@@ -1,66 +1,5472 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
-		/>
-		<title>Scramjet</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<link rel="shortcut icon" content="favicon.webp" />
-	
-		<script src="/scram/scramjet.all.js"></script>
-		<script src="/baremux/index.js"></script>
-		
-		<link rel="stylesheet" href="index.css" />
-		<script src="register-sw.js" defer></script>
-		<script src="search.js" defer></script>
-		<script src="index.js" defer></script>
-	</head>
+    <title>Fern</title>
 
-	<body>
-		<div title="Scramjet Logo" class="flex-center logo-wrapper header-center">
-			<img class="logo" src="sj.png" alt="Scramjet" />
-			<h1>Scramjet | MW</h1>
-		</div>
-		<div class="flex-center desc left-margin">
-			<p>
-				Scramjet is an experimental interception based web proxy designed to
-				evade internet censorship, bypass arbitrary web browser restrictions and
-				innovate web proxy technologies.
-			</p>
-		</div>
+    <meta name="fern-version" content="1.2.20">
 
-		<form id="sj-form" class="flex-center">
-			<input
-				id="sj-search-engine"
-				value="https://www.google.com/search?q=%s"
-				type="hidden"
-			/>
-			<input id="sj-address" type="text" placeholder="Search the web freely" />
-		</form>
-		<div class="desc left-margin">
-			<p id="sj-error"></p>
-			<pre id="sj-error-code"></pre>
-		</div>
-		<footer>
-			<div>
-				<a
-					title="The Mercury Workshop GitHub organization"
-					href="https://github.com/MercuryWorkshop"
-					>Mercury Workshop</a
-				>
-				<a
-					title="The example demo app for Scramjet"
-					href="https://github.com/MercuryWorkshop/Scramjet-Demo"
-					>GitHub</a
-				>
-				<a title="License information" href="credits.html">Credits</a>
-			</div>
-			<div>
-				<span>Scramjet &copy; MW 2025</span>
-			</div>
-		</footer>
-	</body>
+    <!-- Scramjet -->
+    <script src="/scram/scramjet.all.js"></script>
+    <script src="/baremux/index.js"></script>
+    <script>
+        /*
+         * ============================================================
+         * FERN SCRAMJET BOOTSTRAP
+         * ============================================================
+         *
+         * Fern keeps its existing UI and iframe container, but the
+         * proxy engine is now Scramjet. The paths below match the
+         * standard Scramjet demo asset layout.
+         */
+
+        let fernScramjet = null;
+        let fernScramjetFrame = null;
+        let fernScramjetConnection = null;
+        let fernScramjetReady = false;
+        let fernScramjetSWPromise = null;
+
+        async function registerFernScramjetSW() {
+            if (fernScramjetSWPromise) {
+                return fernScramjetSWPromise;
+            }
+
+            fernScramjetSWPromise = (async () => {
+                if (!("serviceWorker" in navigator)) {
+                    throw new Error("This browser does not support service workers.");
+                }
+
+                if (
+                    location.protocol !== "https:" &&
+                    location.hostname !== "localhost" &&
+                    location.hostname !== "127.0.0.1"
+                ) {
+                    throw new Error(
+                        "Scramjet service workers require HTTPS, localhost, or 127.0.0.1."
+                    );
+                }
+
+                const registration =
+                    await navigator.serviceWorker.register("/sw.js");
+
+                await navigator.serviceWorker.ready;
+
+                return registration;
+            })();
+
+            try {
+                return await fernScramjetSWPromise;
+            } catch (error) {
+                fernScramjetSWPromise = null;
+                throw error;
+            }
+        }
+
+        async function initializeFernScramjet() {
+            if (fernScramjetReady) {
+                return true;
+            }
+
+            if (typeof $scramjetLoadController !== "function") {
+                throw new Error(
+                    "Scramjet controller loader was not found at /scram/scramjet.all.js."
+                );
+            }
+
+            const { ScramjetController } =
+                $scramjetLoadController();
+
+            if (typeof ScramjetController !== "function") {
+                throw new Error(
+                    "ScramjetController was not found."
+                );
+            }
+
+            fernScramjet = new ScramjetController({
+                files: {
+                    wasm: "/scram/scramjet.wasm.wasm",
+                    all: "/scram/scramjet.all.js",
+                    sync: "/scram/scramjet.sync.js"
+                }
+            });
+
+            fernScramjet.init();
+
+            if (
+                typeof BareMux === "undefined" ||
+                typeof BareMux.BareMuxConnection !== "function"
+            ) {
+                throw new Error(
+                    "BareMux was not found at /baremux/index.js."
+                );
+            }
+
+            fernScramjetConnection =
+                new BareMux.BareMuxConnection(
+                    "/baremux/worker.js"
+                );
+
+            fernScramjetReady = true;
+            return true;
+        }
+
+        async function prepareFernScramjetTransport() {
+            await initializeFernScramjet();
+            await registerFernScramjetSW();
+
+            const wispUrl =
+                (location.protocol === "https:" ? "wss" : "ws") +
+                "://" +
+                location.host +
+                "/wisp/";
+
+            const currentTransport =
+                await fernScramjetConnection.getTransport();
+
+            if (currentTransport !== "/libcurl/index.mjs") {
+                await fernScramjetConnection.setTransport(
+                    "/libcurl/index.mjs",
+                    [
+                        {
+                            websocket: wispUrl
+                        }
+                    ]
+                );
+            }
+
+            return true;
+        }
+
+        async function createFernScramjetFrame() {
+            await prepareFernScramjetTransport();
+
+            if (fernScramjetFrame) {
+                return fernScramjetFrame;
+            }
+
+            fernScramjetFrame =
+                fernScramjet.createFrame();
+
+            fernScramjetFrame.frame.id =
+                "iframeWindow";
+
+            fernScramjetFrame.frame.title =
+                "Fern";
+
+            fernScramjetFrame.frame.setAttribute(
+                "allow",
+                "fullscreen; autoplay; gamepad"
+            );
+
+            fernScramjetFrame.frame.setAttribute(
+                "allowfullscreen",
+                ""
+            );
+
+            fernScramjetFrame.frame.setAttribute(
+                "loading",
+                "eager"
+            );
+
+            fernScramjetFrame.frame.setAttribute(
+                "referrerpolicy",
+                "no-referrer"
+            );
+
+            const oldFrame =
+                document.getElementById("iframeWindow");
+
+            if (oldFrame) {
+                oldFrame.replaceWith(
+                    fernScramjetFrame.frame
+                );
+            } else if (iframeContainer) {
+                iframeContainer.appendChild(
+                    fernScramjetFrame.frame
+                );
+            }
+
+            iframeWindow =
+                fernScramjetFrame.frame;
+
+            return fernScramjetFrame;
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg: #030603;
+            --bg-light: #071008;
+            --panel: #09110b;
+            --panel-hover: #0d180f;
+
+            --green: #00ff66;
+            --green-dark: #00b84a;
+            --green-soft: #75ffa5;
+
+            --text: #eaffef;
+            --muted: #72877a;
+
+            --border: rgba(0, 255, 102, 0.16);
+            --border-bright: rgba(0, 255, 102, 0.4);
+
+            --red: #ff526f;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            overflow: hidden;
+
+            color: var(--text);
+
+            font-family:
+                Inter,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(0,255,102,.055),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(0,255,102,.04),
+                    transparent 30%
+                ),
+                var(--bg);
+        }
+
+        /* Interactive Canvas Background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+
+        /* =====================================================
+           LOGIN
+           ===================================================== */
+
+        #loginScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            background:
+                linear-gradient(
+                    rgba(0,255,102,.025) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(0,255,102,.025) 1px,
+                    transparent 1px
+                ),
+                var(--bg);
+
+            background-size: 42px 42px;
+        }
+
+
+        .login-box {
+            position: relative;
+            z-index: 2;
+            width: min(430px, 100%);
+            padding: 36px;
+
+            background: rgba(7,14,9,.95);
+
+            border: 1px solid var(--border);
+
+            /* Sharp cyberpunk corners */
+            border-radius: 0;
+
+            box-shadow:
+                0 0 80px rgba(0,255,102,.07),
+                inset 0 0 35px rgba(0,255,102,.015);
+
+            backdrop-filter: blur(15px);
+        }
+
+
+        .fern-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+
+        .fern-icon {
+            width: 44px;
+            height: 44px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: var(--green);
+
+            border: 1px solid var(--border-bright);
+
+            border-radius: 0;
+
+            font-size: 23px;
+
+            box-shadow:
+                0 0 20px rgba(0,255,102,.08);
+        }
+
+
+        .fern-logo h1 {
+            margin: 0;
+
+            font-size: 31px;
+            letter-spacing: -1.5px;
+        }
+
+
+        .fern-logo h1 span {
+            color: var(--green);
+
+            text-shadow:
+                0 0 15px rgba(0,255,102,.35);
+        }
+
+
+        .login-subtitle {
+            margin: 0 0 28px;
+
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+
+        .field-label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+            font-weight: 800;
+
+            letter-spacing: .13em;
+
+            text-transform: uppercase;
+        }
+
+
+        #passwordInput {
+            width: 100%;
+
+            padding: 13px 14px;
+
+            color: var(--text);
+
+            background: #030703;
+
+            border: 1px solid var(--border);
+
+            border-radius: 0;
+
+            outline: none;
+
+            transition: .2s;
+        }
+
+
+        #passwordInput:focus {
+            border-color: var(--border-bright);
+
+            box-shadow:
+                0 0 0 3px rgba(0,255,102,.06);
+        }
+
+
+        #loginButton {
+            width: 100%;
+
+            margin-top: 14px;
+
+            padding: 13px;
+
+            color: #001b08;
+
+            background: var(--green);
+
+            border: 0;
+
+            border-radius: 0;
+
+            font-weight: 900;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+
+        #loginButton:hover {
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 0 25px rgba(0,255,102,.2);
+        }
+
+
+        #loginButton:active {
+            transform: translateY(0);
+        }
+
+
+        #loginError {
+            min-height: 20px;
+
+            margin-top: 12px;
+
+            color: var(--red);
+
+            font-size: 12px;
+
+            text-align: center;
+        }
+
+
+        .login-joke {
+            margin-top: 22px;
+            padding-top: 17px;
+
+            border-top:
+                1px solid rgba(255,255,255,.05);
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            text-align: center;
+
+            line-height: 1.5;
+        }
+
+
+        /* =====================================================
+           APPLICATION
+           ===================================================== */
+
+        #app {
+            position: relative;
+            z-index: 2;
+            display: none;
+
+            width: 100%;
+            height: 100vh;
+            min-height: 0;
+
+            flex-direction: column;
+        }
+
+
+        .topbar {
+            height: 64px;
+            min-height: 64px;
+            flex: 0 0 64px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 20px;
+
+            background:
+                rgba(3,8,4,.92);
+
+            border-bottom:
+                1px solid var(--border);
+
+            backdrop-filter: blur(14px);
+        }
+
+
+        .brand {
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+
+        .brand-icon {
+            color: var(--green);
+
+            text-shadow:
+                0 0 14px rgba(0,255,102,.5);
+        }
+
+
+        .nav {
+            display: flex;
+            gap: 5px;
+        }
+
+
+        .nav button {
+            padding: 9px 14px;
+
+            color: var(--muted);
+
+            background: transparent;
+
+            border: 1px solid transparent;
+
+            border-radius: 0;
+
+            font-weight: 750;
+
+            cursor: pointer;
+
+            transition: .18s;
+        }
+
+
+        .nav button:hover,
+        .nav button.active {
+            color: var(--green);
+
+            background:
+                rgba(0,255,102,.055);
+
+            border-color:
+                var(--border);
+        }
+
+
+        .online {
+            display: flex;
+            align-items: center;
+
+            gap: 8px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+
+        .online-dot {
+            width: 7px;
+            height: 7px;
+
+            background: var(--green);
+
+            border-radius: 50%;
+
+            box-shadow:
+                0 0 12px var(--green);
+        }
+
+
+        /* =====================================================
+           CONTENT
+           ===================================================== */
+
+         .content {
+            width: 100%;
+            height: auto;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-gutter: stable;
+        }
+
+        #gamesPage {
+            min-height: max-content;
+            padding-bottom: 100px;
+        }
+
+        #gamesPage.active {
+            display: block;
+        }
+
+        .games-grid {
+            padding-bottom: 30px;
+        }
+
+
+        .page {
+            display: none;
+
+            width: min(1200px, 100%);
+
+            margin: auto;
+
+            padding: 28px;
+        }
+
+
+        .page.active {
+            display: block;
+        }
+
+
+        /* =====================================================
+           PROXY
+           ===================================================== */
+
+        .hero {
+            padding: 30px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(0,255,102,.055),
+                    transparent 55%
+                ),
+                var(--panel);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 0;
+
+            backdrop-filter: blur(8px);
+        }
+
+
+        .hero h2 {
+            margin: 0 0 7px;
+
+            font-size: clamp(28px, 5vw, 46px);
+
+            letter-spacing: -2px;
+        }
+
+
+        .hero h2 span {
+            color: var(--green);
+
+            text-shadow:
+                0 0 20px rgba(0,255,102,.25);
+        }
+
+
+        .hero p {
+            margin: 0;
+
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+
+        .proxy-controls {
+            display: flex;
+
+            gap: 9px;
+
+            margin-top: 21px;
+        }
+
+
+        #urlInput {
+            flex: 1;
+
+            min-width: 0;
+
+            padding: 13px 14px;
+
+            color: var(--text);
+
+            background: #030703;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 0;
+
+            outline: none;
+        }
+
+
+        #urlInput:focus {
+            border-color: var(--border-bright);
+
+            box-shadow:
+                0 0 0 3px rgba(0,255,102,.05);
+        }
+
+
+        #searchButton {
+            padding: 0 22px;
+
+            color: var(--green);
+
+            background:
+                rgba(0,255,102,.06);
+
+            border:
+                1px solid var(--border-bright);
+
+            border-radius: 0;
+
+            font-weight: 850;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+
+        #searchButton:hover {
+            background:
+                rgba(0,255,102,.12);
+
+            box-shadow:
+                0 0 20px rgba(0,255,102,.07);
+        }
+
+
+        .iframe-container {
+            position: relative;
+
+            width: 100%;
+
+            height: calc(100vh - 192px);
+
+            min-height: 400px;
+
+            margin-top: 18px;
+
+            overflow: hidden;
+
+            background: #020402;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 0;
+        }
+
+
+        #iframeWindow {
+            width: 100%;
+            height: 100%;
+
+            border: 0;
+
+            background: white;
+        }
+
+
+
+        /* =====================================================
+           FULLSCREEN LAYOUT
+           ===================================================== */
+
+        #iframeContainer:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            min-height: 0;
+            margin: 0;
+            border: 0;
+            border-radius: 0;
+            background: #020402;
+        }
+
+        #iframeContainer:fullscreen #iframeWindow {
+            width: 100%;
+            height: 100%;
+        }
+
+        #iframeContainer:fullscreen .iframe-toolbar {
+            z-index: 50;
+        }
+
+        /* =====================================================
+           PROXY WINDOW POP-IN ANIMATION
+           ===================================================== */
+
+        .iframe-container.window-pop {
+            animation: fernWindowPop .42s cubic-bezier(.2,.85,.25,1) both;
+        }
+
+
+        .iframe-container.window-pop #iframeWindow {
+            animation: fernIframeReveal .42s ease-out both;
+        }
+
+
+        .proxy-opening-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            background: rgba(1,4,2,.72);
+        }
+
+
+        .proxy-opening-overlay.show {
+            animation: fernOverlay .5s ease-out both;
+        }
+
+
+        .proxy-opening-text {
+            padding: 12px 18px;
+            border: 1px solid var(--border-bright);
+            background: #020602;
+            color: var(--green);
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            box-shadow: 0 0 24px rgba(0,255,102,.12);
+        }
+
+
+        @keyframes fernWindowPop {
+            0% {
+                transform: scale(.94);
+                opacity: .45;
+            }
+            55% {
+                transform: scale(1.012);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+
+        @keyframes fernIframeReveal {
+            0% {
+                transform: scale(.985);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+
+        @keyframes fernOverlay {
+            0% {
+                opacity: 1;
+            }
+            65% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+
+        /* =====================================================
+           IFRAME TOOLBAR
+           ===================================================== */
+
+        .iframe-toolbar {
+            position: absolute;
+
+            top: 8px;
+            right: 8px;
+
+            z-index: 20;
+
+            display: flex;
+
+            gap: 5px;
+        }
+
+
+        .iframe-toolbar button {
+            width: 34px;
+            height: 30px;
+
+            color: var(--green);
+
+            background: rgba(3,8,4,.92);
+
+            border:
+                1px solid var(--border-bright);
+
+            border-radius: 0;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            transition: .18s;
+        }
+
+
+        .iframe-toolbar button:hover {
+            background:
+                rgba(0,255,102,.12);
+
+            box-shadow:
+                0 0 15px rgba(0,255,102,.12);
+        }
+
+
+
+        /* =====================================================
+           SETTINGS
+           ===================================================== */
+
+        .settings-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 8px;
+        }
+
+        .settings-section {
+            padding: 22px;
+            background: rgba(7,14,9,.72);
+            border: 1px solid var(--border);
+            box-shadow: inset 0 0 30px rgba(0,0,0,.12);
+            backdrop-filter: blur(8px);
+        }
+
+        .settings-section h3 {
+            margin: 0 0 5px;
+            font-size: 16px;
+        }
+
+        .settings-section p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .theme-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 58px;
+            padding: 10px 12px;
+            color: var(--text);
+            background: rgba(3,8,4,.72);
+            border: 1px solid var(--border);
+            border-radius: 0;
+            cursor: pointer;
+            font-weight: 750;
+            text-align: left;
+            transition: .18s;
+        }
+
+        .theme-card:hover,
+        .theme-card.active {
+            border-color: var(--border-bright);
+            box-shadow: 0 0 18px rgba(0,0,0,.18);
+            transform: translateY(-1px);
+        }
+
+        .theme-preview {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            border: 1px solid rgba(255,255,255,.18);
+            box-shadow: inset 0 0 10px rgba(0,0,0,.3);
+        }
+
+        .theme-fern { background: linear-gradient(135deg, #030603, #00ff66); }
+        .theme-midnight { background: linear-gradient(135deg, #050612, #5570ff); }
+        .theme-amber { background: linear-gradient(135deg, #0b0702, #ffb020); }
+        .theme-ice { background: linear-gradient(135deg, #031016, #5de7ff); }
+        .theme-violet { background: linear-gradient(135deg, #080311, #b36bff); }
+        .theme-rose { background: linear-gradient(135deg, #110307, #ff6688); }
+        .theme-mono { background: linear-gradient(135deg, #050505, #d7d7d7); }
+        .theme-cyan { background: linear-gradient(135deg, #02100e, #20ffd4); }
+        .theme-light { background: linear-gradient(135deg, #f3f6f5, #087d3d); }
+        .theme-cyberpunk { background: linear-gradient(135deg, #08050f, #ff2dcc 48%, #00eaff); }
+        .theme-aurora { background: linear-gradient(135deg, #06100f, #63ffd0 52%, #7d8cff); }
+        .theme-sunset { background: linear-gradient(135deg, #12070a, #ff5e62 48%, #ffbd59); }
+        .theme-ocean { background: linear-gradient(135deg, #03101b, #43b8ff 52%, #6b7cff); }
+        .theme-dracula { background: linear-gradient(135deg, #0b0912, #bd93f9 52%, #ff79c6); }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 18px;
+            padding: 14px;
+            border: 1px solid var(--border);
+            background: rgba(3,8,4,.55);
+            cursor: pointer;
+        }
+
+        .settings-toggle strong,
+        .settings-toggle small {
+            display: block;
+        }
+
+        .settings-toggle small {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .settings-toggle input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--green);
+            cursor: pointer;
+        }
+
+        .settings-about {
+            opacity: .9;
+        }
+
+        /* Saved theme palettes */
+        body[data-theme="midnight"] {
+            --bg: #050612;
+            --bg-light: #0a0d1d;
+            --panel: #0b0e20;
+            --panel-hover: #11152c;
+            --green: #6f86ff;
+            --green-dark: #4e65df;
+            --green-soft: #aab8ff;
+            --text: #eef1ff;
+            --muted: #7d86a6;
+            --border: rgba(111,134,255,.18);
+            --border-bright: rgba(111,134,255,.48);
+        }
+
+        body[data-theme="amber"] {
+            --bg: #0b0702;
+            --bg-light: #160e04;
+            --panel: #171006;
+            --panel-hover: #211508;
+            --green: #ffb020;
+            --green-dark: #d88d00;
+            --green-soft: #ffd477;
+            --text: #fff5df;
+            --muted: #9d8a6c;
+            --border: rgba(255,176,32,.18);
+            --border-bright: rgba(255,176,32,.48);
+        }
+
+        body[data-theme="ice"] {
+            --bg: #031016;
+            --bg-light: #061a22;
+            --panel: #08202a;
+            --panel-hover: #0b2b37;
+            --green: #5de7ff;
+            --green-dark: #27b9d3;
+            --green-soft: #a4f3ff;
+            --text: #e9fbff;
+            --muted: #71939c;
+            --border: rgba(93,231,255,.18);
+            --border-bright: rgba(93,231,255,.48);
+        }
+
+        body[data-theme="violet"] {
+            --bg: #080311;
+            --bg-light: #11061b;
+            --panel: #160a20;
+            --panel-hover: #20102e;
+            --green: #b36bff;
+            --green-dark: #8644cf;
+            --green-soft: #d4a9ff;
+            --text: #f8efff;
+            --muted: #957fa4;
+            --border: rgba(179,107,255,.18);
+            --border-bright: rgba(179,107,255,.48);
+        }
+
+        body[data-theme="rose"] {
+            --bg: #110307;
+            --bg-light: #1b060c;
+            --panel: #210a11;
+            --panel-hover: #2b0e17;
+            --green: #ff6688;
+            --green-dark: #d83f63;
+            --green-soft: #ffadbd;
+            --text: #fff0f4;
+            --muted: #a37b86;
+            --border: rgba(255,102,136,.18);
+            --border-bright: rgba(255,102,136,.48);
+        }
+
+        body[data-theme="mono"] {
+            --bg: #050505;
+            --bg-light: #0c0c0c;
+            --panel: #111111;
+            --panel-hover: #181818;
+            --green: #d7d7d7;
+            --green-dark: #999999;
+            --green-soft: #f1f1f1;
+            --text: #eeeeee;
+            --muted: #858585;
+            --border: rgba(255,255,255,.14);
+            --border-bright: rgba(255,255,255,.38);
+        }
+
+        body[data-theme="cyan"] {
+            --bg: #02100e;
+            --bg-light: #041b18;
+            --panel: #06221e;
+            --panel-hover: #0a2d28;
+            --green: #20ffd4;
+            --green-dark: #10b69a;
+            --green-soft: #8affea;
+            --text: #e8fffb;
+            --muted: #6c9991;
+            --border: rgba(32,255,212,.18);
+            --border-bright: rgba(32,255,212,.48);
+        }
+
+        body.no-animations *,
+        body.no-animations *::before,
+        body.no-animations *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        /* =====================================================
+           GAMES
+           ===================================================== */
+
+        .section-header {
+            margin-bottom: 20px;
+        }
+
+
+        .section-header h2 {
+            margin: 0 0 5px;
+
+            font-size: 29px;
+        }
+
+
+        .section-header p {
+            margin: 0;
+
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+
+        .games-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fill, minmax(220px, 1fr));
+
+            gap: 15px;
+            padding-bottom: 10px;
+        }
+
+
+        .game-card {
+            padding: 20px;
+
+            background: var(--panel);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 0;
+
+            transition: .2s;
+            backdrop-filter: blur(8px);
+        }
+
+
+        .game-card:hover {
+            transform: translateY(-3px);
+
+            background: var(--panel-hover);
+
+            border-color:
+                var(--border-bright);
+
+            box-shadow:
+                0 15px 35px rgba(0,0,0,.25);
+        }
+
+
+        .game-icon {
+            width: 45px;
+            height: 45px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 15px;
+
+            color: var(--green);
+
+            background:
+                rgba(0,255,102,.055);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 0;
+
+            font-size: 20px;
+        }
+
+
+        .game-card h3 {
+            margin: 0 0 6px;
+
+            font-size: 17px;
+        }
+
+
+        .game-card p {
+            margin: 0 0 17px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            line-height: 1.5;
+        }
+
+
+        .game-card a {
+            display: block;
+
+            padding: 10px;
+
+            color: var(--green);
+
+            background:
+                rgba(0,255,102,.045);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 0;
+
+            text-align: center;
+
+            text-decoration: none;
+
+            font-size: 12px;
+            font-weight: 850;
+
+            transition: .2s;
+        }
+
+
+        .game-card a:hover {
+            background:
+                rgba(0,255,102,.1);
+
+            border-color:
+                var(--border-bright);
+        }
+
+
+        .joke-card {
+            margin-top: 18px;
+
+            padding: 17px;
+
+            color: var(--green-soft);
+
+            background:
+                rgba(0,255,102,.025);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 0;
+
+            font-size: 12px;
+
+            text-align: center;
+
+            backdrop-filter: blur(8px);
+        }
+
+
+        /* =====================================================
+           VERSION INDICATOR
+           ===================================================== */
+
+        .version-indicator {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .6px;
+            white-space: nowrap;
+        }
+
+        .version-indicator span {
+            color: var(--green);
+        }
+
+
+        /* =====================================================
+           MOBILE
+           ===================================================== */
+
+        @media (max-width: 700px) {
+
+            .topbar {
+                padding: 0 12px;
+            }
+
+            .online {
+                display: none;
+            }
+
+            .version-indicator {
+                font-size: 9px;
+            }
+
+            .page {
+                padding: 14px;
+            }
+
+            .hero {
+                padding: 21px;
+            }
+
+            .proxy-controls {
+                flex-direction: column;
+            }
+
+            #searchButton {
+                padding: 12px;
+            }
+
+            .iframe-container {
+                height: calc(100vh - 265px);
+            }
+
+        }
+
+        /* =====================================================
+           FERN 1.1.1 UI REFRESH
+           ===================================================== */
+
+        :root {
+            --radius-sm: 9px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --button-ease: cubic-bezier(.2,.8,.2,1);
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 12% 8%, rgba(0,255,102,.045), transparent 28%),
+                radial-gradient(circle at 88% 92%, rgba(0,255,102,.025), transparent 30%),
+                var(--bg);
+            transition: background .3s ease, color .3s ease;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background:
+                linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        .topbar {
+            background: rgba(3,8,4,.92);
+            box-shadow: 0 10px 35px rgba(0,0,0,.16);
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border-bright);
+            border-radius: 9px;
+            background: rgba(0,255,102,.06);
+            box-shadow: 0 0 22px rgba(0,255,102,.10);
+        }
+
+        .nav {
+            padding: 4px;
+            gap: 3px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: rgba(9,17,11,.76);
+        }
+
+        .nav button {
+            border-radius: 9px;
+            transition:
+                transform .2s var(--button-ease),
+                background .2s ease,
+                border-color .2s ease,
+                color .2s ease,
+                box-shadow .2s ease;
+        }
+
+        .nav button:hover {
+            transform: translateY(-1px);
+        }
+
+        .nav button.active {
+            border-color: var(--border-bright);
+            background: rgba(0,255,102,.08);
+            box-shadow: inset 0 0 18px rgba(0,255,102,.04);
+        }
+
+        .online {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(9,17,11,.70);
+        }
+
+        .page {
+            padding: 34px 28px 70px;
+        }
+
+        .hero,
+        .settings-section {
+            border-radius: var(--radius-lg);
+            box-shadow:
+                0 18px 55px rgba(0,0,0,.18),
+                inset 0 1px 0 rgba(255,255,255,.018);
+        }
+
+        .hero {
+            padding: 34px;
+            background:
+                radial-gradient(circle at 90% 0%, rgba(0,255,102,.08), transparent 34%),
+                linear-gradient(135deg, rgba(0,255,102,.04), transparent 52%),
+                var(--panel);
+        }
+
+        .hero h2 {
+            letter-spacing: -.04em;
+        }
+
+        .proxy-controls {
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .proxy-controls input {
+            min-height: 48px;
+            padding: 0 15px;
+            border-radius: 11px;
+            background: var(--bg);
+            border-color: var(--border);
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .proxy-controls input:focus {
+            border-color: var(--border-bright);
+            box-shadow: 0 0 0 4px rgba(0,255,102,.07);
+            outline: none;
+        }
+
+        .proxy-controls button {
+            min-height: 48px;
+            padding: 0 21px;
+            border: 1px solid var(--border-bright);
+            border-radius: 11px;
+            background: var(--green);
+            color: var(--bg);
+            box-shadow: 0 8px 24px rgba(0,255,102,.07);
+            transition:
+                transform .2s var(--button-ease),
+                box-shadow .2s ease,
+                filter .2s ease;
+        }
+
+        .proxy-controls button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+            box-shadow: 0 12px 30px rgba(0,255,102,.13);
+        }
+
+        .proxy-controls button:active,
+        .iframe-toolbar button:active,
+        .nav button:active,
+        .theme-card:active {
+            transform: translateY(1px) scale(.98);
+        }
+
+        .iframe-container {
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 55px rgba(0,0,0,.22);
+        }
+
+        .iframe-toolbar {
+            top: 12px;
+            right: 12px;
+            gap: 7px;
+        }
+
+        .iframe-toolbar button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: rgba(9,17,11,.82);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,.22);
+            transition:
+                transform .2s var(--button-ease),
+                background .2s ease,
+                border-color .2s ease,
+                color .2s ease,
+                box-shadow .2s ease;
+        }
+
+        .iframe-toolbar button:hover {
+            color: var(--green);
+            border-color: var(--border-bright);
+            background: var(--panel-hover);
+            transform: translateY(-2px);
+        }
+
+        .iframe-toolbar button.holding {
+            color: var(--green);
+            border-color: var(--border-bright);
+            box-shadow:
+                0 0 0 3px rgba(0,255,102,.08),
+                0 0 25px rgba(0,255,102,.14);
+            transform: scale(.96);
+        }
+
+        .settings-section {
+            padding: 24px;
+            background:
+                linear-gradient(135deg, rgba(0,255,102,.03), transparent 55%),
+                var(--panel);
+        }
+
+        .theme-grid {
+            grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+            gap: 12px;
+        }
+
+        .theme-card {
+            min-height: 68px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: var(--bg);
+            border-color: var(--border);
+            transition:
+                transform .2s var(--button-ease),
+                background .2s ease,
+                border-color .2s ease,
+                box-shadow .2s ease;
+        }
+
+        .theme-card:hover,
+        .theme-card.active {
+            transform: translateY(-2px);
+            border-color: var(--border-bright);
+            background: var(--panel-hover);
+            box-shadow: 0 12px 28px rgba(0,0,0,.18);
+        }
+
+        .theme-card.active::after {
+            content: "✓";
+            margin-left: auto;
+            color: var(--green);
+            font-weight: 900;
+        }
+
+        .theme-preview {
+            width: 36px;
+            height: 36px;
+            flex: 0 0 36px;
+            border-radius: 10px;
+        }
+
+        .theme-light {
+            background: linear-gradient(135deg, #ffffff, #8fd7ad);
+        }
+
+        .theme-cyberpunk {
+            background: linear-gradient(135deg, #090511 0%, #ff2dcc 48%, #00efff 100%);
+        }
+
+        .settings-toggle {
+            border-radius: 13px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .settings-toggle:hover {
+            border-color: var(--border-bright);
+            background: var(--panel-hover);
+        }
+
+        .settings-toggle select {
+            min-width: 120px;
+            padding: 9px 12px;
+            color: var(--text);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .settings-toggle select:focus {
+            outline: none;
+            border-color: var(--border-bright);
+        }
+
+        /* Light */
+        body[data-theme="light"] {
+            --bg: #f3f6f5;
+            --bg-light: #ffffff;
+            --panel: rgba(255, 255, 255, 0.85);
+            --panel-hover: #edf3ef;
+            --green: #087d3d;
+            --green-dark: #056630;
+            --green-soft: #0a7040;
+            --text: #132018;
+            --muted: #617067;
+            --border: rgba(8,96,48,.16);
+            --border-bright: rgba(8,96,48,.38);
+        }
+
+        body[data-theme="light"] {
+            background:
+                radial-gradient(circle at 12% 8%, rgba(8,125,61,.07), transparent 28%),
+                #f3f6f5;
+        }
+
+        body[data-theme="light"]::before {
+            background:
+                linear-gradient(rgba(0,0,0,.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,.025) 1px, transparent 1px);
+        }
+
+        body[data-theme="light"] .topbar {
+            background: rgba(255,255,255,.92);
+        }
+
+        body[data-theme="light"] .nav,
+        body[data-theme="light"] .online,
+        body[data-theme="light"] .iframe-toolbar button {
+            background: rgba(255,255,255,.86);
+        }
+
+        body[data-theme="light"] .login-box {
+            background: rgba(255,255,255,.94);
+        }
+
+        body[data-theme="light"] #passwordInput {
+            background: #f7faf8;
+        }
+
+        /* Cyberpunk */
+        body[data-theme="cyberpunk"] {
+            --bg: #08050f;
+            --bg-light: #10091b;
+            --panel: rgba(18, 12, 29, 0.85);
+            --panel-hover: #1b1028;
+            --green: #00eaff;
+            --green-dark: #0099a6;
+            --green-soft: #82f8ff;
+            --text: #f2fbff;
+            --muted: #918aa8;
+            --border: rgba(0,240,255,.19);
+            --border-bright: rgba(255,45,205,.58);
+            --red: #ff3fc8;
+        }
+
+        body[data-theme="cyberpunk"] {
+            background:
+                radial-gradient(circle at 15% 15%, rgba(255,45,205,.12), transparent 30%),
+                radial-gradient(circle at 85% 80%, rgba(0,240,255,.10), transparent 32%),
+                #08050f;
+        }
+
+        body[data-theme="cyberpunk"] .topbar {
+            background: rgba(10,5,17,.93);
+        }
+
+        body[data-theme="cyberpunk"] .brand-icon {
+            border-color: rgba(255,45,205,.55);
+            background: rgba(255,45,205,.07);
+            box-shadow: 0 0 25px rgba(255,45,205,.13);
+        }
+
+        body[data-theme="cyberpunk"] .nav button.active,
+        body[data-theme="cyberpunk"] .theme-card.active {
+            border-color: rgba(255,45,205,.55);
+            background: rgba(255,45,205,.07);
+        }
+
+        body[data-theme="cyberpunk"] .hero,
+        body[data-theme="cyberpunk"] .settings-section {
+            background:
+                linear-gradient(135deg, rgba(255,45,205,.055), transparent 48%),
+                var(--panel);
+        }
+
+        body[data-theme="cyberpunk"] .online-dot {
+            background: #ff3fc8;
+            box-shadow: 0 0 14px #ff3fc8;
+        }
+
+        /* Smooth controls — intentionally scoped so checkboxes,
+           selects, and cards do not all become giant pills. */
+        body[data-button-style="smooth"] .nav button,
+        body[data-button-style="smooth"] .proxy-controls button,
+        body[data-button-style="smooth"] #loginButton,
+        body[data-button-style="smooth"] .settings-toggle select {
+            border-radius: 999px;
+        }
+
+        body[data-button-style="smooth"] .proxy-controls input,
+        body[data-button-style="smooth"] #passwordInput {
+            border-radius: 999px;
+        }
+
+        body[data-button-style="smooth"] .iframe-toolbar button {
+            border-radius: 50%;
+        }
+
+        body[data-button-style="smooth"] .theme-card {
+            border-radius: 16px;
+        }
+
+        @media (max-width: 850px) {
+            .topbar {
+                flex-wrap: wrap;
+                justify-content: center;
+                height: auto;
+                min-height: 64px;
+                padding: 10px 12px;
+            }
+
+            .brand {
+                margin-right: auto;
+            }
+
+            .version-indicator {
+                display: none;
+            }
+
+            .page {
+                padding: 22px 16px 55px;
+            }
+
+            .hero {
+                padding: 24px 20px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .001ms !important;
+            }
+        }
+
+    
+
+        /* =====================================================
+           FERN 2.0 — GLASS / BENTO UI REFRESH
+           ===================================================== */
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: .7;
+            background:
+                radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--green) 12%, transparent), transparent 30%),
+                radial-gradient(circle at 82% 75%, color-mix(in srgb, var(--green) 9%, transparent), transparent 34%),
+                linear-gradient(120deg, transparent 0 45%, color-mix(in srgb, var(--green) 2%, transparent) 50%, transparent 55%);
+        }
+
+        .topbar {
+            margin: 12px 14px 0;
+            width: calc(100% - 28px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--bg) 72%, transparent);
+            box-shadow: 0 14px 45px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.035);
+            backdrop-filter: blur(22px) saturate(125%);
+        }
+
+        .nav {
+            border-radius: 14px;
+            padding: 4px;
+            background: color-mix(in srgb, var(--panel) 75%, transparent);
+            border: 1px solid var(--border);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+        }
+
+        .nav button {
+            border-radius: 11px;
+            transition: transform .2s var(--button-ease), background .2s ease, box-shadow .2s ease;
+        }
+
+        .nav button.active {
+            background: linear-gradient(135deg,
+                color-mix(in srgb, var(--green) 17%, transparent),
+                color-mix(in srgb, var(--green) 6%, transparent));
+            box-shadow: 0 0 22px color-mix(in srgb, var(--green) 10%, transparent);
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero,
+        .settings-section,
+        .joke-card {
+            border-radius: 22px !important;
+            background: linear-gradient(145deg,
+                color-mix(in srgb, var(--panel) 92%, transparent),
+                color-mix(in srgb, var(--bg) 70%, transparent)) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 20px 55px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.035);
+            backdrop-filter: blur(18px) saturate(125%);
+        }
+
+        .section-header {
+            padding: 4px 3px 2px;
+        }
+
+        .section-header h2 {
+            font-size: clamp(30px, 4vw, 42px);
+            letter-spacing: -1.8px;
+        }
+
+        .games-grid {
+            grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+            gap: 17px;
+        }
+
+        .game-card {
+            position: relative;
+            overflow: hidden;
+            padding: 21px;
+            min-height: 205px;
+            border-radius: 20px !important;
+            background:
+                linear-gradient(145deg,
+                    color-mix(in srgb, var(--panel) 94%, transparent),
+                    color-mix(in srgb, var(--bg-light) 55%, transparent)) !important;
+            box-shadow: 0 12px 35px rgba(0,0,0,.13), inset 0 1px 0 rgba(255,255,255,.025);
+            transition: transform .24s var(--button-ease), border-color .24s ease, box-shadow .24s ease;
+        }
+
+        .game-card::before {
+            content: "";
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            right: -70px;
+            top: -80px;
+            border-radius: 50%;
+            background: var(--green);
+            opacity: .07;
+            filter: blur(4px);
+            transition: transform .3s ease, opacity .3s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-7px) scale(1.012);
+            border-color: var(--border-bright) !important;
+            box-shadow: 0 24px 55px rgba(0,0,0,.24), 0 0 28px color-mix(in srgb, var(--green) 7%, transparent);
+        }
+
+        .game-card:hover::before {
+            transform: scale(1.7);
+            opacity: .13;
+        }
+
+        .game-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px !important;
+            background: linear-gradient(145deg,
+                color-mix(in srgb, var(--green) 15%, transparent),
+                color-mix(in srgb, var(--green) 4%, transparent)) !important;
+            box-shadow: 0 8px 22px color-mix(in srgb, var(--green) 8%, transparent);
+        }
+
+        .game-card a {
+            border-radius: 12px !important;
+            background: color-mix(in srgb, var(--green) 8%, transparent) !important;
+            transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+        }
+
+        .game-card a:hover {
+            transform: translateY(-1px);
+            background: color-mix(in srgb, var(--green) 15%, transparent) !important;
+            box-shadow: 0 8px 24px color-mix(in srgb, var(--green) 9%, transparent);
+        }
+
+        .settings-section {
+            padding: 24px;
+        }
+
+        .theme-grid {
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 13px;
+        }
+
+        .theme-card {
+            position: relative;
+            min-height: 74px;
+            border-radius: 17px !important;
+            overflow: hidden;
+            background: color-mix(in srgb, var(--panel) 72%, transparent) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+        }
+
+        .theme-preview {
+            width: 38px;
+            height: 38px;
+            flex-basis: 38px;
+            border-radius: 12px;
+        }
+
+        .theme-card:hover,
+        .theme-card.active {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 14px 30px rgba(0,0,0,.18), 0 0 22px color-mix(in srgb, var(--green) 6%, transparent);
+        }
+
+        .iframe-container {
+            border-radius: 22px !important;
+            border-color: var(--border-bright);
+            box-shadow: 0 25px 65px rgba(0,0,0,.24);
+        }
+
+        .iframe-toolbar button {
+            border-radius: 11px !important;
+            width: 38px;
+            height: 34px;
+            backdrop-filter: blur(12px);
+        }
+
+        .login-box {
+            border-radius: 26px !important;
+            background: linear-gradient(145deg,
+                color-mix(in srgb, var(--panel) 94%, transparent),
+                color-mix(in srgb, var(--bg-light) 60%, transparent)) !important;
+            box-shadow: 0 30px 90px rgba(0,0,0,.30), 0 0 45px color-mix(in srgb, var(--green) 8%, transparent);
+        }
+
+        .fern-icon {
+            border-radius: 15px !important;
+            background: color-mix(in srgb, var(--green) 8%, transparent);
+        }
+
+        /* New atmospheric theme treatments */
+        body[data-theme="aurora"] {
+            background:
+                radial-gradient(circle at 14% 18%, rgba(99,255,208,.16), transparent 27%),
+                radial-gradient(circle at 82% 78%, rgba(125,140,255,.12), transparent 31%),
+                #06100f;
+        }
+
+        body[data-theme="sunset"] {
+            background:
+                radial-gradient(circle at 15% 18%, rgba(255,94,98,.14), transparent 28%),
+                radial-gradient(circle at 84% 78%, rgba(255,189,89,.13), transparent 32%),
+                #12070a;
+        }
+
+        body[data-theme="ocean"] {
+            background:
+                radial-gradient(circle at 16% 16%, rgba(67,184,255,.15), transparent 28%),
+                radial-gradient(circle at 86% 80%, rgba(107,124,255,.13), transparent 33%),
+                #03101b;
+        }
+
+        body[data-theme="dracula"] {
+            background:
+                radial-gradient(circle at 14% 18%, rgba(189,147,249,.14), transparent 28%),
+                radial-gradient(circle at 84% 78%, rgba(255,121,198,.11), transparent 32%),
+                #0b0912;
+        }
+
+        @media (max-width: 700px) {
+            .topbar {
+                margin: 7px 8px 0;
+                width: calc(100% - 16px);
+                border-radius: 14px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        /* =====================================================
+           FERN 2.1 — REFERENCE-INSPIRED LIBRARY UI
+           ===================================================== */
+        .topbar {
+            min-height: 78px;
+            margin: 14px 18px 0 !important;
+            width: calc(100% - 36px) !important;
+            display: grid !important;
+            grid-template-columns: 250px 1fr auto;
+            align-items: center;
+            gap: 22px;
+            padding: 8px 16px !important;
+            border-radius: 20px !important;
+            background: rgba(3,7,4,.72) !important;
+            border-color: rgba(255,255,255,.07) !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.035) !important;
+        }
+        .brand { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.4px; }
+        .brand::after { content:"Workspace"; display:block; margin-left:-3px; margin-top:22px; position:absolute; color:var(--green); font-size:12px; font-weight:700; letter-spacing:.2px; }
+        .brand-icon { font-size:31px !important; filter: drop-shadow(0 0 12px color-mix(in srgb,var(--green) 35%,transparent)); }
+        .nav { justify-self:center; display:flex !important; gap:2px; padding:4px !important; border:0 !important; background:transparent !important; box-shadow:none !important; }
+        .nav button { min-height:44px; padding:0 16px !important; border:1px solid transparent !important; background:transparent !important; color:var(--muted) !important; font-size:13px; font-weight:700; }
+        .nav button:hover { color:var(--text) !important; background:rgba(255,255,255,.035) !important; }
+        .nav button.active { color:var(--text) !important; border-color:var(--border) !important; background:color-mix(in srgb,var(--green) 9%,transparent) !important; box-shadow:0 0 24px color-mix(in srgb,var(--green) 8%,transparent) !important; }
+        .nav-symbol { font-size:18px; margin-right:7px; vertical-align:-2px; color:var(--green); }
+        .online { min-width:150px; padding:11px 15px !important; border:1px solid var(--border) !important; border-radius:14px !important; background:rgba(255,255,255,.035) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.035); }
+        .version-indicator { display:none !important; }
+
+        .content { max-width:1280px !important; padding:28px 28px 44px !important; }
+        .page { min-height:calc(100vh - 125px); }
+        .page.active { animation:fernPageIn .42s cubic-bezier(.2,.8,.2,1) both; }
+        @keyframes fernPageIn { from{opacity:0;transform:translateY(10px) scale(.995)} to{opacity:1;transform:none} }
+
+        .section-header { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin:12px 0 25px !important; }
+        .eyebrow { color:var(--green); font-size:10px; font-weight:900; letter-spacing:.18em; margin-bottom:8px; opacity:.9; }
+        .section-header h2 { font-size:36px !important; letter-spacing:-1.7px; margin:0 0 7px !important; }
+        .heading-spark { color:var(--green); font-size:18px; filter:drop-shadow(0 0 8px color-mix(in srgb,var(--green) 60%,transparent)); }
+        .section-header p { font-size:14px !important; margin:0 !important; }
+
+        /* Normal page headers are stacked. The Library header is the only one
+           that intentionally uses a left/right split for its search controls. */
+        .page > .section-header:not(.library-heading) {
+            display:block !important;
+            text-align:left;
+        }
+        .page > .section-header:not(.library-heading) h2 {
+            display:block;
+            width:100%;
+        }
+        .page > .section-header:not(.library-heading) p {
+            display:block;
+            width:100%;
+        }
+
+        .library-controls { display:flex; align-items:center; gap:8px; }
+        .library-search { height:44px; width:min(300px,35vw); display:flex; align-items:center; gap:8px; padding:0 13px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.25); backdrop-filter:blur(15px); }
+        .library-search span { color:var(--muted); font-size:21px; }
+        .library-search input { width:100%; border:0; outline:0; background:transparent; color:var(--text); font:inherit; }
+        #gameFilter { height:44px; padding:0 12px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.25); color:var(--text); outline:0; }
+
+        .games-grid { grid-template-columns:repeat(auto-fill,minmax(225px,1fr)) !important; gap:17px !important; }
+        .game-card { padding:0 !important; min-height:0 !important; border-radius:17px !important; overflow:hidden; background:rgba(5,11,7,.72) !important; border-color:rgba(255,255,255,.075) !important; box-shadow:0 16px 38px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.035) !important; }
+        .game-card:hover { transform:translateY(-6px) scale(1.012) !important; border-color:var(--border-bright) !important; box-shadow:0 25px 55px rgba(0,0,0,.34), 0 0 25px color-mix(in srgb,var(--green) 9%,transparent) !important; }
+        .game-media { position:relative; height:148px; overflow:hidden; background:linear-gradient(135deg,var(--panel),var(--bg)); }
+        .game-image { display:block; width:100%; height:100%; object-fit:cover; transition:transform .45s cubic-bezier(.2,.8,.2,1), filter .3s ease; }
+        .game-card:hover .game-image { transform:scale(1.06); filter:saturate(1.08) brightness(1.06); }
+        .game-media::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.02) 35%,rgba(0,0,0,.62)); pointer-events:none; }
+        .game-media-glow { position:absolute; width:120px; height:120px; right:-50px; top:-60px; border-radius:50%; background:var(--green); opacity:.12; filter:blur(25px); pointer-events:none; }
+        .game-card-body { padding:13px 14px 14px; }
+        .game-card-top { display:flex; align-items:center; gap:8px; }
+        .game-card h3 { margin:0 !important; flex:1; font-size:14px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .game-card p { min-height:30px; margin:6px 0 12px !important; font-size:11px !important; color:var(--muted); line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .game-card a { padding:9px 11px !important; border-radius:10px !important; color:var(--text) !important; background:color-mix(in srgb,var(--green) 9%,transparent) !important; border-color:var(--border) !important; text-align:left !important; font-size:11px !important; }
+        .game-card a::after { content:"↗"; float:right; color:var(--green); font-size:14px; }
+        .bookmark-button { width:30px; height:30px; flex:0 0 30px; border:1px solid var(--border); border-radius:9px; background:rgba(255,255,255,.035); color:var(--muted); cursor:pointer; font-size:16px; transition:.2s ease; }
+        .bookmark-button:hover,.bookmark-button.saved { color:var(--green); border-color:var(--border-bright); background:color-mix(in srgb,var(--green) 10%,transparent); }
+        .joke-card { margin-top:20px !important; }
+
+        .bookmarks-panel, .about-grid { border:1px solid var(--border); border-radius:20px; background:rgba(4,9,6,.55); backdrop-filter:blur(18px); padding:20px; box-shadow:0 18px 55px rgba(0,0,0,.2); }
+        .empty-state { min-height:320px; display:grid; place-items:center; align-content:center; text-align:center; gap:8px; }
+        .empty-icon { width:62px; height:62px; display:grid; place-items:center; border-radius:18px; border:1px solid var(--border); color:var(--green); font-size:30px; background:color-mix(in srgb,var(--green) 7%,transparent); }
+        .empty-state h3 { margin:5px 0 0; }
+        .empty-state p { margin:0 0 8px; color:var(--muted); }
+        .empty-action, .bookmark-row button { border:1px solid var(--border); border-radius:10px; background:color-mix(in srgb,var(--green) 9%,transparent); color:var(--text); padding:10px 14px; cursor:pointer; font-weight:800; }
+        .bookmark-row { display:grid; grid-template-columns:92px 1fr auto; gap:14px; align-items:center; padding:10px; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.025); margin-bottom:10px; }
+        .bookmark-row img { width:92px; height:58px; object-fit:cover; border-radius:9px; }
+        .bookmark-row strong,.bookmark-row small { display:block; }
+        .bookmark-row small { color:var(--muted); margin-top:4px; }
+        .about-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+        .about-card { display:flex; align-items:center; gap:14px; min-height:110px; padding:18px; border:1px solid var(--border); border-radius:16px; background:rgba(255,255,255,.025); }
+        .about-icon { width:44px; height:44px; display:grid; place-items:center; border-radius:13px; background:color-mix(in srgb,var(--green) 9%,transparent); color:var(--green); font-size:21px; }
+        .about-card strong,.about-card small { display:block; }
+        .about-card small { color:var(--muted); margin-top:5px; line-height:1.45; }
+
+        /* Extra atmosphere so the particle field remains visible all the way down. */
+        body::after { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse at 50% 105%, color-mix(in srgb,var(--green) 12%,transparent), transparent 42%), radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(0,0,0,.28) 100%); }
+        #bgCanvas { z-index:0 !important; opacity:.95; }
+        #app, #loginScreen { position:relative; z-index:1; }
+
+        @media (max-width:900px) {
+            .topbar { grid-template-columns:1fr auto; }
+            .nav { grid-column:1/-1; grid-row:2; overflow:auto; justify-self:stretch; justify-content:center; }
+            .online { justify-self:end; }
+            .library-controls { width:100%; }
+            .library-heading { display:flex !important; align-items:stretch; flex-direction:column; }
+            .library-search { flex:1; width:auto; }
+            .about-grid { grid-template-columns:1fr; }
+        }
+        @media (max-width:600px) {
+            .content { padding:20px 14px 32px !important; }
+            .topbar { margin:8px 8px 0 !important; width:calc(100% - 16px) !important; }
+            .brand::after { display:none; }
+            .nav button { padding:0 10px !important; font-size:11px; }
+            .nav-symbol { margin-right:3px; }
+            .online { display:none; }
+            .library-controls { flex-direction:column; }
+            .library-search,#gameFilter { width:100%; }
+        }
+
+
+        /* =====================================================
+           FINAL UI POLISH — clean spacing, no squeezed headers
+           ===================================================== */
+        .content { position: relative; z-index: 2; }
+        .page { width: min(1320px, calc(100% - 48px)); padding: 42px 0 80px; }
+
+        .section-header {
+            display: flex !important;
+            align-items: flex-end !important;
+            justify-content: space-between !important;
+            gap: 32px !important;
+            margin: 0 0 28px !important;
+            min-height: 74px;
+        }
+        .section-header > div:first-child { min-width: 0; }
+        .section-header h2 {
+            display: block !important;
+            width: auto !important;
+            margin: 0 0 7px !important;
+            font-size: clamp(30px, 3vw, 40px) !important;
+            line-height: 1.08 !important;
+            white-space: normal !important;
+        }
+        .section-header p {
+            display: block !important;
+            width: auto !important;
+            margin: 0 !important;
+            max-width: 620px;
+            line-height: 1.55 !important;
+        }
+        .eyebrow { line-height: 1.2 !important; white-space: nowrap; }
+
+        .library-heading { align-items: flex-end !important; }
+        .library-controls { flex: 0 0 auto; }
+        .library-search { width: 300px; }
+
+        .games-grid {
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important;
+            gap: 20px !important;
+        }
+        .game-card { min-width: 0; }
+
+        .about-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            border: 0;
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+        .about-card {
+            min-height: 126px;
+            padding: 22px;
+            background: rgba(7,14,9,.66);
+            border: 1px solid var(--border);
+        }
+        .about-card > div { min-width: 0; }
+        .about-card small { line-height: 1.5; }
+
+        .settings-panel { gap: 18px; margin-top: 0; }
+        .settings-section {
+            padding: 26px;
+            border-radius: 18px;
+        }
+        .settings-section > div:first-child { margin-bottom: 4px; }
+        .theme-grid { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 12px; }
+
+        .bookmarks-panel {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: rgba(5,11,7,.52);
+        }
+
+        .topbar {
+            padding: 0 28px;
+            gap: 24px;
+        }
+        .brand { flex: 0 0 auto; }
+        .nav { margin: 0 auto; }
+        .online { flex: 0 0 auto; white-space: nowrap; }
+
+        @media (max-width: 900px) {
+            .page { width: min(100% - 32px, 760px); padding-top: 30px; }
+            .section-header,
+            .library-heading { align-items: flex-start !important; flex-direction: column !important; gap: 18px !important; }
+            .library-controls { width: 100%; }
+            .library-search { flex: 1; width: auto; }
+            .games-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important; }
+            .about-grid { grid-template-columns: 1fr; }
+            .topbar { padding: 10px 16px; }
+            .nav { order: 3; width: 100%; justify-content: center; }
+            .online { display: none; }
+        }
+
+        @media (max-width: 560px) {
+            .page { width: min(100% - 22px, 520px); padding-top: 24px; }
+            .games-grid { grid-template-columns: 1fr !important; }
+            .library-controls { flex-direction: column; align-items: stretch; }
+            .library-search { width: 100%; }
+            #gameFilter { width: 100%; }
+            .section-header h2 { font-size: 30px !important; }
+        }
+
+        /* =====================================================
+           FERN 2.2 — CLEAN REFERENCE LAYOUT
+           ===================================================== */
+        .topbar {
+            position: relative !important;
+            z-index: 20 !important;
+            width: calc(100% - 32px) !important;
+            max-width: 1600px !important;
+            margin: 12px auto 0 !important;
+            min-height: 72px !important;
+            padding: 8px 22px !important;
+            grid-template-columns: 230px minmax(0,1fr) 180px !important;
+            gap: 18px !important;
+            border-radius: 20px !important;
+            background: rgba(7, 9, 18, .78) !important;
+            border: 1px solid rgba(0,255,102,.20) !important;
+            backdrop-filter: blur(22px) saturate(125%);
+        }
+        .brand {
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 11px !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+        }
+        .brand::after { display: none !important; }
+        .brand-icon {
+            flex: 0 0 40px !important;
+            width: 40px !important;
+            height: 40px !important;
+            display: grid !important;
+            place-items: center !important;
+            font-size: 29px !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 13px !important;
+            background: color-mix(in srgb,var(--green) 8%,transparent) !important;
+        }
+        .brand-copy {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+            min-width: 0 !important;
+        }
+        .brand-copy strong {
+            color: var(--text) !important;
+            font-size: 19px !important;
+            letter-spacing: -.5px !important;
+        }
+        .brand-copy small {
+            color: var(--green) !important;
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            margin-top: 6px !important;
+            letter-spacing: .2px !important;
+        }
+        .nav {
+            justify-self: center !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+        }
+        .nav button {
+            height: 44px !important;
+            padding: 0 17px !important;
+            border-radius: 13px !important;
+            white-space: nowrap !important;
+        }
+        .online {
+            justify-self: end !important;
+            min-width: 160px !important;
+            text-align: center !important;
+            border-radius: 14px !important;
+        }
+
+        .content {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 34px 46px 70px !important;
+        }
+        .page {
+            width: min(1480px, 100%) !important;
+            min-height: auto !important;
+            margin: 0 auto !important;
+            padding: 20px 0 60px !important;
+        }
+
+        /* Proxy uses the whole available canvas — no giant dead area on the right. */
+        #proxyPage .hero,
+        #proxyPage .iframe-container {
+            width: 100% !important;
+            max-width: none !important;
+        }
+        #proxyPage .hero {
+            padding: 32px !important;
+            border-radius: 22px !important;
+            margin-bottom: 18px !important;
+        }
+        #proxyPage .hero h2 {
+            font-size: clamp(32px, 3.4vw, 48px) !important;
+            margin-bottom: 10px !important;
+        }
+        #proxyPage .proxy-controls {
+            display: grid !important;
+            grid-template-columns: minmax(0,1fr) auto !important;
+            gap: 14px !important;
+            width: 100% !important;
+        }
+        #proxyPage .proxy-controls input { min-width: 0 !important; }
+        #proxyPage .iframe-container {
+            min-height: 500px !important;
+            height: calc(100vh - 275px) !important;
+            border-radius: 22px !important;
+        }
+
+        .library-heading {
+            align-items: flex-end !important;
+            margin-bottom: 24px !important;
+        }
+        .library-heading > div:first-child { flex: 1 1 auto !important; }
+        .library-controls { flex: 0 0 auto !important; }
+        .games-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+            gap: 18px !important;
+        }
+        .game-card {
+            border-radius: 16px !important;
+            background: rgba(4,9,15,.80) !important;
+        }
+        .game-media { height: 166px !important; }
+        .game-card-body { padding: 12px 13px !important; }
+        .game-card h3 { font-size: 14px !important; }
+        .game-card p { display: none !important; }
+        .game-card a {
+            display: none !important;
+        }
+        .game-card-top::before {
+            content: '▶';
+            color: var(--green);
+            font-size: 10px;
+            margin-right: 2px;
+        }
+        .game-image {
+            object-fit: cover !important;
+            background: var(--bg-light);
+        }
+
+        .section-header {
+            min-height: 0 !important;
+            margin-bottom: 24px !important;
+        }
+        .section-header h2 { font-size: clamp(30px, 3vw, 42px) !important; }
+
+        /* Keep every secondary page from compressing its text into the controls. */
+        #settingsPage .section-header,
+        #aboutPage .section-header,
+        #bookmarksPage .section-header {
+            display: block !important;
+        }
+        #settingsPage .section-header h2,
+        #aboutPage .section-header h2,
+        #bookmarksPage .section-header h2 { margin-bottom: 8px !important; }
+        #settingsPage .settings-panel,
+        #aboutPage .about-grid,
+        #bookmarksPage .bookmarks-panel {
+            width: 100% !important;
+        }
+
+        @media (max-width: 1150px) {
+            .games-grid { grid-template-columns: repeat(4, minmax(0,1fr)) !important; }
+            .topbar { grid-template-columns: 210px minmax(0,1fr) 150px !important; }
+            .nav button { padding: 0 12px !important; }
+        }
+        @media (max-width: 900px) {
+            .topbar { grid-template-columns: 1fr auto !important; }
+            .nav { grid-column: 1 / -1 !important; grid-row: 2 !important; }
+            .content { padding: 26px 20px 55px !important; }
+            .games-grid { grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+        }
+        @media (max-width: 650px) {
+            .content { padding: 20px 12px 45px !important; }
+            .topbar { width: calc(100% - 16px) !important; margin-top: 8px !important; }
+            .online { display: none !important; }
+            .brand { grid-column: 1 / -1 !important; }
+            .nav { overflow-x: auto !important; justify-content: flex-start !important; width: 100% !important; }
+            .games-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 12px !important; }
+            .game-media { height: 130px !important; }
+            #proxyPage .proxy-controls { grid-template-columns: 1fr !important; }
+            #proxyPage .iframe-container { height: calc(100vh - 330px) !important; min-height: 360px !important; }
+        }
+        @media (max-width: 420px) {
+            .games-grid { grid-template-columns: 1fr !important; }
+        }
+    
+
+        /* =========================================================
+           PERFORMANCE OVERRIDES
+           Keep the reference look without turning every card into
+           an expensive compositor layer.
+           ========================================================= */
+        #bgCanvas { will-change: auto; }
+        .game-card,
+        .nav-button,
+        .theme-card,
+        .hero,
+        .settings-section,
+        .iframe-container { will-change: auto; }
+        .game-card:hover { transform: translateY(-3px) !important; }
+        .game-card:hover .game-image { transform: scale(1.025); }
+        .game-media-glow { filter: blur(16px); opacity: .08; }
+        .game-image { transition: transform .2s ease, filter .2s ease; }
+        @media (prefers-reduced-motion: reduce) {
+            .game-card:hover { transform: none !important; }
+        }
+
+/* Fern performance pass: keep the visual language without costly compositing. */
+#bgCanvas{opacity:.88;}
+.hero,.game-card,.settings-section,.theme-card,.iframe-container,.topbar,.nav,.online,.library-controls{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+.game-media-glow{display:none!important;}
+.game-card{box-shadow:0 7px 22px rgba(0,0,0,.16)!important;}
+.game-card:hover{box-shadow:0 9px 25px rgba(0,0,0,.18)!important;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+
+
+/* Proxy frame stays completely hidden until a URL is entered/launched. */
+#iframeContainer {
+    display: none !important;
+}
+
+#iframeContainer.fern-visible {
+    display: block !important;
+}
+
+/* =========================================================
+   FERN ATMOSPHERE — DEEP SPACE MIST + CLEAN CONSTELLATIONS
+   ========================================================= */
+html, body { background:#050611 !important; }
+body {
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 70% 55% at 78% 42%, rgba(84,46,135,.24), transparent 68%),
+      radial-gradient(ellipse 55% 45% at 22% 76%, rgba(18,91,116,.16), transparent 70%),
+      linear-gradient(135deg,#04050d 0%,#080716 48%,#100916 100%) !important;
+}
+/* Soft, slow-moving mist. No heavy blur/filter is used. */
+body::before {
+    content:"";
+    position:fixed;
+    inset:-18%;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 32% 22% at 76% 27%, rgba(65,146,190,.18), transparent 72%),
+      radial-gradient(ellipse 38% 25% at 84% 63%, rgba(151,62,180,.20), transparent 73%),
+      radial-gradient(ellipse 30% 20% at 31% 73%, rgba(33,129,145,.14), transparent 72%),
+      radial-gradient(ellipse 26% 18% at 57% 48%, rgba(94,65,166,.11), transparent 75%);
+    transform:translate3d(0,0,0) scale(1.08);
+    animation:fernMistDrift 24s ease-in-out infinite alternate;
+}
+body::after {
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(1,2,8,.30) 100%),
+      radial-gradient(circle at 8% 20%, rgba(113,65,172,.10), transparent 28%),
+      radial-gradient(circle at 92% 82%, rgba(0,156,184,.08), transparent 26%);
+}
+@keyframes fernMistDrift {
+    0%   { transform:translate3d(-2%,1%,0) scale(1.08); opacity:.82; }
+    50%  { transform:translate3d(1%,-1%,0) scale(1.12); opacity:1; }
+    100% { transform:translate3d(2%,2%,0) scale(1.09); opacity:.86; }
+}
+#bgCanvas {
+    position:fixed !important;
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    z-index:1 !important;
+    pointer-events:none !important;
+    opacity:1 !important;
+}
+#app, #loginScreen { position:relative; z-index:2; }
+
+/* Match the reference: broad panels, while using the full available width. */
+.content { width:100% !important; max-width:none !important; }
+.page { width:100% !important; max-width:none !important; }
+#proxyPage .hero,
+#proxyPage .iframe-container { width:100% !important; max-width:none !important; }
+#proxyPage .hero {
+    background:
+      linear-gradient(135deg, rgba(38,220,184,.055), transparent 42%),
+      linear-gradient(115deg, rgba(13,15,32,.92), rgba(7,8,20,.78)) !important;
+    border:1px solid rgba(110,92,176,.34) !important;
+    box-shadow:0 18px 60px rgba(0,0,0,.24) !important;
+}
+#proxyPage .iframe-container {
+    background:rgba(4,6,15,.62) !important;
+    border:1px solid rgba(110,92,176,.30) !important;
+    box-shadow:0 18px 70px rgba(0,0,0,.28) !important;
+}
+.topbar {
+    background:rgba(4,5,14,.72) !important;
+    border:1px solid rgba(105,91,167,.26) !important;
+    box-shadow:0 12px 40px rgba(0,0,0,.18) !important;
+}
+.nav button.active {
+    background:linear-gradient(180deg,rgba(34,238,201,.10),rgba(34,238,201,.025)) !important;
+    border-color:rgba(53,235,205,.28) !important;
+}
+@media (max-width:900px){
+    .content { padding:24px 20px 50px !important; }
+}
+
+</style>
+
+<style id="fern-v28-visual-fix">
+/* =========================================================
+   FERN 2.8 — MATCH REFERENCE COMPOSITION
+   ========================================================= */
+html,body{background:#03050d!important;}
+body{
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse 34% 48% at 78% 34%,var(--mist1),transparent 72%),
+    radial-gradient(ellipse 32% 44% at 86% 72%,var(--mist2),transparent 72%),
+    radial-gradient(ellipse 30% 30% at 22% 75%,var(--mist3),transparent 74%),
+    linear-gradient(125deg,#03050d 0%,#050714 46%,#090817 100%)!important;
+}
+body::before{
+  content:"";position:fixed;inset:-10%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 20% 12% at 73% 28%,color-mix(in srgb,var(--mist1) 100%,transparent),transparent 75%),
+    radial-gradient(ellipse 22% 15% at 87% 60%,color-mix(in srgb,var(--mist2) 90%,transparent),transparent 75%),
+    radial-gradient(ellipse 18% 11% at 66% 79%,color-mix(in srgb,var(--mist3) 90%,transparent),transparent 75%);
+  filter:blur(22px);opacity:.82;animation:fernNebula 30s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 32%,rgba(0,0,0,.38) 100%);
+}
+@keyframes fernNebula{0%{transform:translate3d(-1%,1%,0) scale(1)}50%{transform:translate3d(1%,-1%,0) scale(1.04)}100%{transform:translate3d(2%,1%,0) scale(1.02)}}
+#bgCanvas{z-index:1!important;opacity:1!important;}
+#app,#loginScreen{position:relative;z-index:2;}
+
+.topbar{
+  width:calc(100% - 24px)!important;margin:14px 12px 0!important;height:76px!important;min-height:76px!important;
+  grid-template-columns:250px 1fr 190px!important;padding:7px 14px!important;
+  border-radius:17px!important;background:rgba(3,7,15,.64)!important;
+  border:1px solid rgba(125,145,205,.16)!important;box-shadow:0 12px 38px rgba(0,0,0,.24)!important;
+}
+.brand-icon{font-size:31px!important;}.brand-copy strong{font-size:19px!important}.brand-copy small{font-size:11px!important}
+.nav{gap:2px!important;padding:3px!important}.nav button{height:52px!important;padding:0 18px!important;border-radius:13px!important;font-size:13px!important}
+.nav button.active{background:linear-gradient(180deg,color-mix(in srgb,var(--green) 11%,transparent),color-mix(in srgb,var(--green) 3%,transparent))!important;border-color:color-mix(in srgb,var(--green) 30%,transparent)!important;box-shadow:0 0 25px color-mix(in srgb,var(--green) 7%,transparent)!important}
+.nav-symbol{font-size:19px!important}.online{min-width:174px!important;border-radius:12px!important;background:rgba(255,255,255,.025)!important}
+
+.content{width:100%!important;max-width:none!important;padding:20px 0 50px!important;overflow:hidden!important}
+.page{width:100%!important;max-width:none!important;padding:20px 0 50px!important;margin:0!important}
+#proxyPage{position:relative;padding-left:3.35vw!important;}
+#proxyPage .hero,#proxyPage .iframe-container{width:min(58.5vw,904px)!important;max-width:904px!important;}
+#proxyPage .hero{
+  margin:0 0 20px!important;padding:34px 30px 28px!important;border-radius:18px!important;
+  background:linear-gradient(145deg,rgba(7,9,22,.82),rgba(5,7,17,.62))!important;
+  border:1px solid rgba(115,104,175,.32)!important;box-shadow:0 18px 55px rgba(0,0,0,.25)!important;
+}
+#proxyPage .hero h2{font-size:32px!important;letter-spacing:-1.3px!important;margin:0 0 8px!important}
+#proxyPage .hero p{font-size:14px!important;margin-bottom:22px!important}
+#proxyPage .proxy-controls{display:grid!important;grid-template-columns:minmax(0,1fr) 123px!important;gap:18px!important;margin-top:0!important}
+#proxyPage #urlInput{height:56px!important;border-radius:10px!important;background:rgba(4,6,15,.72)!important;border:1px solid color-mix(in srgb,var(--green) 48%,#31344a)!important;padding:0 17px!important;font-size:14px!important}
+#proxyPage #searchButton{height:56px!important;border-radius:10px!important;background:rgba(5,15,19,.55)!important;color:var(--green)!important;border:1px solid color-mix(in srgb,var(--green) 48%,#3b5360)!important}
+#proxyPage #searchButton:hover{background:color-mix(in srgb,var(--green) 8%,transparent)!important}
+#proxyPage .iframe-container{height:calc(100vh - 285px)!important;min-height:480px!important;margin-top:0!important;border-radius:18px!important;background:rgba(4,6,15,.60)!important;border:1px solid rgba(115,104,175,.28)!important;box-shadow:0 18px 65px rgba(0,0,0,.28)!important}
+#proxyPage .iframe-toolbar{top:15px!important;right:15px!important}.iframe-toolbar button{width:42px!important;height:40px!important;border-radius:11px!important;background:rgba(4,8,18,.72)!important;border:1px solid rgba(140,155,205,.24)!important}
+
+/* Theme controls use variables rather than inline forced backgrounds. */
+.theme-card,.settings-section,.game-card,.bookmarks-panel,.about-grid,.settings-toggle{color:var(--text)!important;border-color:var(--border)!important}
+.theme-card{background:color-mix(in srgb,var(--bg-light) 76%,transparent)!important}
+.settings-section,.bookmarks-panel,.about-grid{background:color-mix(in srgb,var(--panel) 82%,transparent)!important}
+.game-card{background:color-mix(in srgb,var(--panel) 78%,transparent)!important}
+.theme-card.active{background:color-mix(in srgb,var(--green) 10%,var(--bg-light))!important;border-color:var(--border-bright)!important}
+
+@media(max-width:1050px){
+  #proxyPage{padding-left:24px!important;padding-right:24px!important}
+  #proxyPage .hero,#proxyPage .iframe-container{width:min(100%,900px)!important}
+  #proxyPage .hero{margin-left:0!important}
+}
+@media(max-width:650px){
+  .topbar{height:auto!important;min-height:64px!important;grid-template-columns:1fr auto!important}
+  #proxyPage{padding-left:14px!important;padding-right:14px!important}
+  #proxyPage .proxy-controls{grid-template-columns:1fr!important}
+  #proxyPage .iframe-container{height:calc(100vh - 360px)!important;min-height:350px!important}
+}
+
+/* Light theme gets its own readable surface instead of inheriting the space backdrop. */
+body[data-theme="light"]{
+  background:
+    radial-gradient(ellipse 34% 48% at 78% 34%,rgba(70,150,115,.12),transparent 72%),
+    radial-gradient(ellipse 32% 44% at 86% 72%,rgba(90,130,180,.09),transparent 72%),
+    linear-gradient(125deg,#edf3f0 0%,#f7faf9 52%,#e8efec 100%)!important;
+}
+body[data-theme="light"]::before{opacity:.35}
+body[data-theme="light"]::after{background:radial-gradient(ellipse at 50% 50%,transparent 32%,rgba(20,45,35,.07) 100%)}
+body[data-theme="light"] .topbar{background:rgba(255,255,255,.78)!important;border-color:rgba(20,70,50,.15)!important}
+body[data-theme="light"] #proxyPage .hero,body[data-theme="light"] #proxyPage .iframe-container{background:rgba(255,255,255,.76)!important;border-color:rgba(20,100,65,.20)!important}
+body[data-theme="light"] #proxyPage #urlInput{background:rgba(245,249,247,.92)!important;color:var(--text)!important}
+
+
+/* ============================================================
+   FERN 3.0 — PERFORMANCE OVERRIDES
+   ============================================================ */
+/* One GPU-friendly atmospheric layer instead of several animated/blurred layers. */
+body::before{
+    content:"" !important;
+    position:fixed !important; inset:-12% !important; z-index:0 !important;
+    pointer-events:none !important;
+    background:
+      radial-gradient(ellipse 43% 34% at 82% 34%, var(--mist1,rgba(55,155,215,.16)), transparent 70%),
+      radial-gradient(ellipse 39% 31% at 88% 70%, var(--mist2,rgba(135,65,205,.15)), transparent 72%),
+      radial-gradient(ellipse 27% 20% at 69% 82%, var(--mist3,rgba(35,125,155,.10)), transparent 72%) !important;
+    transform:translate3d(0,0,0);
+    animation:fernCheapMist 55s ease-in-out infinite alternate !important;
+    filter:none !important;
+}
+body::after{
+    content:"" !important; position:fixed !important; inset:0 !important; z-index:0 !important;
+    pointer-events:none !important;
+    background:radial-gradient(ellipse at 50% 50%,transparent 42%,rgba(0,0,0,.30) 100%) !important;
+}
+.fern-nebula{display:none !important;}
+body.no-animations::before{animation:none !important;}
+@media(prefers-reduced-motion:reduce){body::before{animation:none !important;}}
+@keyframes fernCheapMist{
+    0%{transform:translate3d(-1%,.5%,0) scale(1)}
+    50%{transform:translate3d(.7%,-.8%,0) scale(1.025)}
+    100%{transform:translate3d(1.2%,.6%,0) scale(1.01)}
+}
+/* Backdrop blur is expensive over a moving background. Solid translucent panels keep the look. */
+.topbar,.nav,.online,.hero,.game-card,.settings-section,.theme-card,.settings-toggle,.iframe-container,.library-controls{
+    backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+}
+.game-card{cursor:pointer;}
+.game-card:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
+</style>
+
+<style id="fern-v29-atmosphere">
+/* =========================================================
+   FERN 2.9 — MORE STARS + LARGE MOVING MIST + PERFORMANCE
+   ========================================================= */
+html,body{background:var(--bg,#050611)!important;}
+body{position:relative;isolation:isolate;overflow:hidden!important;}
+
+/* The cloud sits behind the UI and particles. It is intentionally made from
+   radial gradients rather than filter:blur(), which is much cheaper. */
+.fern-nebula{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    overflow:hidden;
+    opacity:1;
+    background:
+      radial-gradient(ellipse 54% 44% at 84% 47%,var(--mist1,rgba(70,150,210,.15)),transparent 69%),
+      radial-gradient(ellipse 48% 42% at 91% 70%,var(--mist2,rgba(135,65,190,.13)),transparent 72%),
+      radial-gradient(ellipse 34% 32% at 69% 82%,var(--mist3,rgba(40,125,155,.10)),transparent 73%);
+}
+.fern-nebula-cloud{position:absolute;inset:-18%;will-change:transform;}
+.cloud-a{
+    background:
+      radial-gradient(ellipse 31% 23% at 78% 31%,color-mix(in srgb,var(--mist1,rgba(65,146,190,.18)) 100%,transparent),transparent 73%),
+      radial-gradient(ellipse 39% 27% at 88% 57%,color-mix(in srgb,var(--mist2,rgba(151,62,180,.18)) 100%,transparent),transparent 75%),
+      radial-gradient(ellipse 27% 20% at 71% 76%,color-mix(in srgb,var(--mist3,rgba(33,129,145,.14)) 100%,transparent),transparent 74%);
+    animation:fernCloudDriftA 46s ease-in-out infinite alternate;
+}
+.cloud-b{
+    background:
+      radial-gradient(ellipse 24% 15% at 82% 43%,rgba(75,170,220,.11),transparent 72%),
+      radial-gradient(ellipse 28% 18% at 91% 65%,rgba(184,83,210,.10),transparent 74%),
+      radial-gradient(ellipse 20% 14% at 70% 63%,rgba(45,140,180,.08),transparent 75%);
+    animation:fernCloudDriftB 61s ease-in-out infinite alternate;
+}
+.cloud-c{
+    background:
+      radial-gradient(ellipse 38% 12% at 83% 54%,rgba(110,150,220,.065),transparent 76%),
+      radial-gradient(ellipse 33% 13% at 78% 69%,rgba(155,75,200,.06),transparent 78%);
+    animation:fernCloudDriftC 73s ease-in-out infinite alternate;
+}
+@keyframes fernCloudDriftA{
+    0%{transform:translate3d(-1.5%,.7%,0) scale(1.02)}
+    50%{transform:translate3d(1.2%,-1%,0) scale(1.06)}
+    100%{transform:translate3d(2%,1.1%,0) scale(1.03)}
+}
+@keyframes fernCloudDriftB{
+    0%{transform:translate3d(1%,0,0) scale(1.02)}
+    100%{transform:translate3d(-1.4%,-.8%,0) scale(1.07)}
+}
+@keyframes fernCloudDriftC{
+    0%{transform:translate3d(-.7%,.4%,0)}
+    100%{transform:translate3d(1.1%,-.6%,0)}
+}
+
+/* Keep the theme system alive: earlier visual passes hard-coded the body
+   background, which is why switching themes appeared broken. */
+body[data-theme="cyberpunk"] .fern-nebula,
+body[data-theme="sunset"] .fern-nebula,
+body[data-theme="ocean"] .fern-nebula,
+body[data-theme="dracula"] .fern-nebula,
+body[data-theme="aurora"] .fern-nebula,
+body .fern-nebula{mix-blend-mode:normal;}
+
+/* UI stays above the atmosphere. */
+#app,#loginScreen{position:relative;z-index:2;}
+#bgCanvas{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;z-index:1!important;opacity:1!important;}
+
+/* Final reference composition: left content, open atmospheric space on right. */
+#proxyPage{padding-left:3.35vw!important;padding-right:0!important;}
+#proxyPage .hero,#proxyPage .iframe-container{width:min(58.5vw,904px)!important;max-width:904px!important;}
+
+/* Theme-aware surfaces. These override the older reference hard-codes. */
+.topbar,.nav,.online{background:color-mix(in srgb,var(--panel) 78%,transparent)!important;border-color:var(--border)!important;color:var(--text)!important;}
+#proxyPage .hero{background:color-mix(in srgb,var(--panel) 86%,transparent)!important;border-color:var(--border)!important;color:var(--text)!important;}
+#proxyPage .iframe-container{background:color-mix(in srgb,var(--panel) 62%,transparent)!important;border-color:var(--border)!important;}
+.nav button{color:var(--muted)!important;}
+.nav button.active{color:var(--text)!important;background:color-mix(in srgb,var(--green) 10%,transparent)!important;border-color:var(--border-bright)!important;}
+#proxyPage #urlInput{background:color-mix(in srgb,var(--bg) 82%,transparent)!important;color:var(--text)!important;border-color:var(--border-bright)!important;}
+#proxyPage #searchButton{background:color-mix(in srgb,var(--panel) 70%,transparent)!important;color:var(--green)!important;border-color:var(--border-bright)!important;}
+
+@media(max-width:1050px){
+  #proxyPage{padding-left:24px!important;padding-right:24px!important;}
+  #proxyPage .hero,#proxyPage .iframe-container{width:min(100%,900px)!important;}
+}
+@media(max-width:650px){
+  #proxyPage{padding-left:14px!important;padding-right:14px!important;}
+}
+
+/* Respect the animation setting. */
+body.no-animations .fern-nebula-cloud{animation:none!important;} .fern-bright-aurora i{animation:none!important;}
+@media(prefers-reduced-motion:reduce){.fern-nebula-cloud{animation:none!important;}}
+</style>
+<style id="fern-fixed-mist-texture">
+/* Fern v3 — bright atmosphere, GPU-light version. */
+#fernMistTexture{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0;overflow:hidden;background:transparent url("https://opengameart.org/sites/default/files/oga-textures/136561/fx_cloudalpha05.png") 68% 48%/145% 145% no-repeat;opacity:.68;mix-blend-mode:screen;}
+#fernMistTexture::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,6,18,.96) 0%,rgba(3,9,28,.70) 34%,rgba(5,12,35,.12) 68%,rgba(5,8,25,.02) 100%);}
+#fernMistTexture::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 82% 32%,rgba(55,150,255,.34),transparent 38%),radial-gradient(ellipse at 87% 64%,rgba(175,65,255,.32),transparent 39%),radial-gradient(ellipse at 65% 82%,rgba(25,220,205,.25),transparent 36%);}
+#app,#loginScreen{position:relative;z-index:3;}
+#bgCanvas{display:none!important;}
+@media(max-width:900px){#fernMistTexture{opacity:.55;background-size:180% 180%;}}
+</style>
+<style id="fern-final-performance">
+/* Final performance pass: static texture + compositor-friendly SVG transforms only. */
+#bgCanvas{display:none!important;}
+.fern-nebula{display:none!important;}
+.fern-mist-layer,.fern-nebula-cloud{animation:none!important;filter:none!important;}
+</style>
+
+<style id="fern-cpu-killer-fix">
+/* Fern performance pass: atmosphere is STATIC. No continuous animation, no canvas, no blur. */
+#bgCanvas{display:none!important;}
+.fern-nebula,.fern-nebula-cloud,.fern-mist-layer{display:none!important;animation:none!important;filter:none!important;will-change:auto!important;}
+#fernMistTexture{animation:none!important;filter:none!important;transform:none!important;will-change:auto!important;opacity:.46!important;background-size:cover!important;}
+/* Keep only compositor-friendly UI transitions. */
+body::before,body::after{animation:none!important;will-change:auto!important;}
+@media (max-width:900px){#fernMistTexture{opacity:.38!important;}}
+</style>
+<style id="fern-disable-old-aurora">
+.fern-aurora,.aurora,.aurora-layer,#aurora,.fernAurora,.aurora-layer *{animation:none!important;filter:none!important;will-change:auto!important}
+</style>
+
+
+<style id="fern-webgl-aurora">
+#fernWebGLAurora{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.78;mix-blend-mode:screen;}
+#app,#loginScreen{position:relative;z-index:3;}
+</style>
+
+<script id="fern-webgl-aurora-script">
+(()=>{
+const boot=()=>{
+ if(document.getElementById('fernWebGLAurora'))return;
+ const c=document.createElement('canvas'); c.id='fernWebGLAurora'; document.body.appendChild(c);
+ const gl=c.getContext('webgl2',{alpha:true,antialias:false,preserveDrawingBuffer:false,powerPreference:'low-power'});
+ if(!gl){c.style.display='none';return;}
+ const vs=`#version 300 es
+ in vec2 p; void main(){gl_Position=vec4(p,0.,1.);}`;
+ const fs=`#version 300 es
+ precision mediump float;
+ out vec4 o; uniform vec2 r; uniform float t;
+ float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+ float noise(vec2 p){
+   vec2 i=floor(p),f=fract(p);
+   f=f*f*(3.-2.*f);
+   return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),
+              mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);
+ }
+ void main(){
+   vec2 uv=gl_FragCoord.xy/r; uv.y=1.-uv.y;
+   float tt=t*.018;
+   float dx=abs(uv.x-.55);
+   float arc=.16+.18*exp(-pow(dx/.34,2.));
+   float wave=.028*sin(uv.x*10.+tt*2.)+.018*sin(uv.x*24.-tt*1.4);
+   float band=1.-smoothstep(.015,.060,abs(uv.y-(arc+wave)));
+   float n=noise(uv*vec2(3.0,4.0)+vec2(tt,tt*.35));
+   float f=band*(.72+.28*n)*smoothstep(.02,.16,uv.x)*smoothstep(1.,.82,uv.x);
+   float fade=smoothstep(.78,.16,uv.y);
+   f*=fade;
+   vec3 col=vec3(.015,.82,.50)*f*1.35;
+   o=vec4(col,clamp(f*.82,0.,.78));
+ }`;
+ const compile=(type,src)=>{const sh=gl.createShader(type);gl.shaderSource(sh,src);gl.compileShader(sh);return sh;};
+ const a=compile(gl.VERTEX_SHADER,vs),b=compile(gl.FRAGMENT_SHADER,fs);
+ if(!gl.getShaderParameter(a,gl.COMPILE_STATUS)||!gl.getShaderParameter(b,gl.COMPILE_STATUS)){c.style.display='none';return;}
+ const pr=gl.createProgram();gl.attachShader(pr,a);gl.attachShader(pr,b);gl.linkProgram(pr);if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){c.style.display='none';return;}
+ const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+ const loc=gl.getAttribLocation(pr,'p'),rr=gl.getUniformLocation(pr,'r'),tm=gl.getUniformLocation(pr,'t');gl.useProgram(pr);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+ let w=0,h=0,last=0,active=true,raf=0;
+ const resize=()=>{w=Math.max(1,Math.floor(innerWidth*.18));h=Math.max(1,Math.floor(innerHeight*.18));c.width=w;c.height=h;c.style.width='100%';c.style.height='100%';gl.viewport(0,0,w,h);};
+ addEventListener('resize',resize,{passive:true}); resize();
+ const shouldRun=()=>active&&!document.hidden&&!document.body.classList.contains('fern-proxy-active');
+ const stop=()=>{if(raf){cancelAnimationFrame(raf);raf=0;}};
+ const start=()=>{if(raf||!shouldRun())return; raf=requestAnimationFrame(frame);};
+ const frame=now=>{raf=0;if(!shouldRun())return;if(now-last>=200){last=now;gl.uniform2f(rr,w,h);gl.uniform1f(tm,now*.001);gl.drawArrays(gl.TRIANGLES,0,3);}start();};
+ const sync=()=>{if(shouldRun())start();else stop();};
+ const io=new IntersectionObserver(es=>{active=es.some(e=>e.isIntersecting);sync()});io.observe(c);
+ document.addEventListener('visibilitychange',sync,{passive:true});
+ const proxyObserver=new MutationObserver(sync);proxyObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+ sync();
+};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+
+<style id="fern-stars-moon">
+#fernSkyDecor{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.fern-moon{position:absolute;right:6vw;top:5vh;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 28%,#edf4ff 52%,#b9d4ff 78%,#7ea8e8 100%);box-shadow:0 0 18px rgba(205,225,255,.9),0 0 42px rgba(130,180,255,.42),0 0 80px rgba(100,140,255,.18);opacity:.95}
+.fern-moon:after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 68% 22%,rgba(70,100,145,.18) 0 8%,transparent 9%),radial-gradient(circle at 35% 66%,rgba(70,100,145,.14) 0 11%,transparent 12%),radial-gradient(circle at 62% 70%,rgba(70,100,145,.11) 0 7%,transparent 8%)}
+.fern-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 5px 1px rgba(220,240,255,.95);opacity:.9}
+.fern-star.big{width:3px;height:3px;box-shadow:0 0 8px 2px rgba(220,240,255,1)}
+@media(max-width:900px){.fern-moon{width:64px;height:64px;right:5vw}.fern-star{transform:scale(.8)}}
+</style>
+<div id="fernSkyDecor" aria-hidden="true"><div class="fern-moon"></div><i class="fern-star big" style="left:61.5%;top:4.3%"></i><i class="fern-star" style="left:28.8%;top:14.6%"></i><i class="fern-star" style="left:70.3%;top:38.2%"></i><i class="fern-star" style="left:84.3%;top:7.5%"></i><i class="fern-star" style="left:42.0%;top:4.5%"></i><i class="fern-star" style="left:23.7%;top:29.3%"></i><i class="fern-star" style="left:6.4%;top:13.3%"></i><i class="fern-star" style="left:62.5%;top:31.3%"></i><i class="fern-star" style="left:23.8%;top:33.6%"></i><i class="fern-star big" style="left:76.8%;top:3.3%"></i><i class="fern-star" style="left:76.5%;top:39.3%"></i><i class="fern-star" style="left:34.6%;top:11.1%"></i><i class="fern-star" style="left:90.1%;top:20.5%"></i><i class="fern-star" style="left:12.3%;top:8.0%"></i><i class="fern-star" style="left:80.3%;top:34.4%"></i><i class="fern-star" style="left:76.6%;top:40.9%"></i><i class="fern-star" style="left:52.3%;top:53.6%"></i><i class="fern-star" style="left:38.1%;top:31.7%"></i><i class="fern-star big" style="left:78.6%;top:35.2%"></i><i class="fern-star" style="left:81.6%;top:33.0%"></i><i class="fern-star" style="left:67.4%;top:5.4%"></i><i class="fern-star" style="left:24.5%;top:18.0%"></i><i class="fern-star" style="left:11.2%;top:15.1%"></i><i class="fern-star" style="left:13.1%;top:17.5%"></i><i class="fern-star" style="left:61.2%;top:22.0%"></i><i class="fern-star" style="left:37.3%;top:13.9%"></i><i class="fern-star" style="left:28.0%;top:51.7%"></i><i class="fern-star big" style="left:62.3%;top:34.7%"></i><i class="fern-star" style="left:19.4%;top:40.9%"></i><i class="fern-star" style="left:18.7%;top:22.7%"></i><i class="fern-star" style="left:93.1%;top:36.3%"></i><i class="fern-star" style="left:54.1%;top:38.6%"></i><i class="fern-star" style="left:79.9%;top:43.4%"></i><i class="fern-star" style="left:24.6%;top:4.7%"></i></div>
+
+<style id="fern-aurora-definition">
+#fernWebGLAurora{opacity:.9!important;filter:saturate(1.18) contrast(1.16)!important}
+</style>
+<style>
+/* ============================================================
+   FERN SCROLL FIX — keep the app fixed, scroll only the content
+   ============================================================ */
+html, body {
+    min-height: 100%;
+    overflow: hidden;
+}
+#app {
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+.content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+.page {
+    width: min(1200px, 100%);
+    min-height: 0;
+}
+#gamesPage.active {
+    min-height: max-content !important;
+}
+.games-grid {
+    padding-bottom: 60px !important;
+}
+</style>
+<style>
+/* Final library polish */
+#gamesPage .games-grid {
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+}
+#gamesPage .game-card {
+    min-width: 0;
+}
+#gamesPage img {
+    max-width: 100%;
+}
+</style>
+
+<style id="fern-featured-games">
+#gamesGrid .game-card[data-game-featured="true"]{border-color:rgba(125,165,255,.42)!important;box-shadow:0 10px 30px rgba(75,110,220,.20)!important}
+#gamesGrid .game-card[data-game-featured="true"] .game-card-top h3{color:#dce8ff}
+#gamesGrid .game-card[data-game-featured="true"]:first-child{grid-column:span 2}
+@media(max-width:900px){#gamesGrid .game-card[data-game-featured="true"]:first-child{grid-column:span 1}}
+</style>
+
+<style id="fern-proxy-performance">
+/* Proxy performance mode: keep the actual game surface as close to a native iframe as possible. */
+.iframe-container{contain:layout paint;isolation:isolate;}
+#iframeWindow{display:block;contain:paint;transform:none!important;animation:none!important;will-change:auto!important;}
+.iframe-container.window-pop,.iframe-container.window-pop #iframeWindow{animation:none!important;transform:none!important;}
+.proxy-opening-overlay{transition:none!important;animation:none!important;}
+/* When the proxy is active, stop decorative GPU work behind it. */
+body.fern-proxy-active #fernWebGLAurora,
+body.fern-proxy-active #fernSkyDecor,
+body.fern-proxy-active #fernMistTexture{visibility:hidden!important;}
+body.fern-proxy-active .fern-nebula,
+body.fern-proxy-active .fern-nebula-cloud,
+body.fern-proxy-active .fern-mist-layer{display:none!important;}
+</style>
+
+<link rel="dns-prefetch" href="https://dante-el-gamer.github.io">
+<link rel="dns-prefetch" href="https://now.gg">
+
+<style id="fern-final-performance">
+/* ============================================================
+   FERN FINAL PERFORMANCE PASS
+   Keep the look, remove expensive always-on compositing.
+   ============================================================ */
+html{scroll-behavior:auto!important}
+*,*::before,*::after{box-sizing:border-box}
+.hero,.game-card,.settings-section,.theme-card,.iframe-container,.topbar,.nav,.online,.library-controls,.login-box,.modal,.panel{
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+.game-card,.theme-card,.settings-section,.hero,.iframe-container{
+  will-change:auto!important;
+}
+.game-card:hover{will-change:auto!important}
+.game-card .game-image{will-change:auto!important}
+/* Avoid expensive blur/filter stacks on ordinary UI elements. */
+.game-media-glow{display:none!important}
+/* The aurora is intentionally rendered at low resolution and 15 FPS. */
+#fernWebGLAurora{
+  image-rendering:auto!important;
+  will-change:auto!important;
+}
+/* Disable decorative CSS motion while the user has disabled animations. */
+body.no-animations .fern-nebula,
+body.no-animations .fern-nebula-cloud,
+body.no-animations #fernMistTexture{animation:none!important}
+/* Don't create compositor layers for every interactive element. */
+button,.nav-button,.game-card,.theme-card,input,select{will-change:auto!important}
+</style>
+
+<style id="fern-library-render-optimization">
+.games-grid{contain:layout paint}
+.game-card{content-visibility:auto;contain-intrinsic-size:0 320px}
+.bookmark-row{content-visibility:auto;contain-intrinsic-size:0 90px}
+.game-card,.game-card:hover,.game-card[data-game-featured="true"]{
+  filter:none!important;
+}
+.game-card::before,.game-card::after,.game-card .game-media::before,.game-card .game-media::after{
+  animation:none!important;
+}
+.game-image{
+  content-visibility:auto;
+  contain:paint;
+}
+</style>
+
+<style id="fern-modern-ui-v1-2-10">
+:root {
+    --fern-radius:10px;
+    --fern-radius-sm:7px;
+    --fern-border:rgba(255,255,255,.075);
+    --fern-shadow:0 10px 30px rgba(0,0,0,.22);
+}
+button,.button,.nav-button,.game-card,.card,.panel,.modal {
+    text-shadow:none !important;
+}
+.nav-button,.button,button {
+    border-radius:var(--fern-radius-sm) !important;
+    box-shadow:none !important;
+}
+.game-card {
+    border-radius:var(--fern-radius) !important;
+    box-shadow:var(--fern-shadow) !important;
+    border:1px solid var(--fern-border) !important;
+    text-shadow:none !important;
+}
+.game-card:hover {
+    transform:translateY(-2px) !important;
+    box-shadow:0 14px 32px rgba(0,0,0,.28) !important;
+}
+.game-card::before,.game-card::after,
+.game-card .game-media::before,.game-card .game-media::after {
+    display:none !important;
+    animation:none !important;
+    filter:none !important;
+}
+.game-image { filter:none !important; }
+input,select,textarea {
+    border-radius:var(--fern-radius-sm) !important;
+    box-shadow:none !important;
+}
+h1,h2,h3,h4,p,span,label { text-shadow:none !important; }
+#auroraCanvas,#starsCanvas,#moon { opacity:.34 !important; }
+
+:fullscreen #iframeContainer,
+:-webkit-full-screen #iframeContainer {
+    background:#000 !important;
+    border:0 !important;
+    box-shadow:none !important;
+    filter:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    transform:none !important;
+    contain:none !important;
+}
+:fullscreen #iframeWindow,
+:-webkit-full-screen #iframeWindow {
+    background:#000 !important;
+    border:0 !important;
+    box-shadow:none !important;
+    filter:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    transform:none !important;
+    contain:none !important;
+    isolation:auto !important;
+}
+:fullscreen #iframeWindow iframe,
+:-webkit-full-screen #iframeWindow iframe {
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    background:#000 !important;
+    filter:none !important;
+    transform:none !important;
+    will-change:auto !important;
+    contain:none !important;
+}
+body.fern-fullscreen-performance * {
+    animation:none !important;
+    transition:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+}
+:fullscreen #auroraCanvas,:fullscreen #starsCanvas,:fullscreen #moon,
+:fullscreen .nebula,:fullscreen .mist,:fullscreen .background,
+:fullscreen .bg-layer,:fullscreen .particles,
+:-webkit-full-screen #auroraCanvas,:-webkit-full-screen #starsCanvas,
+:-webkit-full-screen #moon,:-webkit-full-screen .nebula,
+:-webkit-full-screen .mist,:-webkit-full-screen .background,
+:-webkit-full-screen .bg-layer,:-webkit-full-screen .particles {
+    display:none !important;
+}
+</style>
+
+
+<style id="fern-concentrated-aurora-ui-v1-2-12">
+html,body{background:#03050c !important;}
+body{
+    color:#eef4ff !important;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif !important;
+}
+.navbar,.nav-bar,.topbar,header{
+    background:rgba(8,12,24,.78) !important;
+    border:1px solid rgba(0,225,255,.22) !important;
+    border-radius:12px !important;
+    box-shadow:0 16px 45px rgba(0,0,0,.28) !important;
+}
+.nav-button{
+    background:rgba(8,12,24,.52) !important;
+    border-radius:8px !important;
+    box-shadow:none !important;
+    text-shadow:none !important;
+}
+.nav-button:hover{background:rgba(20,28,44,.82) !important;}
+.nav-button.active,.nav-button[data-active="true"]{
+    background:rgba(8,20,34,.92) !important;
+    border-color:rgba(0,229,255,.58) !important;
+    box-shadow:inset 0 -2px 0 rgba(255,0,200,.75) !important;
+}
+.game-card,.card,.panel,.modal,.welcome-card,.proxy-card,.content-card{
+    background:rgba(7,12,24,.78) !important;
+    border:1px solid rgba(0,207,230,.24) !important;
+    border-radius:12px !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.30) !important;
+}
+.game-card:hover{
+    transform:translateY(-2px) !important;
+    border-color:rgba(0,225,255,.46) !important;
+    box-shadow:0 20px 46px rgba(0,0,0,.36) !important;
+}
+.game-card::before,.game-card::after,
+.game-card .game-media::before,.game-card .game-media::after{
+    display:none !important;
+}
+h1,h2,h3,h4{
+    color:#f2f6ff !important;
+    text-shadow:none !important;
+    letter-spacing:-.025em !important;
+}
+p,.muted,.subtitle,.description{color:#969caf !important;text-shadow:none !important;}
+input,select,textarea{
+    background:rgba(3,5,13,.82) !important;
+    border:1px solid rgba(220,0,190,.56) !important;
+    border-radius:8px !important;
+    color:#eef4ff !important;
+    box-shadow:none !important;
+}
+input:focus,select:focus,textarea:focus{
+    border-color:rgba(0,229,255,.78) !important;
+    outline:none !important;
+    box-shadow:0 0 0 2px rgba(0,229,255,.10) !important;
+}
+button,.button{border-radius:8px !important;box-shadow:none !important;text-shadow:none !important;}
+#auroraCanvas{opacity:.96 !important;}
+</style>
+
+
+<style id="fern-space-polish-v1-2-16">
+/* Fern v1.2.16 — deep-space base layer */
+html,body {
+    background:
+        radial-gradient(ellipse 72% 48% at 58% 5%, rgba(0,104,122,.30), transparent 62%),
+        radial-gradient(ellipse 58% 42% at 82% 30%, rgba(31,58,112,.22), transparent 68%),
+        radial-gradient(ellipse 45% 38% at 36% 45%, rgba(24,44,79,.18), transparent 72%),
+        linear-gradient(180deg, #06111b 0%, #050b15 43%, #02040b 100%) !important;
+}
+
+/* Put the base behind Fern's existing WebGL effects. */
+body::before {
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-30;
+    pointer-events:none;
+    background:
+        radial-gradient(circle at 20% 18%, rgba(255,255,255,.035) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 67% 24%, rgba(255,255,255,.028) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 87% 12%, rgba(255,255,255,.025) 0 1px, transparent 1.5px);
+    background-size: 260px 220px, 330px 280px, 410px 340px;
+    opacity:.65;
+}
+
+/* More realistic moon: layered shading + subtle craters. */
+#moon {
+    background:
+        radial-gradient(circle at 34% 29%, rgba(255,255,255,.72) 0 5%, transparent 5.8%),
+        radial-gradient(circle at 62% 65%, rgba(122,133,148,.25) 0 7%, transparent 8%),
+        radial-gradient(circle at 31% 68%, rgba(132,142,156,.22) 0 9%, transparent 10%),
+        radial-gradient(circle at 67% 34%, rgba(116,128,145,.20) 0 6%, transparent 7%),
+        radial-gradient(circle at 42% 49%, rgba(120,131,146,.16) 0 5%, transparent 6%),
+        radial-gradient(circle at 38% 34%, #f4f7fa 0%, #dce4ed 48%, #aeb9c7 78%, #778394 100%) !important;
+    box-shadow:
+        0 0 18px rgba(210,228,255,.52),
+        0 0 46px rgba(145,190,255,.22),
+        inset -10px -8px 18px rgba(47,57,72,.28),
+        inset 6px 5px 14px rgba(255,255,255,.34) !important;
+    border:1px solid rgba(224,236,250,.42) !important;
+    overflow:hidden !important;
+}
+
+#moon::before {
+    content:"";
+    position:absolute;
+    inset:8%;
+    border-radius:50%;
+    background:
+        radial-gradient(circle at 24% 24%, rgba(93,105,120,.20) 0 7%, transparent 8%),
+        radial-gradient(circle at 72% 30%, rgba(87,98,113,.16) 0 8%, transparent 9%),
+        radial-gradient(circle at 55% 70%, rgba(92,103,118,.19) 0 10%, transparent 11%),
+        radial-gradient(circle at 28% 72%, rgba(83,95,111,.13) 0 6%, transparent 7%);
+    filter:blur(.3px);
+    opacity:.9;
+}
+
+#moon::after {
+    content:"";
+    position:absolute;
+    inset:-3%;
+    border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.42), transparent 36%);
+    pointer-events:none;
+}
+
+/* Occasional lightweight shooting stars. */
+.fern-shooting-star {
+    position:fixed;
+    z-index:1;
+    width:110px;
+    height:2px;
+    pointer-events:none;
+    border-radius:999px;
+    opacity:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.9) 42%, rgba(170,235,255,.98));
+    box-shadow:0 0 7px rgba(170,235,255,.65);
+    transform-origin:right center;
+    animation:fern-shoot 850ms cubic-bezier(.18,.7,.25,1) forwards;
+}
+
+@keyframes fern-shoot {
+    0% {
+        opacity:0;
+        transform:translate3d(0,0,0) rotate(28deg) scaleX(.35);
+    }
+    12% { opacity:.9; }
+    70% { opacity:.78; }
+    100% {
+        opacity:0;
+        transform:translate3d(-260px,150px,0) rotate(28deg) scaleX(1);
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .fern-shooting-star { display:none !important; }
+}
+</style>
+
+
+<style id="fern-optimization-v1-2-19">
+/* Fern v1.2.19 — conservative performance pass */
+html {
+    text-rendering: optimizeSpeed;
+}
+img {
+    content-visibility: auto;
+}
+.games-grid {
+    contain: layout paint style;
+}
+.game-card {
+    contain: layout paint;
+}
+.game-media {
+    contain: layout paint;
+}
+.game-image {
+    backface-visibility: hidden;
+}
+
+/* The WebGL aurora stays animated, but at a smaller render target and
+   slightly lower update rate. This cuts GPU work without removing it. */
+#fernWebGLAurora {
+    mix-blend-mode:normal !important;
+}
+body.fern-proxy-active #fernWebGLAurora {
+    display:none !important;
+}
+
+/* Avoid expensive hover filtering on game artwork. */
+.game-card:hover .game-image {
+    filter:none !important;
+}
+
+/* Don't animate off-screen card internals. */
+@media (prefers-reduced-motion: reduce) {
+    .game-card,
+    .game-card *,
+    .game-image {
+        animation:none !important;
+        transition:none !important;
+    }
+}
+</style>
+
+
+<style id="fern-hard-performance-v1-2-20">
+/* Fern v1.2.20 — aggressive performance mode */
+*,
+*::before,
+*::after {
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+}
+
+.game-card,
+.game-card:hover {
+    transform:none !important;
+    box-shadow:none !important;
+    transition:none !important;
+}
+.game-card:hover .game-image {
+    transform:none !important;
+    filter:none !important;
+}
+.game-image {
+    transition:none !important;
+    filter:none !important;
+}
+.game-media-glow {
+    display:none !important;
+}
+.game-media::after {
+    display:none !important;
+}
+.topbar,
+.nav,
+.online,
+.hero,
+.game-card,
+.settings-section,
+.theme-card,
+.settings-toggle,
+.iframe-container,
+.library-controls,
+.bookmarks-panel,
+.about-grid {
+    box-shadow:none !important;
+}
+.page.active {
+    animation:none !important;
+}
+button,
+a,
+input,
+select,
+textarea {
+    transition:none !important;
+}
+body::before,
+body::after,
+#fernMistTexture {
+    animation:none !important;
+    filter:none !important;
+}
+#fernWebGLAurora {
+    opacity:.58 !important;
+    will-change:auto !important;
+}
+.fern-shooting-star {
+    display:none !important;
+}
+
+/* When the proxy is running, eliminate every nonessential compositor layer. */
+body.fern-proxy-active #fernWebGLAurora,
+body.fern-proxy-active .fern-shooting-star,
+body.fern-proxy-active #fernMistTexture,
+body.fern-proxy-active .fern-nebula,
+body.fern-proxy-active .fern-nebula-cloud,
+body.fern-proxy-active .fern-mist-layer {
+    display:none !important;
+}
+
+/* Let the browser skip layout/paint work for off-screen game cards. */
+.game-card {
+    content-visibility:auto;
+    contain-intrinsic-size:260px 330px;
+}
+</style>
+
+<style id="fern-scramjet-library-fix">
+/* Keep the library away from the viewport edge. */
+.content {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+}
+.page {
+    width: min(1480px, 100%) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Preserve the automatic game artwork cards. */
+#gamesPage .game-media {
+    background: #07100a !important;
+}
+#gamesPage .game-image {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+#gamesPage .game-media::after {
+    display: block !important;
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    pointer-events: none !important;
+    background: linear-gradient(
+        180deg,
+        rgba(0,0,0,.02) 25%,
+        rgba(0,0,0,.58) 100%
+    ) !important;
+}
+#gamesPage .game-media-glow {
+    display: none !important;
+}
+@media (max-width: 900px) {
+    .content {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+}
+@media (max-width: 560px) {
+    .content {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+}
+</style>
+</head>
+
+
+<body>
+<div id="fernMistTexture" aria-hidden="true"></div>
+<div class="fern-nebula-cloud cloud-b"></div>
+    <div class="fern-nebula-cloud cloud-c"></div>
+</div>
+
+
+<!-- =========================================================
+     LOGIN SCREEN
+     ========================================================= -->
+
+<div id="loginScreen">
+
+    <div class="login-box">
+
+        <div class="fern-logo">
+
+            <div class="fern-icon">
+                🌿
+            </div>
+
+            <h1>
+                Fern<span>.</span>
+            </h1>
+
+        </div>
+
+
+        <p class="login-subtitle">
+            Welcome back, mysterious internet person.
+        </p>
+
+
+        <label
+            class="field-label"
+            for="passwordInput"
+        >
+            Authentication
+        </label>
+
+
+        <input
+            type="password"
+            id="passwordInput"
+            placeholder="Enter passcode..."
+            autocomplete="current-password"
+        >
+
+
+        <button id="loginButton">
+            Enter Fern
+        </button>
+
+
+        <div id="loginError"></div>
+
+
+        <div
+            class="login-joke"
+            id="loginJoke"
+        >
+            The fern is judging your password.
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     MAIN APPLICATION
+     ========================================================= -->
+
+<div id="app">
+
+
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+        <div class="brand">
+            <span class="brand-icon">🌿</span>
+            <div class="brand-copy">
+                <strong>Fern</strong>
+                <small>Workspace</small>
+            </div>
+        </div>
+
+
+        <nav class="nav">
+
+            <button class="nav-button active" data-page="proxy">
+                <span class="nav-symbol">⌁</span><span>Proxy</span>
+            </button>
+
+            <button class="nav-button" data-page="games">
+                <span class="nav-symbol">▦</span><span>Library</span>
+            </button>
+
+            <button class="nav-button" data-page="bookmarks">
+                <span class="nav-symbol">♡</span><span>Bookmarks</span>
+            </button>
+
+            <button class="nav-button" data-page="settings">
+                <span class="nav-symbol">⚙</span><span>Settings</span>
+            </button>
+
+            <button class="nav-button" data-page="about">
+                <span class="nav-symbol">ⓘ</span><span>About</span>
+            </button>
+
+        </nav>
+
+
+        <div class="online">
+
+            <span class="online-dot"></span>
+
+            SYSTEM ONLINE
+
+        </div>
+
+        <div class="version-indicator" title="Fern build version">
+            BUILD <span id="fernVersion">v1.1.5</span>
+        </div>
+
+    </header>
+
+
+
+    <!-- CONTENT -->
+
+    <main class="content">
+
+
+        <!-- =================================================
+             PROXY PAGE
+             ================================================= -->
+
+        <section
+            class="page active"
+            id="proxyPage"
+        >
+
+            <div class="hero">
+
+                <h2>
+                    Welcome to <span>Fern</span>
+                </h2>
+
+
+                <p id="welcomeJoke">
+                    Loading questionable technology...
+                </p>
+
+
+                <div class="proxy-controls">
+
+                    <input
+                        type="text"
+                        id="urlInput"
+                        placeholder="Enter URL here..."
+                        autocomplete="off"
+                    >
+
+
+                    <button id="searchButton">
+                        Launch
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="iframe-container" id="iframeContainer">
+
+                <div class="proxy-opening-overlay" id="proxyOpeningOverlay">
+                    <div class="proxy-opening-text">OPENING WINDOW...</div>
+                </div>
+
+                <div class="iframe-toolbar">
+
+                    <button
+                        id="fullscreenButton"
+                        title="Fullscreen"
+                    >
+                        ⛶
+                    </button>
+
+                    <button
+                        id="reloadButton"
+                        title="Reload"
+                    >
+                        ↻
+                    </button>
+
+                </div>
+
+
+                <iframe
+                    id="iframeWindow"
+                    title="Fern"
+                    allow="fullscreen; autoplay; gamepad"
+                    allowfullscreen
+                    loading="eager"
+                    referrerpolicy="no-referrer"
+                ></iframe>
+
+            </div>
+
+        </section>
+
+
+
+
+        <!-- =================================================
+             BOOKMARKS PAGE
+             ================================================= -->
+        <section class="page" id="bookmarksPage">
+            <div class="section-header">
+                <div class="eyebrow">SAVED FOR LATER</div>
+                <h2>Bookmarks</h2>
+                <p>Your favorite games in one place.</p>
+            </div>
+            <div class="bookmarks-panel" id="bookmarksPanel">
+                <div class="empty-state">
+                    <div class="empty-icon">♡</div>
+                    <h3>No bookmarks yet</h3>
+                    <p>Use the star on a game card to save it here.</p>
+                    <button class="empty-action" data-page-jump="games">Browse library</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================
+             ABOUT PAGE
+             ================================================= -->
+        <section class="page" id="aboutPage">
+            <div class="section-header">
+                <div class="eyebrow">ABOUT FERN</div>
+                <h2>Fern Workspace</h2>
+                <p>A clean home for your browser tools and game library.</p>
+            </div>
+            <div class="about-grid">
+                <div class="about-card"><span class="about-icon">✦</span><div><strong>Fern</strong><small>Build <span id="aboutVersion">v1.1.5</span></small></div></div>
+                <div class="about-card"><span class="about-icon">⌁</span><div><strong>Proxy</strong><small>Launch URLs through your configured Fern proxy.</small></div></div>
+                <div class="about-card"><span class="about-icon">▦</span><div><strong>Library</strong><small>Game artwork is loaded automatically when available.</small></div></div>
+                <div class="about-card"><span class="about-icon">♡</span><div><strong>Bookmarks</strong><small>Saved locally in this browser.</small></div></div>
+            </div>
+        </section>
+
+        <!-- =================================================
+             SETTINGS PAGE
+             ================================================= -->
+
+        <section
+            class="page"
+            id="settingsPage"
+        >
+
+            <div class="section-header">
+                <h2>Settings</h2>
+                <p>Customize the Fern interface.</p>
+            </div>
+
+            <div class="settings-panel">
+
+                <div class="settings-section">
+                    <div>
+                        <h3>Theme</h3>
+                        <p>Choose the look of Fern.</p>
+                    </div>
+
+                    <div class="theme-grid" id="themeGrid">
+
+                        <button class="theme-card" data-theme="fern">
+                            <span class="theme-preview theme-fern"></span>
+                            <span>Fern</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="midnight">
+                            <span class="theme-preview theme-midnight"></span>
+                            <span>Midnight</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="amber">
+                            <span class="theme-preview theme-amber"></span>
+                            <span>Amber</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="ice">
+                            <span class="theme-preview theme-ice"></span>
+                            <span>Ice</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="violet">
+                            <span class="theme-preview theme-violet"></span>
+                            <span>Violet</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="rose">
+                            <span class="theme-preview theme-rose"></span>
+                            <span>Rose</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="mono">
+                            <span class="theme-preview theme-mono"></span>
+                            <span>Monochrome</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="cyan">
+                            <span class="theme-preview theme-cyan"></span>
+                            <span>Cyan</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="light">
+                            <span class="theme-preview theme-light"></span>
+                            <span>Light</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="cyberpunk">
+                            <span class="theme-preview theme-cyberpunk"></span>
+                            <span>Cyberpunk</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="aurora">
+                            <span class="theme-preview theme-aurora"></span>
+                            <span>Aurora</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="sunset">
+                            <span class="theme-preview theme-sunset"></span>
+                            <span>Sunset</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="ocean">
+                            <span class="theme-preview theme-ocean"></span>
+                            <span>Ocean</span>
+                        </button>
+
+                        <button class="theme-card" data-theme="dracula">
+                            <span class="theme-preview theme-dracula"></span>
+                            <span>Dracula</span>
+                        </button>
+
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div>
+                        <h3>Interface</h3>
+                        <p>Small interface preferences.</p>
+                    </div>
+
+                    <div class="settings-toggle" style="margin-top:18px;">
+                        <span>
+                            <strong>Button style</strong>
+                            <small>Switch between Fern's standard controls and softer rounded buttons.</small>
+                        </span>
+                        <select id="buttonStyleSelect" aria-label="Button style">
+                            <option value="standard">Standard</option>
+                            <option value="smooth">Smooth</option>
+                        </select>
+                    </div>
+
+                    <label class="settings-toggle">
+                        <span>
+                            <strong>Animations</strong>
+                            <small>Keep Fern's window and page animations enabled.</small>
+                        </span>
+                        <input type="checkbox" id="animationsToggle" checked>
+                    </label>
+                </div>
+
+
+                <div class="settings-section">
+                    <div>
+                        <h3>Connection Diagnostics</h3>
+                        <p>Check Fern's UV setup without needing Developer Tools.</p>
+                    </div>
+                    <div id="fernDiagnostics"
+                         style="margin-top:18px;padding:14px;border:1px solid var(--border);background:var(--bg);font-family:monospace;font-size:12px;line-height:1.65;">
+                        Checking Fern...
+                    </div>
+                    <button id="runDiagnosticsButton"
+                            style="margin-top:12px;padding:10px 14px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer;border-radius:10px;">
+                        Run diagnostics again
+                    </button>
+                </div>
+
+                <div class="settings-section settings-about">
+                    <div>
+                        <h3>About Fern</h3>
+                        <p>Fern build <span id="settingsVersion">v1.1.5</span></p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- =================================================
+             GAMES PAGE
+             ================================================= -->
+
+        <section
+            class="page"
+            id="gamesPage"
+        >
+
+            <div class="section-header library-heading">
+                <div>
+                    <div class="eyebrow">FERN LIBRARY</div>
+                    <h2>Game Library <span class="heading-spark">✦</span></h2>
+                    <p>Pick a game and have fun.</p>
+                </div>
+                <div class="library-controls">
+                    <div class="library-search">
+                        <span>⌕</span>
+                        <input id="gameSearch" type="search" placeholder="Search games..." autocomplete="off">
+                    </div>
+                    <select id="gameFilter" aria-label="Filter games">
+                        <option value="all">All Games</option>
+                        <option value="favorites">Favorites</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="games-grid" id="gamesGrid">
+
+                <!--
+                    =====================================================
+                    ADD GAMES HERE
+                    =====================================================
+
+                    Just add another object using this format:
+
+                    {
+                        name: "Game Name",
+                        description: "Game description",
+                        link: "https://game.com"
+                    },
+
+                    That's it. Fern builds the cards automatically.
+                    =====================================================
+                -->
+
+            </div>
+
+
+            <div
+                class="joke-card"
+                id="gameJoke"
+            >
+                Fern is calculating how many games
+                you can procrastinate with.
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<script>
+/* ============================================================
+   BACKGROUND — LOW-CPU STARFIELD + STATIC CONSTELLATIONS
+   ============================================================ */
+;
+
+/* ============================================================
+   FERN CONFIGURATION
+   ============================================================
+/* ============================================================
+   FERN CONFIGURATION
+   ============================================================ */
+
+const CORRECT_PASSWORD = "S1gmaGyat";
+const AUTH_KEY = "fern_authenticated";
+const COOKIE_NAME = "FernAuth";
+
+const jokes = [
+    "Loading questionable technology...",
+    "Reticulating splines...",
+    "Feeding the fern...",
+    "Optimizing procrastination...",
+    "Bypassing quantum barriers..."
+];
+
+/* ============================================================
+   AUTHENTICATION / PERSISTENCE
+   ============================================================ */
+
+function storageAvailable() {
+    try {
+        const testKey = "__fern_storage_test__";
+        localStorage.setItem(testKey, "1");
+        localStorage.removeItem(testKey);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+function setAuthCookie() {
+    try {
+        if (location.protocol !== "http:" &&
+            location.protocol !== "https:") {
+            return false;
+        }
+
+        const maxAge = 60 * 60 * 24 * 365 * 20;
+        const secure = location.protocol === "https:" ? ";Secure" : "";
+
+        document.cookie =
+            COOKIE_NAME +
+            "=authenticated;" +
+            "Max-Age=" + maxAge +
+            ";Path=/;SameSite=Lax" +
+            secure;
+
+        return hasAuthCookie();
+    } catch (_) {
+        return false;
+    }
+}
+
+function hasAuthCookie() {
+    try {
+        return document.cookie
+            .split(";")
+            .some(cookie => {
+                const parts = cookie.trim().split("=");
+                return parts[0] === COOKIE_NAME &&
+                       parts.slice(1).join("=") === "authenticated";
+            });
+    } catch (_) {
+        return false;
+    }
+}
+
+function saveLocalAuthentication() {
+    try {
+        localStorage.setItem(AUTH_KEY, "authenticated");
+        return localStorage.getItem(AUTH_KEY) === "authenticated";
+    } catch (error) {
+        console.warn("Fern could not persist authentication:", error);
+        return false;
+    }
+}
+
+function hasLocalAuthentication() {
+    try {
+        return localStorage.getItem(AUTH_KEY) === "authenticated";
+    } catch (_) {
+        return false;
+    }
+}
+
+function clearLocalAuthentication() {
+    try {
+        localStorage.removeItem(AUTH_KEY);
+    } catch (_) {}
+}
+
+function isAuthenticated() {
+    if (hasLocalAuthentication()) return true;
+
+    if (location.protocol === "http:" ||
+        location.protocol === "https:") {
+        return hasAuthCookie();
+    }
+
+    return false;
+}
+
+function showApplication() {
+    const loginScreen =
+        document.getElementById("loginScreen");
+
+    const app =
+        document.getElementById("app");
+
+    if (loginScreen) {
+        loginScreen.style.display = "none";
+    }
+
+    if (app) {
+        app.style.display = "flex";
+    }
+}
+
+function showLogin() {
+    const loginScreen =
+        document.getElementById("loginScreen");
+
+    const app =
+        document.getElementById("app");
+
+    if (loginScreen) {
+        loginScreen.style.display = "flex";
+    }
+
+    if (app) {
+        app.style.display = "none";
+    }
+}
+
+function authenticate() {
+    const input =
+        document.getElementById("passwordInput");
+
+    const error =
+        document.getElementById("loginError");
+
+    if (!input) return;
+
+    if (input.value === CORRECT_PASSWORD) {
+        saveLocalAuthentication();
+        setAuthCookie();
+
+        if (error) {
+            error.textContent = "";
+        }
+
+        input.value = "";
+        showApplication();
+        randomJoke();
+    } else {
+        if (error) {
+            error.textContent =
+                "Wrong password. The fern has lost respect for you.";
+        }
+
+        input.value = "";
+        input.focus();
+    }
+}
+
+const loginButton =
+    document.getElementById("loginButton");
+
+if (loginButton) {
+    loginButton.addEventListener(
+        "click",
+        authenticate
+    );
+}
+
+const passwordInput =
+    document.getElementById("passwordInput");
+
+if (passwordInput) {
+    passwordInput.addEventListener(
+        "keydown",
+        event => {
+            if (event.key === "Enter") {
+                authenticate();
+            }
+        }
+    );
+}
+
+
+/* Migrate a previously saved Fern cookie into localStorage. */
+if (hasAuthCookie() && !hasLocalAuthentication()) {
+    saveLocalAuthentication();
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+const navButtons =
+    document.querySelectorAll(
+        ".nav-button"
+    );
+
+
+navButtons.forEach(button => {
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            const target =
+                button.dataset.page;
+
+
+            navButtons.forEach(btn => {
+
+                btn.classList.remove(
+                    "active"
+                );
+
+            });
+
+
+            button.classList.add(
+                "active"
+            );
+
+
+            document
+                .querySelectorAll(".page")
+                .forEach(page => {
+
+                    page.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+            document
+                .getElementById(
+                    target + "Page"
+                )
+                .classList.add(
+                    "active"
+                );
+
+        }
+    );
+
+});
+
+
+
+/* ============================================================
+   GAME / SITE SHORTCUTS
+   ============================================================ */
+
+function openInProxy(targetURL) {
+
+    const proxyButton =
+        document.querySelector(
+            '.nav-button[data-page="proxy"]'
+        );
+
+    if (proxyButton) {
+        proxyButton.click();
+    }
+
+    launchURL(targetURL);
+}
+
+
+/* ============================================================
+   URL LAUNCHER
+   ============================================================ */
+
+const urlInput =
+    document.getElementById(
+        "urlInput"
+    );
+
+
+let iframeWindow =
+    document.getElementById(
+        "iframeWindow"
+    );
+
+
+const iframeContainer =
+    document.getElementById(
+        "iframeContainer"
+    );
+
+
+function setProxyFrameVisible(visible) {
+    if (!iframeContainer) return;
+    const active = !!visible;
+    iframeContainer.classList.toggle("fern-visible", active);
+    document.body.classList.toggle("fern-proxy-active", active);
+}
+
+// Never show the empty proxy window on startup.
+setProxyFrameVisible(false);
+
+
+const proxyOpeningOverlay =
+    document.getElementById(
+        "proxyOpeningOverlay"
+    );
+
+
+const FERN_VERSION =
+    document.querySelector('meta[name="fern-version"]')?.content ||
+    "unknown";
+
+const versionDisplay =
+    document.getElementById("fernVersion");
+
+if (versionDisplay) {
+    versionDisplay.textContent = "v" + FERN_VERSION;
+}
+
+
+// Show the proxy window when the user enters a link, but do not load anything
+// until Launch is pressed. Clearing the URL hides the empty window again.
+if (urlInput) {
+    urlInput.addEventListener("input", () => {
+        const value = urlInput.value.trim();
+        setProxyFrameVisible(value.length > 0);
+    });
+}
+
+async function launchURL(targetURL = null) {
+
+    let url =
+        targetURL ||
+        urlInput.value.trim();
+
+
+    if (!url) {
+
+        return;
+
+    }
+
+
+    if (
+        !url.startsWith("http://") &&
+        !url.startsWith("https://")
+    ) {
+
+        url =
+            "https://" + url;
+
+    }
+
+
+    // A proxy window should only exist after a URL has actually been entered.
+    setProxyFrameVisible(true);
+
+    // Do not force a reflow or animate the iframe: both add latency when a
+    // proxied page is doing heavy JavaScript/WebGL work.
+    if (proxyOpeningOverlay) proxyOpeningOverlay.classList.remove("show");
+
+
+    try {
+        const frame =
+            await createFernScramjetFrame();
+
+        await frame.go(url);
+
+        return;
+    } catch (error) {
+        console.error(
+            "Scramjet launch failed:",
+            error
+        );
+
+        if (proxyOpeningOverlay) {
+            proxyOpeningOverlay.classList.add("show");
+        }
+
+        return;
+    }
+
+}
+
+
+
+
+document
+    .getElementById("searchButton")
+    .addEventListener(
+        "click",
+        launchURL
+    );
+
+
+urlInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key === "Enter") {
+
+            launchURL();
+
+        }
+
+    }
+);
+
+
+
+/* ============================================================
+   IFRAME RELOAD
+   ============================================================ */
+
+document
+    .getElementById("reloadButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (iframeWindow.src) {
+
+                iframeWindow.contentWindow.location.reload();
+
+            }
+
+        }
+    );
+
+
+
+/* ============================================================
+   FULLSCREEN — PRESS AND HOLD + KEYBOARD LOCK
+   ============================================================ */
+
+const fullscreenButton =
+    document.getElementById("fullscreenButton");
+
+const fullscreenContainer =
+    document.getElementById("iframeContainer");
+
+let fullscreenMouseHeld = false;
+let fullscreenTouchHeld = false;
+let fullscreenRequestPending = false;
+let fullscreenKeyboardLocked = false;
+
+function fullscreenIsActive() {
+    return document.fullscreenElement === fullscreenContainer;
+}
+
+function updateFullscreenUI() {
+    if (!fullscreenButton) return;
+
+    const active = fullscreenIsActive();
+    const held = fullscreenMouseHeld || fullscreenTouchHeld;
+
+    fullscreenButton.textContent = active ? "✕" : "⛶";
+    fullscreenButton.title = active
+        ? "Fullscreen active — hold Esc to exit"
+        : "Press and hold for fullscreen";
+
+    fullscreenButton.setAttribute(
+        "aria-label",
+        active
+            ? "Fullscreen active — hold Escape to exit"
+            : "Press and hold for fullscreen"
+    );
+
+    fullscreenButton.classList.toggle("holding", held);
+}
+
+async function lockFullscreenKeyboard() {
+    if (
+        !navigator.keyboard ||
+        typeof navigator.keyboard.lock !== "function"
+    ) {
+        return false;
+    }
+
+    try {
+        await navigator.keyboard.lock(["Escape"]);
+        fullscreenKeyboardLocked = true;
+        return true;
+    } catch (error) {
+        fullscreenKeyboardLocked = false;
+        console.warn("Fern keyboard lock unavailable:", error);
+        return false;
+    }
+}
+
+function unlockFullscreenKeyboard() {
+    if (
+        fullscreenKeyboardLocked &&
+        navigator.keyboard &&
+        typeof navigator.keyboard.unlock === "function"
+    ) {
+        try {
+            navigator.keyboard.unlock();
+        } catch (_) {}
+    }
+
+    fullscreenKeyboardLocked = false;
+}
+
+function enterFernFullscreen() {
+    if (!fullscreenContainer) return;
+    if (fullscreenIsActive()) return;
+    if (document.fullscreenElement) return;
+
+    if (
+        !document.fullscreenEnabled ||
+        typeof fullscreenContainer.requestFullscreen !== "function"
+    ) {
+        console.warn("Fullscreen is not available.");
+        return;
+    }
+
+    fullscreenRequestPending = true;
+
+    fullscreenContainer
+        .requestFullscreen({
+            navigationUI: "hide",
+            keyboardLock: "browser"
+        })
+        .then(async () => {
+            fullscreenRequestPending = false;
+
+            await lockFullscreenKeyboard();
+
+            if (
+                !fullscreenMouseHeld &&
+                !fullscreenTouchHeld &&
+                fullscreenIsActive()
+            ) {
+                await document.exitFullscreen().catch(() => {});
+            }
+
+            updateFullscreenUI();
+        })
+        .catch(error => {
+            fullscreenRequestPending = false;
+
+            console.warn(
+                "Fern fullscreen request failed:",
+                error
+            );
+
+            updateFullscreenUI();
+        });
+}
+
+function leaveFernFullscreen() {
+    fullscreenMouseHeld = false;
+    fullscreenTouchHeld = false;
+
+    unlockFullscreenKeyboard();
+
+    if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+    }
+
+    updateFullscreenUI();
+}
+
+if (fullscreenButton) {
+    fullscreenButton.addEventListener(
+        "mousedown",
+        event => {
+            if (event.button !== 0) return;
+
+            fullscreenMouseHeld = true;
+            updateFullscreenUI();
+
+            enterFernFullscreen();
+        }
+    );
+
+    fullscreenButton.addEventListener(
+        "click",
+        event => {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    );
+
+    window.addEventListener(
+        "mouseup",
+        () => {
+            if (!fullscreenMouseHeld) return;
+
+            fullscreenMouseHeld = false;
+            updateFullscreenUI();
+
+            if (fullscreenRequestPending) {
+                return;
+            }
+
+            if (fullscreenIsActive()) {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+    );
+
+    window.addEventListener(
+        "blur",
+        () => {
+            fullscreenMouseHeld = false;
+            fullscreenTouchHeld = false;
+            updateFullscreenUI();
+        }
+    );
+
+    fullscreenButton.addEventListener(
+        "touchstart",
+        () => {
+            fullscreenTouchHeld = true;
+            updateFullscreenUI();
+            enterFernFullscreen();
+        },
+        { passive: true }
+    );
+
+    fullscreenButton.addEventListener(
+        "touchend",
+        event => {
+            event.preventDefault();
+            fullscreenTouchHeld = false;
+            updateFullscreenUI();
+
+            if (fullscreenIsActive()) {
+                document.exitFullscreen().catch(() => {});
+            }
+        },
+        { passive: false }
+    );
+
+    fullscreenButton.addEventListener(
+        "touchcancel",
+        () => {
+            fullscreenTouchHeld = false;
+            updateFullscreenUI();
+
+            if (fullscreenIsActive()) {
+                document.exitFullscreen().catch(() => {});
+            }
+        },
+        { passive: true }
+    );
+}
+
+document.addEventListener(
+    "keydown",
+    event => {
+        if (
+            fullscreenIsActive() &&
+            event.key === "Escape" &&
+            fullscreenKeyboardLocked
+        ) {
+            event.preventDefault();
+        }
+    },
+    true
+);
+
+document.addEventListener(
+    "fullscreenchange",
+    () => {
+        if (!fullscreenIsActive()) {
+            unlockFullscreenKeyboard();
+            fullscreenMouseHeld = false;
+            fullscreenTouchHeld = false;
+        }
+
+        updateFullscreenUI();
+    }
+);
+
+document.addEventListener(
+    "fullscreenerror",
+    event => {
+        fullscreenRequestPending = false;
+        unlockFullscreenKeyboard();
+
+        console.warn(
+            "Fern fullscreen error:",
+            event
+        );
+
+        updateFullscreenUI();
+    }
+);
+
+updateFullscreenUI();
+
+
+/* ============================================================
+   GAME LAUNCHER
+   ============================================================ */
+
+function openGame(targetURL) {
+    const proxyButton = document.querySelector('.nav-button[data-page="proxy"]');
+    if (proxyButton) proxyButton.click();
+
+    launchURL(targetURL);
+
+    // Try to enter fullscreen immediately from the card's user gesture.
+    // If the browser blocks programmatic fullscreen, the existing toolbar
+    // fullscreen button remains available.
+    const container = document.getElementById("iframeContainer");
+    if (container && document.fullscreenElement !== container && container.requestFullscreen) {
+        container.requestFullscreen().catch(() => {});
+    }
+}
+
+
+/* ============================================================
+   GAMES DATA
+   ============================================================ */
+
+const games = [
+    { name: "Friday Night Funkin'", description: "fnfnfnfnfnf", link: "https://ninja-muffin24.itch.io/funkin", featured: true },
+    { name: "NowGG.fun", description: "a working version of now.gg", link: "https://nowgg.fun", featured: true },
+    { name: "Shitty 2D Rocket League", description: "shitty version of 2d rocket league in browser", link: "https://skempisty.github.io/rocket_league_2d/", featured: true },
+    { name: "Minecraft", description: "it's minecraft dumbass", link: "https://eaglercraft1-8.github.io", featured: true }
+];
+
+
+/* ============================================================
+   GAME CARD BUILDER
+   ============================================================ */
+
+function getGameImage(game) {
+    if (game.image) return game.image;
+    const query = encodeURIComponent(game.name + " logo");
+    // Automatic artwork: the query is generated from the game name, so adding a new
+    // game automatically gives it a logo/image without editing the card markup.
+    return "https://tse1.mm.bing.net/th?q=" + query + "&w=900&h=500&c=7&rs=1";
+}
+
+function getGameImageCandidates(game) {
+    if (game.image) return [game.image];
+    const q = encodeURIComponent(game.name + " logo");
+    return [
+        "https://tse1.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1",
+        "https://tse2.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1",
+        "https://tse3.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1",
+        "https://tse4.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1"
+    ];
+}
+
+function gameFallbackDataURL(game) {
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--green').trim() || '#00ff66';
+    const safe = game.name.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#071009"/><stop offset="1" stop-color="#0b1c11"/></linearGradient></defs><rect width="900" height="500" fill="url(#g)"/><circle cx="760" cy="80" r="170" fill="${accent}" opacity=".08"/><path d="M0 420 L230 300 L390 380 L560 250 L900 410" fill="none" stroke="${accent}" stroke-opacity=".18" stroke-width="3"/><text x="55" y="255" fill="white" font-family="Arial,sans-serif" font-size="64" font-weight="800">${safe}</text><text x="58" y="305" fill="${accent}" font-family="Arial,sans-serif" font-size="20" letter-spacing="5">FERN LIBRARY</text></svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+}
+
+const FERN_BOOKMARKS_KEY = 'fern_bookmarks_v1';
+function getBookmarks() {
+    try { return JSON.parse(localStorage.getItem(FERN_BOOKMARKS_KEY) || '[]'); } catch (_) { return []; }
+}
+function setBookmarks(items) {
+    try { localStorage.setItem(FERN_BOOKMARKS_KEY, JSON.stringify(items)); } catch (_) {}
+}
+function isBookmarked(index) { return getBookmarks().includes(index); }
+function toggleBookmark(index) {
+    const items = getBookmarks();
+    const pos = items.indexOf(index);
+    if (pos >= 0) items.splice(pos, 1); else items.push(index);
+    setBookmarks(items);
+    renderGames();
+    renderBookmarks();
+}
+
+function renderGames() {
+    const grid = document.getElementById('gamesGrid');
+    if (!grid) return;
+
+    const search = (document.getElementById('gameSearch')?.value || '').trim().toLowerCase();
+    const filter = document.getElementById('gameFilter')?.value || 'all';
+    const bookmarks = getBookmarks();
+    grid.innerHTML = '';
+
+    games.forEach((game, index) => {
+        if (search && !(game.name + ' ' + game.description).toLowerCase().includes(search)) return;
+        if (filter === 'favorites' && !bookmarks.includes(index)) return;
+
+        const card = document.createElement('article');
+        card.className = 'game-card';
+        card.dataset.gameIndex = index;
+        if (game.featured) card.dataset.gameFeatured = 'true';
+
+        // Make the entire game card clickable, not just the Play now text.
+        card.setAttribute('role', 'button');
+        card.tabIndex = 0;
+        card.addEventListener('click', event => {
+            if (event.target.closest('.bookmark-button') || event.target.closest('a')) return;
+            openGame(game.link);
+        });
+        card.addEventListener('keydown', event => {
+            if ((event.key === 'Enter' || event.key === ' ') &&
+                !event.target.closest('.bookmark-button') &&
+                !event.target.closest('a')) {
+                event.preventDefault();
+                openGame(game.link);
+            }
+        });
+
+        const media = document.createElement('div');
+        media.className = 'game-media';
+
+        const image = document.createElement('img');
+        image.className = 'game-image';
+        image.alt = game.name + ' logo';
+        image.loading = index < 2 ? 'eager' : 'lazy';
+        if (index === 0) image.fetchPriority = 'high';
+        image.referrerPolicy = 'no-referrer';
+        const imageCandidates = getGameImageCandidates(game);
+        let imageCandidateIndex = 0;
+        image.src = imageCandidates[imageCandidateIndex];
+        image.onerror = () => {
+            imageCandidateIndex++;
+            if (imageCandidateIndex < imageCandidates.length) {
+                image.src = imageCandidates[imageCandidateIndex];
+            } else {
+                image.onerror = null;
+                image.src = gameFallbackDataURL(game);
+            }
+        };
+
+        const mediaGlow = document.createElement('div');
+        mediaGlow.className = 'game-media-glow';
+        media.appendChild(image);
+        media.appendChild(mediaGlow);
+
+        const body = document.createElement('div');
+        body.className = 'game-card-body';
+
+        const top = document.createElement('div');
+        top.className = 'game-card-top';
+
+        const title = document.createElement('h3');
+        title.textContent = game.name;
+
+        const star = document.createElement('button');
+        star.className = 'bookmark-button' + (isBookmarked(index) ? ' saved' : '');
+        star.type = 'button';
+        star.title = isBookmarked(index) ? 'Remove bookmark' : 'Bookmark game';
+        star.textContent = isBookmarked(index) ? '★' : '☆';
+        star.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleBookmark(index); });
+
+        top.appendChild(title);
+        top.appendChild(star);
+
+        const description = document.createElement('p');
+        description.textContent = game.description;
+
+        const link = document.createElement('a');
+        link.href = game.link;
+        link.textContent = 'Play now';
+        link.dataset.gameIndex = index;
+        link.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            openGame(game.link);
+        });
+
+        body.appendChild(top);
+        body.appendChild(description);
+        body.appendChild(link);
+        card.appendChild(media);
+        card.appendChild(body);
+        grid.appendChild(card);
+    });
+
+    const joke = document.getElementById('gameJoke');
+    if (joke) joke.textContent = grid.children.length ? `${grid.children.length} games ready to launch.` : 'Nothing matched that search.';
+}
+
+function renderBookmarks() {
+    const panel = document.getElementById('bookmarksPanel');
+    if (!panel) return;
+    const bookmarks = getBookmarks();
+    if (!bookmarks.length) {
+        panel.innerHTML = `<div class="empty-state"><div class="empty-icon">♡</div><h3>No bookmarks yet</h3><p>Use the star on a game card to save it here.</p><button class="empty-action" data-page-jump="games">Browse library</button></div>`;
+        panel.querySelector('[data-page-jump]')?.addEventListener('click', () => document.querySelector('.nav-button[data-page="games"]')?.click());
+        return;
+    }
+    panel.innerHTML = '';
+    bookmarks.forEach(index => {
+        if (!games[index]) return;
+        const game = games[index];
+        const card = document.createElement('div');
+        card.className = 'bookmark-row';
+        const img = document.createElement('img');
+        img.src = getGameImage(game); img.alt = game.name + ' logo';
+        img.onerror = () => { img.onerror=null; img.src=gameFallbackDataURL(game); };
+        const info = document.createElement('div');
+        info.innerHTML = `<strong></strong><small></small>`;
+        info.querySelector('strong').textContent = game.name;
+        info.querySelector('small').textContent = game.description;
+        const play = document.createElement('button');
+        play.textContent = 'Play'; play.addEventListener('click', () => openGame(game.link));
+        card.append(img, info, play);
+        panel.appendChild(card);
+    });
+}
+
+const gameSearch = document.getElementById('gameSearch');
+const gameFilter = document.getElementById('gameFilter');
+if (gameSearch) {
+    let gameSearchTimer = 0;
+    gameSearch.addEventListener('input', () => {
+        clearTimeout(gameSearchTimer);
+        gameSearchTimer = setTimeout(renderGames, 100);
+    });
+}
+if (gameFilter) gameFilter.addEventListener('change', renderGames);
+renderGames();
+renderBookmarks();
+
+
+
+/* ============================================================
+   RANDOM JOKES
+   ============================================================ */
+
+function randomJoke() {
+
+    const joke =
+        jokes[
+            Math.floor(
+                Math.random() *
+                jokes.length
+            )
+        ];
+
+
+    const welcome =
+        document.getElementById(
+            "welcomeJoke"
+        );
+
+
+    const login =
+        document.getElementById(
+            "loginJoke"
+        );
+
+
+    const game =
+        document.getElementById(
+            "gameJoke"
+        );
+
+
+    if (welcome) {
+
+        welcome.textContent = joke;
+
+    }
+
+
+    if (login) {
+
+        login.textContent = joke;
+
+    }
+
+
+    if (game) {
+
+        game.textContent = joke;
+
+    }
+
+}
+
+
+// Avoid a permanent timer waking the page every few seconds.
+let fernJokeTimer = 0;
+function scheduleFernJoke(){
+    if (fernJokeTimer) clearTimeout(fernJokeTimer);
+    fernJokeTimer = setTimeout(() => {
+        if (!document.hidden) randomJoke();
+        fernJokeTimer = 0;
+    }, 12000);
+}
+scheduleFernJoke();
+
+
+/* ============================================================
+   FERN CONNECTION DIAGNOSTICS
+   ============================================================ */
+
+function setDiagnosticLine(label, value, ok = null) {
+    const el = document.getElementById("fernDiagnostics");
+    if (!el) return;
+
+    const line = document.createElement("div");
+    line.textContent =
+        (ok === true ? "✓ " : ok === false ? "✕ " : "• ") +
+        label + ": " + value;
+
+    if (ok === true) line.style.color = "var(--green)";
+    if (ok === false) line.style.color = "var(--red)";
+    el.appendChild(line);
+}
+
+async function runFernDiagnostics() {
+    const el = document.getElementById("fernDiagnostics");
+    if (!el) return;
+
+    el.innerHTML = "";
+
+    setDiagnosticLine(
+        "Origin",
+        location.origin || location.protocol,
+        true
+    );
+
+    const https = location.protocol === "https:";
+    setDiagnosticLine("HTTPS", https ? "yes" : "no", https);
+
+    let storageOK = false;
+    try {
+        const key = "__fern_diag__";
+        localStorage.setItem(key, "1");
+        storageOK = localStorage.getItem(key) === "1";
+        localStorage.removeItem(key);
+    } catch (_) {}
+
+    setDiagnosticLine(
+        "Local storage",
+        storageOK ? "available" : "blocked",
+        storageOK
+    );
+
+    const webOrigin =
+        location.protocol === "http:" ||
+        location.protocol === "https:";
+
+    setDiagnosticLine(
+        "Cookie-capable origin",
+        webOrigin ? "yes" : "file:// — cookie persistence is not reliable",
+        webOrigin
+    );
+
+    const scramjetScript =
+        document.querySelector(
+            'script[src="/scram/scramjet.all.js"]'
+        );
+
+    const baremuxScript =
+        document.querySelector(
+            'script[src="/baremux/index.js"]'
+        );
+
+    const scramjetLoaded =
+        typeof $scramjetLoadController === "function";
+
+    setDiagnosticLine(
+        "Scramjet script",
+        scramjetScript ? "referenced" : "missing",
+        !!scramjetScript
+    );
+
+    setDiagnosticLine(
+        "Scramjet controller",
+        scramjetLoaded ? "loaded" : "missing",
+        scramjetLoaded
+    );
+
+    setDiagnosticLine(
+        "Scramjet initialization",
+        fernScramjetReady ? "ready" : "not initialized",
+        fernScramjetReady
+    );
+
+    setDiagnosticLine(
+        "Scramjet WASM",
+        "/scram/scramjet.wasm.wasm",
+        true
+    );
+
+    setDiagnosticLine(
+        "Scramjet sync file",
+        "/scram/scramjet.sync.js",
+        true
+    );
+
+    setDiagnosticLine(
+        "BareMux",
+        baremuxScript ? "referenced" : "missing",
+        !!baremuxScript
+    );
+
+    setDiagnosticLine(
+        "BareMux connection",
+        fernScramjetConnection ? "ready" : "not initialized",
+        !!fernScramjetConnection
+    );
+
+    const swSupported = "serviceWorker" in navigator;
+
+    setDiagnosticLine(
+        "Service Worker API",
+        swSupported ? "supported" : "not supported",
+        swSupported
+    );
+
+    if (swSupported && webOrigin) {
+        try {
+            const regs =
+                await navigator.serviceWorker.getRegistrations();
+
+            setDiagnosticLine(
+                "Registered service workers",
+                String(regs.length),
+                regs.length > 0
+            );
+
+            const matches = regs.filter(
+                reg =>
+                    reg.scope.includes("/~/sj/") ||
+                    (
+                        reg.active &&
+                        (
+                            reg.active.scriptURL.endsWith("/sw.js") ||
+                            reg.active.scriptURL.includes("scram")
+                        )
+                    )
+            );
+
+            setDiagnosticLine(
+                "Scramjet worker registration",
+                matches.length
+                    ? "found"
+                    : "not found",
+                matches.length > 0
+            );
+
+            setDiagnosticLine(
+                "Current page controlled by SW",
+                navigator.serviceWorker.controller
+                    ? navigator.serviceWorker.controller.scriptURL
+                    : "no",
+                !!navigator.serviceWorker.controller
+            );
+        } catch (error) {
+            setDiagnosticLine(
+                "Service-worker check",
+                error && error.message
+                    ? error.message
+                    : "failed",
+                false
+            );
+        }
+    } else if (swSupported) {
+        setDiagnosticLine(
+            "Service-worker check",
+            "requires HTTPS or localhost",
+            null
+        );
+    }
+
+    try {
+        const testURL =
+            "https://example.com/";
+
+        setDiagnosticLine(
+            "Scramjet test URL",
+            testURL,
+            true
+        );
+
+        setDiagnosticLine(
+            "Scramjet frame",
+            fernScramjetFrame
+                ? "created"
+                : "not created yet",
+            !!fernScramjetFrame
+        );
+    } catch (error) {
+        setDiagnosticLine(
+            "Scramjet URL check",
+            error && error.message
+                ? error.message
+                : "failed",
+            false
+        );
+    }
+
+    const localAuth = hasLocalAuthentication();
+    const cookieAuth =
+        webOrigin && hasAuthCookie();
+
+    setDiagnosticLine(
+        "Fern authentication storage",
+        localAuth
+            ? "local authentication saved"
+            : cookieAuth
+                ? "cookie saved"
+                : "not currently saved",
+        localAuth || cookieAuth
+    );
+}
+
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+
+const FERN_THEME_KEY = "fern_theme";
+const FERN_ANIMATIONS_KEY = "fern_animations";
+const FERN_BUTTON_STYLE_KEY = "fern_button_style";
+
+const FERN_THEMES = {
+    fern: {
+        bg: "#030603", bgLight: "#071007", panel: "rgba(11, 18, 13, 0.85)", panelHover: "#101b13",
+        accent: "#00ff66", accentDark: "#00bd4b", accentSoft: "#7affad",
+        text: "#e9fff0", muted: "#769180", border: "rgba(0,255,102,.18)", borderBright: "rgba(0,255,102,.48)", mist1:"rgba(40,210,190,.18)", mist2:"rgba(80,55,180,.18)", mist3:"rgba(25,110,125,.13)"
+    },
+    midnight: {
+        bg: "#050612", bgLight: "#0a0d1d", panel: "rgba(11, 14, 32, 0.85)", panelHover: "#11152c",
+        accent: "#6f86ff", accentDark: "#4e65df", accentSoft: "#aab8ff",
+        text: "#eef1ff", muted: "#7d86a6", border: "rgba(111,134,255,.20)", borderBright: "rgba(111,134,255,.52)", mist1:"rgba(75,110,255,.18)", mist2:"rgba(130,75,210,.17)", mist3:"rgba(30,80,145,.12)"
+    },
+    amber: {
+        bg: "#0b0702", bgLight: "#160e04", panel: "rgba(23, 16, 6, 0.85)", panelHover: "#211508",
+        accent: "#ffb020", accentDark: "#d88d00", accentSoft: "#ffd477",
+        text: "#fff5df", muted: "#9d8a6c", border: "rgba(255,176,32,.20)", borderBright: "rgba(255,176,32,.52)", mist1:"rgba(255,145,45,.16)", mist2:"rgba(185,65,35,.14)", mist3:"rgba(255,190,70,.10)"
+    },
+    ice: {
+        bg: "#031016", bgLight: "#061a22", panel: "rgba(8, 32, 42, 0.85)", panelHover: "#0b2b37",
+        accent: "#5de7ff", accentDark: "#27b9d3", accentSoft: "#a4f3ff",
+        text: "#e9fbff", muted: "#71939c", border: "rgba(93,231,255,.20)", borderBright: "rgba(93,231,255,.52)", mist1:"rgba(55,195,255,.18)", mist2:"rgba(65,90,220,.16)", mist3:"rgba(40,145,175,.13)"
+    },
+    violet: {
+        bg: "#080311", bgLight: "#11061b", panel: "rgba(22, 10, 32, 0.85)", panelHover: "#20102e",
+        accent: "#b36bff", accentDark: "#8644cf", accentSoft: "#d4a9ff",
+        text: "#f8efff", muted: "#957fa4", border: "rgba(179,107,255,.20)", borderBright: "rgba(179,107,255,.52)", mist1:"rgba(125,70,230,.19)", mist2:"rgba(210,70,210,.16)", mist3:"rgba(55,90,180,.11)"
+    },
+    rose: {
+        bg: "#110307", bgLight: "#1b060c", panel: "rgba(33, 10, 17, 0.85)", panelHover: "#2b0e17",
+        accent: "#ff6688", accentDark: "#d83f63", accentSoft: "#ffadbd",
+        text: "#fff0f4", muted: "#a37b86", border: "rgba(255,102,136,.20)", borderBright: "rgba(255,102,136,.52)", mist1:"rgba(255,75,125,.17)", mist2:"rgba(190,55,165,.15)", mist3:"rgba(120,55,100,.11)"
+    },
+    mono: {
+        bg: "#050505", bgLight: "#0c0c0c", panel: "rgba(17, 17, 17, 0.85)", panelHover: "#181818",
+        accent: "#d7d7d7", accentDark: "#999999", accentSoft: "#f1f1f1",
+        text: "#eeeeee", muted: "#858585", border: "rgba(255,255,255,.16)", borderBright: "rgba(255,255,255,.42)", mist1:"rgba(255,255,255,.08)", mist2:"rgba(170,170,170,.06)", mist3:"rgba(100,100,100,.05)"
+    },
+    cyan: {
+        bg: "#02100e", bgLight: "#041b18", panel: "rgba(6, 34, 30, 0.85)", panelHover: "#0a2d28",
+        accent: "#20ffd4", accentDark: "#10b69a", accentSoft: "#8affea",
+        text: "#e8fffb", muted: "#6c9991", border: "rgba(32,255,212,.20)", borderBright: "rgba(32,255,212,.52)", mist1:"rgba(35,235,210,.18)", mist2:"rgba(45,100,220,.16)", mist3:"rgba(30,145,160,.12)"
+    },
+    light: {
+        bg: "#f3f6f5", bgLight: "#ffffff", panel: "rgba(255, 255, 255, 0.85)", panelHover: "#edf3ef",
+        accent: "#087d3d", accentDark: "#056630", accentSoft: "#0a7040",
+        text: "#132018", muted: "#617067", border: "rgba(8,96,48,.16)", borderBright: "rgba(8,96,48,.38)", mist1:"rgba(30,150,90,.10)", mist2:"rgba(80,120,90,.07)", mist3:"rgba(50,90,70,.05)"
+    },
+    cyberpunk: {
+        bg: "#08050f", bgLight: "#10091b", panel: "rgba(18, 12, 29, 0.85)", panelHover: "#1b1028",
+        accent: "#00eaff", accentDark: "#0099a6", accentSoft: "#82f8ff",
+        text: "#f2fbff", muted: "#918aa8", border: "rgba(0,240,255,.19)", borderBright: "rgba(255,45,205,.58)"
+    },
+    aurora: {
+        bg: "#06100f", bgLight: "#0a1b19", panel: "rgba(10, 29, 26, 0.82)", panelHover: "#12332e",
+        accent: "#63ffd0", accentDark: "#21b994", accentSoft: "#b1ffe7",
+        text: "#effff9", muted: "#789b91", border: "rgba(99,255,208,.20)", borderBright: "rgba(130,255,226,.58)", mist1:"rgba(65,255,215,.18)", mist2:"rgba(75,120,255,.15)", mist3:"rgba(55,185,150,.12)"
+    },
+    sunset: {
+        bg: "#12070a", bgLight: "#210d10", panel: "rgba(35, 14, 20, 0.84)", panelHover: "#401822",
+        accent: "#ff8a5b", accentDark: "#e3543d", accentSoft: "#ffc0a4",
+        text: "#fff4ef", muted: "#aa7f78", border: "rgba(255,138,91,.20)", borderBright: "rgba(255,130,90,.17)", mist1:"rgba(255,100,85,.18)", mist2:"rgba(255,175,70,.14)", mist3:"rgba(190,65,95,.11)"
+    },
+    ocean: {
+        bg: "#03101b", bgLight: "#061d2d", panel: "rgba(7, 31, 49, 0.84)", panelHover: "#0b3a59",
+        accent: "#43b8ff", accentDark: "#247bc0", accentSoft: "#a4ddff",
+        text: "#effaff", muted: "#7394aa", border: "rgba(67,184,255,.20)", borderBright: "rgba(95,204,255,.58)", mist1:"rgba(50,185,255,.18)", mist2:"rgba(95,90,230,.15)", mist3:"rgba(40,125,180,.12)"
+    },
+    dracula: {
+        bg: "#0b0912", bgLight: "#151021", panel: "rgba(27, 21, 40, 0.86)", panelHover: "#38294f",
+        accent: "#bd93f9", accentDark: "#8b63c7", accentSoft: "#e2ccff",
+        text: "#f8f5ff", muted: "#938aa8", border: "rgba(189,147,249,.20)", borderBright: "rgba(255,121,198,.55)", mist1:"rgba(170,95,245,.18)", mist2:"rgba(255,85,180,.15)", mist3:"rgba(75,75,180,.11)"
+    }
+};
+
+function applyFernTheme(theme) {
+    if (!Object.prototype.hasOwnProperty.call(FERN_THEMES, theme)) theme = "fern";
+    const palette = FERN_THEMES[theme];
+    const root = document.documentElement;
+    const body = document.body;
+
+    root.style.setProperty("--bg", palette.bg);
+    root.style.setProperty("--bg-light", palette.bgLight);
+    root.style.setProperty("--panel", palette.panel);
+    root.style.setProperty("--panel-hover", palette.panelHover);
+    root.style.setProperty("--green", palette.accent);
+    root.style.setProperty("--green-dark", palette.accentDark);
+    root.style.setProperty("--green-soft", palette.accentSoft);
+    root.style.setProperty("--text", palette.text);
+    root.style.setProperty("--muted", palette.muted);
+    root.style.setProperty("--border", palette.border);
+    root.style.setProperty("--border-bright", palette.borderBright);
+    root.style.setProperty("--mist1", palette.mist1 || "rgba(40,210,190,.16)");
+    root.style.setProperty("--mist2", palette.mist2 || "rgba(80,55,180,.15)");
+    root.style.setProperty("--mist3", palette.mist3 || "rgba(25,110,125,.12)");
+
+    body.dataset.theme = theme;
+    if (theme === "fern") body.removeAttribute("data-theme");
+    body.style.removeProperty("background-color");
+    body.style.removeProperty("color");
+
+    document.querySelectorAll(".theme-card").forEach(card => {
+        card.classList.toggle("active", card.dataset.theme === theme);
+    });
+
+    try { localStorage.setItem(FERN_THEME_KEY, theme); } catch (_) {}
+}
+
+function applyFernAnimations(enabled) {
+    document.body.classList.toggle("no-animations", !enabled);
+    try { localStorage.setItem(FERN_ANIMATIONS_KEY, enabled ? "1" : "0"); } catch (_) {}
+}
+
+function applyFernButtonStyle(style) {
+    if (style !== "smooth") style = "standard";
+    if (style === "smooth") document.body.setAttribute("data-button-style", "smooth");
+    else document.body.removeAttribute("data-button-style");
+    const select = document.getElementById("buttonStyleSelect");
+    if (select) select.value = style;
+    try { localStorage.setItem(FERN_BUTTON_STYLE_KEY, style); } catch (_) {}
+}
+
+function loadFernSettings() {
+    let theme = "fern";
+    let animations = true;
+    let buttonStyle = "standard";
+
+    try {
+        theme = localStorage.getItem(FERN_THEME_KEY) || "fern";
+        animations = localStorage.getItem(FERN_ANIMATIONS_KEY) !== "0";
+        buttonStyle = localStorage.getItem(FERN_BUTTON_STYLE_KEY) || "standard";
+    } catch (_) {}
+
+    applyFernTheme(theme);
+    applyFernAnimations(animations);
+    applyFernButtonStyle(buttonStyle);
+
+    const animationsToggle = document.getElementById("animationsToggle");
+    if (animationsToggle && !animationsToggle.dataset.fernBound) {
+        animationsToggle.dataset.fernBound = "1";
+        animationsToggle.checked = animations;
+        animationsToggle.addEventListener("change", () => applyFernAnimations(animationsToggle.checked));
+    }
+
+    document.querySelectorAll(".theme-card").forEach(card => {
+        if (card.dataset.fernBound) return;
+        card.dataset.fernBound = "1";
+        card.addEventListener("click", () => applyFernTheme(card.dataset.theme));
+    });
+
+    const buttonStyleSelect = document.getElementById("buttonStyleSelect");
+    if (buttonStyleSelect && !buttonStyleSelect.dataset.fernBound) {
+        buttonStyleSelect.dataset.fernBound = "1";
+        buttonStyleSelect.addEventListener("change", () => applyFernButtonStyle(buttonStyleSelect.value));
+    }
+}
+
+loadFernSettings();
+
+const runDiagnosticsButton =
+    document.getElementById("runDiagnosticsButton");
+
+if (runDiagnosticsButton) {
+    runDiagnosticsButton.addEventListener(
+        "click",
+        runFernDiagnostics
+    );
+}
+
+runFernDiagnostics();
+
+
+document.querySelectorAll("[data-page-jump]").forEach(el => {
+    el.addEventListener("click", () => {
+        const target = el.dataset.pageJump;
+        document.querySelector(`.nav-button[data-page="${target}"]`)?.click();
+    });
+});
+
+/* ============================================================
+   START FERN
+   ============================================================ */
+
+const aboutVersion = document.getElementById("aboutVersion");
+if (aboutVersion) aboutVersion.textContent = "v" + FERN_VERSION;
+
+if (isAuthenticated()) {
+
+    showApplication();
+
+} else {
+
+    showLogin();
+
+}
+
+
+randomJoke();
+
+</script>
+
+
+<script id="fern-fullscreen-performance-js-v1-2-10">
+(() => {
+    const sync = () => {
+        const active = !!document.fullscreenElement ||
+                       !!document.webkitFullscreenElement ||
+                       !!document.msFullscreenElement;
+        document.body.classList.toggle("fern-fullscreen-performance", active);
+    };
+    document.addEventListener("fullscreenchange", sync, {passive:true});
+    document.addEventListener("webkitfullscreenchange", sync, {passive:true});
+    document.addEventListener("MSFullscreenChange", sync, {passive:true});
+    sync();
+})();
+</script>
+
+
+<script id="fern-shooting-stars-v1-2-16">
+(() => {
+    let timer = 0;
+
+    function schedule() {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            if (!document.hidden &&
+                !document.body.classList.contains("fern-fullscreen-performance")) {
+                const star = document.createElement("span");
+                star.className = "fern-shooting-star";
+                star.style.left = `${18 + Math.random() * 78}%`;
+                star.style.top = `${8 + Math.random() * 42}%`;
+                star.style.width = `${70 + Math.random() * 80}px`;
+                star.style.animationDuration = `${650 + Math.random() * 500}ms`;
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1400);
+            }
+            schedule();
+        }, 7000 + Math.random() * 11000);
+    }
+
+    schedule();
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) clearTimeout(timer);
+        else schedule();
+    }, {passive:true});
+})();
+</script>
+
+
+<script id="fern-image-cache-v1-2-20">
+(() => {
+    const original = window.getGameImageCandidates;
+    if (typeof original !== "function") return;
+    const cache = new Map();
+    window.getGameImageCandidates = function(game) {
+        const key = game && (game.name || game.link);
+        if (!key) return original(game);
+        if (!cache.has(key)) cache.set(key, original(game));
+        return cache.get(key);
+    };
+})();
+</script>
+
+</body>
 </html>
