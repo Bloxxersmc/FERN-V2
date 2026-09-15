@@ -9,38 +9,54 @@ echo          FERN V2 GitHub Uploader
 echo ==========================================
 echo.
 
-set "REPO_NAME=FERN V2"
+REM ==================================================
+REM SETTINGS
+REM ==================================================
+
 set "REPO_URL=https://github.com/Bloxxersmc/FERN-V2.git"
+
+REM ==================================================
+REM USE THE FOLDER CONTAINING THIS BAT
+REM ==================================================
 
 cd /d "%~dp0"
 
-echo [1/6] Checking Git...
+echo [1/5] Checking Git...
 where git >nul 2>&1
+
 if errorlevel 1 (
+    echo.
     echo ERROR: Git is not installed or not in PATH.
     pause
     exit /b 1
 )
+
 echo Git found.
 
 echo.
-echo [2/6] Checking GitHub CLI...
+echo [2/5] Checking GitHub CLI...
 where gh >nul 2>&1
+
 if errorlevel 1 (
+    echo.
     echo ERROR: GitHub CLI is not installed or not in PATH.
     pause
     exit /b 1
 )
+
 echo GitHub CLI found.
 
 echo.
-echo [3/6] Checking GitHub login...
+echo [3/5] Checking GitHub login...
+
 gh auth status >nul 2>&1
 
 if errorlevel 1 (
+    echo.
     echo You are not logged into GitHub.
     echo Starting GitHub login...
     echo.
+
     gh auth login
 
     if errorlevel 1 (
@@ -54,24 +70,85 @@ if errorlevel 1 (
 echo GitHub login OK.
 
 echo.
-echo [4/6] Initializing repository...
+echo [4/5] Preparing repository...
+
+REM ==================================================
+REM INITIALIZE GIT IF NEEDED
+REM ==================================================
 
 if not exist ".git" (
+    echo Initializing Git repository...
     git init
+
+    if errorlevel 1 (
+        echo.
+        echo ERROR: git init failed.
+        pause
+        exit /b 1
+    )
 )
+
+REM ==================================================
+REM MAKE SURE WE USE MAIN
+REM ==================================================
 
 git branch -M main
 
+REM ==================================================
+REM SET THE CORRECT ORIGIN
+REM ==================================================
+
 echo.
-echo [5/6] Adding EVERYTHING...
+echo Setting GitHub remote...
+
+git remote get-url origin >nul 2>&1
+
+if errorlevel 1 (
+    echo No origin exists.
+    git remote add origin "%REPO_URL%"
+) else (
+    echo Existing origin found.
+    echo Updating origin...
+    git remote set-url origin "%REPO_URL%"
+)
+
+if errorlevel 1 (
+    echo.
+    echo ERROR: Could not configure origin.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Remote:
+git remote -v
+
+REM ==================================================
+REM ADD EVERYTHING
+REM ==================================================
+
+echo.
+echo Adding EVERYTHING in this folder...
 
 git add -A
 
+if errorlevel 1 (
+    echo.
+    echo ERROR: git add failed.
+    pause
+    exit /b 1
+)
+
 echo.
 echo ==========================================
-echo Current Git status:
+echo Git status:
 echo ==========================================
 git status
+echo ==========================================
+
+REM ==================================================
+REM COMMIT IF THERE ARE CHANGES
+REM ==================================================
 
 echo.
 
@@ -89,84 +166,61 @@ if errorlevel 1 (
         pause
         exit /b 1
     )
+
+    echo Commit created.
 ) else (
     echo No new changes to commit.
 )
 
-echo.
-echo [6/6] Configuring GitHub remote...
-
-git remote get-url origin >nul 2>&1
-
-if errorlevel 1 (
-    echo No existing origin found.
-    git remote add origin "%REPO_URL%"
-) else (
-    echo Existing origin found.
-    echo Updating origin...
-    git remote set-url origin "%REPO_URL%"
-)
-
-if errorlevel 1 (
-    echo.
-    echo ERROR: Could not configure GitHub remote.
-    pause
-    exit /b 1
-)
+REM ==================================================
+REM PUSH EVERYTHING
+REM ==================================================
 
 echo.
-echo Checking GitHub repository...
-
-gh repo view "%REPO_NAME%" >nul 2>&1
-
-if errorlevel 1 (
-    echo Repository does not exist.
-    echo Creating "%REPO_NAME%"...
-
-    gh repo create "%REPO_NAME%" --public
-
-    if errorlevel 1 (
-        echo.
-        echo ERROR: Could not create GitHub repository.
-        pause
-        exit /b 1
-    )
-
-    echo Repository created.
-) else (
-    echo Repository already exists.
-)
+echo [5/5] Pushing to GitHub...
 
 echo.
-echo ==========================================
-echo          Pushing Fern V2 to GitHub
-echo ==========================================
+echo Repository:
+echo https://github.com/Bloxxersmc/FERN-V2
 echo.
 
 git push -u origin main
 
 if errorlevel 1 (
     echo.
-    echo Push failed.
-    echo Attempting to synchronize...
+    echo ==========================================
+    echo          FIRST PUSH ATTEMPT FAILED
+    echo ==========================================
+    echo.
+
+    echo Attempting to synchronize with GitHub...
+    echo.
 
     git pull --rebase origin main
 
     if errorlevel 1 (
         echo.
-        echo ERROR: Could not synchronize with GitHub.
+        echo ERROR: GitHub synchronization failed.
+        echo.
+        echo Your local files and commits are still safe.
         pause
         exit /b 1
     )
 
     echo.
+    echo Synchronization successful.
     echo Retrying push...
+    echo.
 
     git push -u origin main
 
     if errorlevel 1 (
         echo.
-        echo ERROR: Push still failed.
+        echo ==========================================
+        echo              PUSH FAILED
+        echo ==========================================
+        echo.
+        echo Your local files and commits are still safe.
         pause
         exit /b 1
     )
@@ -177,9 +231,12 @@ echo ==========================================
 echo              SUCCESS!
 echo ==========================================
 echo.
-echo Everything in this folder has been
-echo committed and pushed to:
+echo Fern V2 has been pushed successfully.
 echo.
+echo Repository:
 echo https://github.com/Bloxxersmc/FERN-V2
 echo.
+echo ==========================================
+echo.
+
 pause
