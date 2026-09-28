@@ -3632,6 +3632,106 @@ body{overflow:auto!important}
 .browser-newtab span{color:#625938;font-size:10px}
 </style>
 
+<style id="korona-stability-fixes">
+/* Stable Korona shell */
+html,body{margin:0!important;min-height:100%!important;width:100%!important;overflow-x:hidden!important}
+#loginScreen{display:none!important}
+#app{display:block!important;min-height:100vh!important}
+.content{display:block!important;min-height:100vh!important}
+.content>.page{display:none!important;visibility:hidden!important}
+.content>.page.active{display:block!important;visibility:visible!important}
+
+/* Browser sizing */
+#proxyPage{height:100vh!important;min-height:100vh!important;box-sizing:border-box!important;overflow:hidden!important}
+#proxyPage .browser-page{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+#proxyPage .browser-topline{flex:0 0 auto!important}
+#proxyPage .browser-window{height:auto!important;min-height:0!important;flex:1 1 auto!important}
+.browser-tabs{flex:0 0 45px!important;min-width:0!important}
+.browser-toolbar{flex:0 0 48px!important;min-width:0!important}
+#iframeContainer{flex:1 1 auto!important;min-height:0!important;height:auto!important}
+.browser-frames{min-height:0!important}
+
+/* The tab strip owns tab buttons; prevent accidental duplicates/overflow. */
+.browser-tabs{scrollbar-width:thin!important;white-space:nowrap!important}
+.browser-tab{flex:0 1 210px!important;min-width:145px!important}
+.new-tab-button{margin-left:2px!important;flex:0 0 38px!important}
+
+/* Make browser controls behave like controls instead of text. */
+.browser-nav-button,.new-tab-button,.browser-address button,.iframe-toolbar button{user-select:none!important;-webkit-user-select:none!important}
+.browser-address{min-width:0!important}
+.browser-address input{min-width:0!important}
+
+/* Settings/reference-page spacing */
+#settingsPage{min-height:100vh!important}
+#settingsPage .settings-panel{width:min(980px,100%)!important}
+
+@media(max-width:900px){
+  .content{margin-left:76px!important;width:calc(100% - 76px)!important}
+  #proxyPage{padding-left:12px!important;padding-right:12px!important}
+}
+@media(max-width:650px){
+  #proxyPage{padding:18px 10px 20px!important}
+  .browser-tab{min-width:120px!important;flex-basis:120px!important}
+  .browser-toolbar{gap:2px!important;padding:5px!important}
+  .browser-nav-button{width:31px!important;flex-basis:31px!important}
+  .browser-address button{width:30px!important}
+}
+</style>
+
+<style id="korona-auth-gate-fix">
+/* Authentication is a true full-screen gate. Nothing behind it is clickable or scrollable. */
+html.korona-auth-locked,
+body.korona-auth-locked {
+  overflow: hidden !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overscroll-behavior: none !important;
+}
+
+body.korona-auth-locked #app {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.korona-auth-locked #loginScreen {
+  display: flex !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 24px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  z-index: 2147483647 !important;
+  isolation: isolate !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+}
+
+body.korona-auth-unlocked #loginScreen {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+body.korona-auth-unlocked #app {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+#loginScreen .korona-auth-box {
+  position: relative !important;
+  z-index: 2 !important;
+  max-height: calc(100dvh - 48px) !important;
+  overflow: hidden !important;
+}
+</style>
 </head>
 
 
@@ -3799,7 +3899,6 @@ body{overflow:auto!important}
             </div>
             <div class="browser-window" id="browserWindow">
               <div class="browser-tabs" id="browserTabs">
-                <button class="browser-tab active" data-tab-id="tab-1" type="button"><span class="tab-favicon">K</span><span class="tab-title">New Tab</span><span class="tab-close" title="Close tab">×</span></button>
                 <button class="new-tab-button" id="newTabButton" title="New tab" type="button">+</button>
               </div>
               <div class="browser-toolbar">
@@ -4144,17 +4243,11 @@ function showKoronaMessage(element, message, type = "error") {
 }
 
 function showApplication() {
-    const loginScreen = document.getElementById("loginScreen");
-    const app = document.getElementById("app");
-    if (loginScreen) loginScreen.style.display = "none";
-    if (app) app.style.display = "flex";
+    setKoronaAuthLock(false);
 }
 
 function showLogin() {
-    const loginScreen = document.getElementById("loginScreen");
-    const app = document.getElementById("app");
-    if (loginScreen) loginScreen.style.display = "flex";
-    if (app) app.style.display = "none";
+    setKoronaAuthLock(true);
 }
 
 function showKoronaSetup() {
@@ -4300,6 +4393,7 @@ async function authenticate() {
         }
 
         input.value = "";
+        setKoronaAuthLock(false);
         showApplication();
         randomJoke();
     } catch (error) {
@@ -4337,14 +4431,57 @@ const lastNameInput = document.getElementById("last-name");
     });
 });
 
-const koronaSavedUser = getKoronaLocalUser();
+/*
+ * Korona uses a full-screen authentication gate.
+ * The application remains inaccessible and non-scrollable until the
+ * authentication code is successfully confirmed.
+ */
+function setKoronaAuthLock(locked) {
+    const root = document.documentElement;
+    const body = document.body;
+    if (!root || !body) return;
 
-showLogin();
-if (koronaSavedUser) {
-    showKoronaLogin(koronaSavedUser);
-} else {
-    showKoronaSetup();
+    root.classList.toggle("korona-auth-locked", locked);
+    body.classList.toggle("korona-auth-locked", locked);
+    body.classList.toggle("korona-auth-unlocked", !locked);
+
+    const loginScreen = document.getElementById("loginScreen");
+    const app = document.getElementById("app");
+
+    if (locked) {
+        if (loginScreen) loginScreen.style.display = "flex";
+        if (app) app.style.display = "none";
+    } else {
+        if (loginScreen) loginScreen.style.display = "none";
+        if (app) app.style.display = "block";
+    }
 }
+
+function startKorona() {
+    // Never expose the application before authentication is explicitly confirmed.
+    setKoronaAuthLock(true);
+    showKoronaSetup();
+    const savedUser = getKoronaLocalUser();
+    if (savedUser) showKoronaLogin(savedUser);
+    randomJoke();
+}
+
+startKorona();
+
+// Block wheel/touch/keyboard scrolling while the authentication gate is active.
+document.addEventListener("wheel", event => {
+    if (document.body.classList.contains("korona-auth-locked")) event.preventDefault();
+}, { passive: false });
+document.addEventListener("touchmove", event => {
+    if (document.body.classList.contains("korona-auth-locked")) event.preventDefault();
+}, { passive: false });
+document.addEventListener("keydown", event => {
+    if (!document.body.classList.contains("korona-auth-locked")) return;
+    const scrollKeys = [" ", "PageUp", "PageDown", "Home", "End", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    if (scrollKeys.includes(event.key) && !["INPUT", "BUTTON"].includes(document.activeElement?.tagName)) {
+        event.preventDefault();
+    }
+});
 
 function refreshKoronaAccountPage(){
   const user=getKoronaLocalUser(),idEl=document.getElementById("accountUserId"),nameEl=document.getElementById("accountUserName");
