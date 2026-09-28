@@ -6,7 +6,7 @@
 
     <title>Korona</title>
 
-    <meta name="fern-version" content="2.0.0">
+    <meta name="fern-version" content="2.1.0">
 
     <!-- Scramjet -->
     <script src="/scram/scramjet.all.js"></script>
@@ -130,59 +130,23 @@
             return true;
         }
 
-        async function createFernScramjetFrame() {
+        async function createFernScramjetFrame(tabId, host) {
             await prepareFernScramjetTransport();
-
-            if (fernScramjetFrame) {
-                return fernScramjetFrame;
-            }
-
-            fernScramjetFrame =
-                fernScramjet.createFrame();
-
-            fernScramjetFrame.frame.id =
-                "iframeWindow";
-
-            fernScramjetFrame.frame.title =
-                "Fern";
-
-            fernScramjetFrame.frame.setAttribute(
-                "allow",
-                "fullscreen; autoplay; gamepad"
-            );
-
-            fernScramjetFrame.frame.setAttribute(
-                "allowfullscreen",
-                ""
-            );
-
-            fernScramjetFrame.frame.setAttribute(
-                "loading",
-                "eager"
-            );
-
-            fernScramjetFrame.frame.setAttribute(
-                "referrerpolicy",
-                "no-referrer"
-            );
-
-            const oldFrame =
-                document.getElementById("iframeWindow");
-
-            if (oldFrame) {
-                oldFrame.replaceWith(
-                    fernScramjetFrame.frame
-                );
-            } else if (iframeContainer) {
-                iframeContainer.appendChild(
-                    fernScramjetFrame.frame
-                );
-            }
-
-            iframeWindow =
-                fernScramjetFrame.frame;
-
-            return fernScramjetFrame;
+            const existing = document.getElementById("iframeWindow-" + tabId);
+            if (existing && existing.__scramjetFrame) return existing.__scramjetFrame;
+            const frame = fernScramjet.createFrame();
+            frame.frame.id = "iframeWindow-" + tabId;
+            frame.frame.className = "korona-browser-frame";
+            frame.frame.title = "Korona";
+            frame.frame.setAttribute("allow", "fullscreen; autoplay; gamepad");
+            frame.frame.setAttribute("allowfullscreen", "");
+            frame.frame.setAttribute("loading", "eager");
+            frame.frame.setAttribute("referrerpolicy", "no-referrer");
+            const mount = host || document.getElementById("browserFrames");
+            if (!mount) throw new Error("Browser frame container was not found.");
+            mount.appendChild(frame.frame);
+            frame.frame.__scramjetFrame = frame;
+            return frame;
         }
     </script>
 
@@ -1625,7 +1589,7 @@
         }
 
         .theme-card.active::after {
-            content: "?";
+            content: "✓";
             margin-left: auto;
             color: var(--green);
             font-weight: 900;
@@ -2138,7 +2102,7 @@
         .game-card h3 { margin:0 !important; flex:1; font-size:14px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .game-card p { min-height:30px; margin:6px 0 12px !important; font-size:11px !important; color:var(--muted); line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .game-card a { padding:9px 11px !important; border-radius:10px !important; color:var(--text) !important; background:color-mix(in srgb,var(--green) 9%,transparent) !important; border-color:var(--border) !important; text-align:left !important; font-size:11px !important; }
-        .game-card a::after { content:"?"; float:right; color:var(--green); font-size:14px; }
+        .game-card a::after { content:"↗"; float:right; color:var(--green); font-size:14px; }
         .bookmark-button { width:30px; height:30px; flex:0 0 30px; border:1px solid var(--border); border-radius:9px; background:rgba(255,255,255,.035); color:var(--muted); cursor:pointer; font-size:16px; transition:.2s ease; }
         .bookmark-button:hover,.bookmark-button.saved { color:var(--green); border-color:var(--border-bright); background:color-mix(in srgb,var(--green) 10%,transparent); }
         .joke-card { margin-top:20px !important; }
@@ -2429,7 +2393,7 @@
             display: none !important;
         }
         .game-card-top::before {
-            content: '?';
+            content: '▶';
             color: var(--green);
             font-size: 10px;
             margin-right: 2px;
@@ -3632,6 +3596,42 @@ body {
 }
 </style>
 
+
+<style id="korona-browser-ui">
+:root{--k-bg:#171305;--k-sidebar:#211b08;--k-line:#69551a;--k-gold:#d9b64c;--k-text:#f6edcf}
+html,body{background:var(--k-bg)!important;color:var(--k-text)!important}
+body{min-height:100vh!important;background:radial-gradient(circle at 76% 16%,rgba(217,182,76,.06),transparent 25%),linear-gradient(180deg,#1a1507,#171305)!important}
+#app{min-height:100vh!important;display:block!important}
+.korona-sidebar{position:fixed!important;inset:0 auto 0 0!important;width:194px!important;z-index:100!important;display:flex!important;flex-direction:column!important;background:var(--k-sidebar)!important;border-right:1px solid #5b4813!important;padding:18px 8px 16px!important;box-sizing:border-box!important}
+.sidebar-brand{display:flex!important;align-items:center!important;gap:10px!important;padding:2px 10px 28px!important}.sidebar-mark{width:28px!important;height:28px!important;display:grid!important;place-items:center!important;color:#a94cff!important;font-weight:900!important;font-size:20px!important;text-shadow:0 0 16px rgba(139,70,255,.65)!important}.sidebar-brand strong{display:block!important;font-size:16px!important}.sidebar-brand span{display:block!important;color:#897b4f!important;font-size:10px!important;text-transform:uppercase!important;letter-spacing:1.4px!important}.sidebar-nav{display:flex!important;flex-direction:column!important;gap:6px!important}
+.korona-sidebar .nav-button{width:100%!important;min-height:48px!important;display:flex!important;align-items:center!important;gap:12px!important;padding:0 12px!important;color:#d0bc6d!important;background:transparent!important;border:1px solid transparent!important;border-radius:0!important;text-align:left!important;font-size:14px!important;box-shadow:none!important}.korona-sidebar .nav-button:hover{color:#f8edc6!important;background:rgba(217,182,76,.055)!important;border-color:#5e4b17!important}.korona-sidebar .nav-button.active{color:#fff4d1!important;background:#382e11!important;border-color:#d6b541!important;box-shadow:inset 3px 0 0 #f1d55f!important}.sidebar-icon{width:18px!important;display:inline-grid!important;place-items:center!important;font-size:17px!important}.sidebar-bottom{margin-top:auto!important;padding:14px 11px 2px!important;border-top:1px solid #4e3e13!important}.sidebar-status{color:#a79558!important;font-size:11px!important;display:flex!important;gap:7px!important;align-items:center!important}.sidebar-status span{width:7px!important;height:7px!important;border-radius:50%!important;background:#d7b84e!important;box-shadow:0 0 9px rgba(215,184,78,.7)!important}.sidebar-version{color:#66592f!important;font-size:10px!important;margin-top:7px!important}
+.content{margin-left:194px!important;width:calc(100% - 194px)!important;min-height:100vh!important;padding:0!important;box-sizing:border-box!important}.content>.page{width:100%!important;min-height:100vh!important;box-sizing:border-box!important;padding:32px 7.2vw 48px!important;background:transparent!important}.topbar{display:none!important}
+.section-header,.browser-topline{border-bottom:1px solid var(--k-line)!important;padding-bottom:18px!important;margin-bottom:23px!important}.section-header h2,.browser-topline h2{margin:0!important;color:#f7f0d9!important;font-size:22px!important;font-weight:650!important;text-transform:lowercase!important}.section-header p{color:#9f915e!important;font-size:11px!important}.eyebrow,.browser-eyebrow{color:#bca15b!important;font-size:10px!important;letter-spacing:1.5px!important;text-transform:uppercase!important;margin-bottom:8px!important}
+.korona-home{max-width:980px!important;margin:0 auto 24px!important;min-height:280px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:35px!important;padding:42px!important;border:1px solid var(--k-line)!important;background:linear-gradient(135deg,rgba(217,182,76,.07),transparent 45%),#211b0b!important}.korona-home h1{margin:0!important;font-size:42px!important;color:#f7f0d9!important}.korona-home h1 span{color:#d9b64c!important}.korona-home-copy p{max-width:620px!important;color:#a79a69!important;font-size:13px!important;line-height:1.7!important}.home-actions{display:flex!important;gap:10px!important;margin-top:24px!important}.korona-large-button{border:1px solid #a18025!important;background:#2b230c!important;color:#f6edcf!important;border-radius:0!important;padding:12px 18px!important;cursor:pointer!important}.korona-large-button:hover{background:#443611!important;border-color:#d9b64c!important}.korona-large-button.secondary{color:#c2b271!important}.home-stat-grid{min-width:210px!important;display:grid!important;gap:10px!important}.home-stat{border:1px solid #5e4b16!important;padding:17px 18px!important;background:#1d1809!important}.home-stat strong{display:block!important;color:#e2c256!important;font-size:24px!important}.home-stat span{color:#897b4e!important;font-size:10px!important}
+.browser-topline{display:flex!important;align-items:end!important;justify-content:space-between!important}.browser-status{color:#8f814e!important;font-size:10px!important;display:flex!important;gap:7px!important;align-items:center!important}.browser-status span{width:6px!important;height:6px!important;border-radius:50%!important;background:#d6b84d!important}
+.browser-window{width:100%!important;height:calc(100vh - 148px)!important;min-height:560px!important;display:flex!important;flex-direction:column!important;border:1px solid #655119!important;background:#0f0d08!important;box-shadow:0 16px 55px rgba(0,0,0,.22)!important}.browser-tabs{height:45px!important;display:flex!important;align-items:end!important;gap:3px!important;padding:5px 6px 0!important;background:#211b0b!important;border-bottom:1px solid #584615!important;overflow-x:auto!important}.browser-tab{height:39px!important;min-width:165px!important;max-width:230px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 9px!important;color:#a99a62!important;background:#1a1609!important;border:1px solid #514115!important;border-bottom:none!important;border-radius:0!important;cursor:pointer!important;flex:0 1 210px!important;text-align:left!important}.browser-tab.active{color:#f7edcd!important;background:#2a220c!important;border-color:#80661d!important}.tab-favicon{width:20px!important;height:20px!important;display:grid!important;place-items:center!important;flex:0 0 20px!important;color:#e3c458!important;border:1px solid #80661d!important;font-size:9px!important}.tab-title{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:11px!important;flex:1!important}.tab-close{color:#756638!important;font-size:16px!important}.new-tab-button{width:38px!important;height:38px!important;flex:0 0 38px!important;color:#cdb35c!important;background:transparent!important;border:1px solid transparent!important;font-size:22px!important;cursor:pointer!important}.new-tab-button:hover{background:#30260d!important;border-color:#68531a!important}
+.browser-toolbar{height:48px!important;display:flex!important;align-items:center!important;gap:5px!important;padding:6px 8px!important;background:#28200b!important;border-bottom:1px solid #5c4915!important}.browser-nav-button{width:34px!important;height:34px!important;display:grid!important;place-items:center!important;flex:0 0 34px!important;padding:0!important;color:#c7b46d!important;background:transparent!important;border:1px solid transparent!important;border-radius:0!important;font-size:17px!important;cursor:pointer!important}.browser-nav-button:hover{color:#f4e8bc!important;background:#382e11!important;border-color:#68531a!important}.browser-address{height:34px!important;flex:1!important;display:flex!important;align-items:center!important;background:#191508!important;border:1px solid #67531a!important;padding-left:10px!important}.address-lock{color:#a38c47!important}.browser-address input{flex:1!important;min-width:0!important;height:100%!important;padding:0 10px!important;background:transparent!important;border:0!important;outline:0!important;color:#f2e9c9!important;font-size:12px!important}.browser-address input::placeholder{color:#776a42!important}.browser-address button{width:36px!important;height:32px!important;color:#d9b64c!important;background:transparent!important;border:0!important;cursor:pointer!important}
+.browser-frames{position:absolute!important;inset:0!important;overflow:hidden!important;background:#080706!important}.iframe-container{position:relative!important;flex:1!important;min-height:0!important;margin:0!important;width:100%!important;max-width:none!important;border:0!important;border-radius:0!important;background:#080706!important;overflow:hidden!important}.korona-browser-frame{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border:0!important;background:#080706!important}.iframe-toolbar{position:absolute!important;right:12px!important;bottom:12px!important;z-index:30!important;display:flex!important;gap:6px!important}.iframe-toolbar button{width:34px!important;height:34px!important;padding:0!important;color:#d9b64c!important;background:rgba(31,25,9,.92)!important;border:1px solid #77601d!important;border-radius:0!important}
+.apps-grid{max-width:1050px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}.app-tile{min-height:110px!important;padding:17px!important;display:grid!important;grid-template-columns:42px 1fr!important;grid-template-rows:auto auto!important;column-gap:13px!important;align-items:center!important;text-align:left!important;color:#eee4c6!important;background:#211b0b!important;border:1px solid #5d4916!important;border-radius:0!important;cursor:pointer!important}.app-tile:hover{border-color:#ad8827!important;background:#29210b!important}.app-letter{grid-row:1/span 2!important;width:42px!important;height:42px!important;display:grid!important;place-items:center!important;background:#32280e!important;border:1px solid #80661d!important;color:#dfc35b!important;font-size:12px!important;font-weight:700!important}.app-tile small{color:#817447!important;font-size:10px!important}
+.account-card{max-width:850px!important;min-height:110px!important;margin-bottom:10px!important;padding:24px!important;display:flex!important;align-items:center!important;gap:18px!important;background:#211b0b!important;border:1px solid #5e4a16!important;border-radius:0!important}.account-card.compact{min-height:72px!important;justify-content:space-between!important}.account-avatar{width:58px!important;height:58px!important;display:grid!important;place-items:center!important;color:#d8bd55!important;background:#33280e!important;border:1px solid #866b1d!important;font-size:22px!important}.account-label{display:block!important;color:#817446!important;font-size:10px!important;text-transform:uppercase!important;letter-spacing:1px!important}.account-details strong{display:block!important;color:#f4e8c4!important;margin:5px 0!important}.account-details small,.account-card.compact small{display:block!important;color:#8d7e4f!important;font-size:11px!important}.account-online-dot{width:9px!important;height:9px!important;border-radius:50%!important;background:#d9b64c!important;box-shadow:0 0 12px rgba(217,182,76,.65)!important}
+.quick-launch-panel{max-width:980px!important;margin:0 auto!important;border-top:1px solid var(--k-line)!important;padding-top:20px!important}.panel-heading{display:flex!important;justify-content:space-between!important;margin-bottom:12px!important}.panel-heading span{color:#e2d39e!important;font-size:13px!important}.panel-heading small{color:#756a43!important;font-size:10px!important}.quick-launch-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:8px!important}.quick-site{height:52px!important;display:flex!important;align-items:center!important;gap:10px!important;padding:0 13px!important;color:#d6c68a!important;background:#211b0b!important;border:1px solid #5b4816!important;border-radius:0!important;cursor:pointer!important;text-align:left!important}.quick-site span{width:25px!important;height:25px!important;display:grid!important;place-items:center!important;color:#dfbf4f!important;background:#33280d!important;border:1px solid #715b1a!important;font-size:9px!important}
+#settingsPage{padding-left:7vw!important;padding-right:11vw!important}#settingsPage .settings-panel{max-width:980px!important;margin:0 auto!important;background:transparent!important;border:0!important;padding:0!important}#settingsPage .settings-section{padding:18px 0!important;margin:0!important;background:transparent!important;border:0!important;border-top:1px solid #5c4915!important;border-radius:0!important;box-shadow:none!important}#settingsPage .settings-section h3{color:#f1e7c7!important;text-transform:lowercase!important;font-size:13px!important}#settingsPage .settings-section p{color:#958657!important;font-size:10px!important}#settingsPage .theme-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;margin-top:17px!important}#settingsPage .theme-card{min-height:41px!important;padding:7px 9px!important;display:flex!important;align-items:center!important;gap:9px!important;color:#e8ddbb!important;background:#211b0b!important;border:1px solid #5b4815!important;border-radius:0!important;text-align:left!important}#settingsPage .theme-card:hover,#settingsPage .theme-card.active{background:#2d250d!important;border-color:#b18b27!important;box-shadow:none!important}#settingsPage .theme-preview{width:23px!important;height:23px!important;flex:0 0 23px!important;border-radius:0!important}
+#proxyPage .hero,#proxyPage .proxy-controls{display:none!important}
+@media(max-width:900px){.korona-sidebar{width:76px!important;padding:14px 7px!important}.sidebar-brand{justify-content:center!important;padding:2px 0 25px!important}.sidebar-brand>div:last-child{display:none!important}.korona-sidebar .nav-button{justify-content:center!important;padding:0!important}.korona-sidebar .nav-button span:last-child{display:none!important}.sidebar-bottom{display:none!important}.content{margin-left:76px!important;width:calc(100% - 76px)!important}.content>.page{padding:25px 18px 35px!important}.apps-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.quick-launch-grid{grid-template-columns:repeat(2,1fr)!important}}
+@media(max-width:650px){.korona-home{flex-direction:column!important;align-items:flex-start!important;padding:24px!important}.home-stat-grid{width:100%!important;grid-template-columns:repeat(3,1fr)!important}.korona-home h1{font-size:32px!important}.browser-window{height:calc(100vh - 132px)!important;min-height:430px!important}.browser-tab{min-width:125px!important;flex-basis:125px!important}#settingsPage .theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.apps-grid{grid-template-columns:1fr!important}}
+</style>
+
+
+<style id="korona-browser-fix">
+body{overflow:auto!important}
+#iframeContainer{display:block!important}
+.browser-newtab{position:absolute;inset:0;z-index:2;display:grid;place-items:center;align-content:center;text-align:center;background:radial-gradient(circle at 50% 38%,rgba(217,182,76,.055),transparent 32%),#0f0d08;color:#a99a62}
+.newtab-k{width:58px;height:58px;display:grid;place-items:center;margin:0 auto 14px;border:1px solid #80661d;background:#28200b;color:#d9b64c;font-weight:800;font-size:25px}
+.browser-newtab h3{margin:0;color:#eee3bf;font-size:25px;font-weight:600;letter-spacing:-.5px}
+.browser-newtab p{margin:8px 0 6px;color:#887a4c;font-size:11px}
+.browser-newtab span{color:#625938;font-size:10px}
+</style>
+
 </head>
 
 
@@ -3722,59 +3722,19 @@ body {
 <div id="app">
 
 
-    <!-- TOP BAR -->
-
-    <header class="topbar">
-
-        <div class="brand">
-            <span class="brand-icon">K</span>
-            <div class="brand-copy">
-                <strong>Korona</strong>
-                <small>Browser</small>
-            </div>
-        </div>
-
-
-        <nav class="nav">
-
-            <button class="nav-button active" data-page="proxy">
-                <span class="nav-symbol">?</span><span>Proxy</span>
-            </button>
-
-            <button class="nav-button" data-page="games">
-                <span class="nav-symbol">?</span><span>Games</span>
-            </button>
-
-            <button class="nav-button" data-page="bookmarks">
-                <span class="nav-symbol">?</span><span>Bookmarks</span>
-            </button>
-
-            <button class="nav-button" data-page="settings">
-                <span class="nav-symbol">?</span><span>Settings</span>
-            </button>
-
-            <button class="nav-button" data-page="about">
-                <span class="nav-symbol">?</span><span>About</span>
-            </button>
-
-        </nav>
-
-
-        <div class="online">
-
-            <span class="online-dot"></span>
-
-            SYSTEM ONLINE
-
-        </div>
-
-        <div class="version-indicator" title="Korona build version">
-            BUILD <span id="fernVersion">v2.0.0</span>
-        </div>
-
-    </header>
-
-
+    <!-- KORONA SIDEBAR -->
+    <aside class="korona-sidebar" id="koronaSidebar">
+      <div class="sidebar-brand"><div class="sidebar-mark">K</div><div><strong>korona</strong><span>browser</span></div></div>
+      <nav class="sidebar-nav">
+        <button class="nav-button active" data-page="home"><span class="sidebar-icon">⌂</span><span>Home</span></button>
+        <button class="nav-button" data-page="games"><span class="sidebar-icon">⌘</span><span>Games</span></button>
+        <button class="nav-button" data-page="apps"><span class="sidebar-icon">▣</span><span>Apps</span></button>
+        <button class="nav-button" data-page="proxy"><span class="sidebar-icon">◎</span><span>Browser</span></button>
+        <button class="nav-button" data-page="settings"><span class="sidebar-icon">⚙</span><span>Settings</span></button>
+        <button class="nav-button" data-page="account"><span class="sidebar-icon">♙</span><span>Account</span></button>
+      </nav>
+      <div class="sidebar-bottom"><div class="sidebar-status"><span></span> online</div><div class="sidebar-version">Korona v2.1</div></div>
+    </aside>
 
     <!-- CONTENT -->
 
@@ -3782,81 +3742,81 @@ body {
 
 
         <!-- =================================================
+             HOME PAGE
+             ================================================= -->
+        <section class="page active" id="homePage">
+          <div class="korona-home">
+            <div class="korona-home-copy">
+              <div class="browser-eyebrow">KORONA BROWSER</div>
+              <h1>your web, <span>your tabs.</span></h1>
+              <p>Open websites in separate tabs, keep your sessions organized, and jump into your game library without leaving Korona.</p>
+              <div class="home-actions">
+                <button class="korona-large-button" data-page-jump="proxy">Open Browser</button>
+                <button class="korona-large-button secondary" data-page-jump="games">Browse Games</button>
+              </div>
+            </div>
+            <div class="home-stat-grid">
+              <div class="home-stat"><strong id="homeTabCount">1</strong><span>browser tabs</span></div>
+              <div class="home-stat"><strong>∞</strong><span>websites</span></div>
+              <div class="home-stat"><strong>⌁</strong><span>Scramjet ready</span></div>
+            </div>
+          </div>
+          <div class="quick-launch-panel">
+            <div class="panel-heading"><span>quick launch</span><small>open a site in a new tab</small></div>
+            <div class="quick-launch-grid">
+              <button class="quick-site" data-url="https://www.google.com"><span>G</span>Google</button>
+              <button class="quick-site" data-url="https://www.youtube.com"><span>▶</span>YouTube</button>
+              <button class="quick-site" data-url="https://chatgpt.com"><span>AI</span>ChatGPT</button>
+              <button class="quick-site" data-url="https://www.wikipedia.org"><span>W</span>Wikipedia</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================
+             APPS PAGE
+             ================================================= -->
+        <section class="page" id="appsPage">
+          <div class="section-header"><div class="eyebrow">KORONA APPS</div><h2>Apps</h2><p>Launch your frequently used websites as browser tabs.</p></div>
+          <div class="apps-grid">
+            <button class="app-tile" data-url="https://chatgpt.com"><span class="app-letter">AI</span><strong>ChatGPT</strong><small>chatgpt.com</small></button>
+            <button class="app-tile" data-url="https://www.youtube.com"><span class="app-letter">▶</span><strong>YouTube</strong><small>youtube.com</small></button>
+            <button class="app-tile" data-url="https://www.google.com"><span class="app-letter">G</span><strong>Google</strong><small>google.com</small></button>
+            <button class="app-tile" data-url="https://www.wikipedia.org"><span class="app-letter">W</span><strong>Wikipedia</strong><small>wikipedia.org</small></button>
+            <button class="app-tile" data-url="https://www.reddit.com"><span class="app-letter">R</span><strong>Reddit</strong><small>reddit.com</small></button>
+            <button class="app-tile" data-url="https://github.com"><span class="app-letter">GH</span><strong>GitHub</strong><small>github.com</small></button>
+          </div>
+        </section>
+
+        <!-- =================================================
              PROXY PAGE
              ================================================= -->
 
-        <section
-            class="page active"
-            id="proxyPage"
-        >
-
-            <div class="hero">
-
-                <h2>
-                    Welcome to <span>Korona</span>
-                </h2>
-
-
-                <p id="welcomeJoke">
-                    Loading questionable technology...
-                </p>
-
-
-                <div class="proxy-controls">
-
-                    <input
-                        type="text"
-                        id="urlInput"
-                        placeholder="Enter URL here..."
-                        autocomplete="off"
-                    >
-
-
-                    <button id="searchButton">
-                        Launch
-                    </button>
-
-                </div>
-
+        <section class="page" id="proxyPage">
+          <div class="browser-page">
+            <div class="browser-topline">
+              <div><div class="browser-eyebrow">KORONA BROWSER</div><h2>Browser</h2></div>
+              <div class="browser-status"><span></span> secure session</div>
             </div>
-
-
-            <div class="iframe-container" id="iframeContainer">
-
-                <div class="proxy-opening-overlay" id="proxyOpeningOverlay">
-                    <div class="proxy-opening-text">OPENING WINDOW...</div>
-                </div>
-
-                <div class="iframe-toolbar">
-
-                    <button
-                        id="fullscreenButton"
-                        title="Fullscreen"
-                    >
-                        ?
-                    </button>
-
-                    <button
-                        id="reloadButton"
-                        title="Reload"
-                    >
-                        ?
-                    </button>
-
-                </div>
-
-
-                <iframe
-                    id="iframeWindow"
-                    title="Fern"
-                    allow="fullscreen; autoplay; gamepad"
-                    allowfullscreen
-                    loading="eager"
-                    referrerpolicy="no-referrer"
-                ></iframe>
-
+            <div class="browser-window" id="browserWindow">
+              <div class="browser-tabs" id="browserTabs">
+                <button class="browser-tab active" data-tab-id="tab-1" type="button"><span class="tab-favicon">K</span><span class="tab-title">New Tab</span><span class="tab-close" title="Close tab">×</span></button>
+                <button class="new-tab-button" id="newTabButton" title="New tab" type="button">+</button>
+              </div>
+              <div class="browser-toolbar">
+                <button class="browser-nav-button" id="browserBack" title="Back" type="button">←</button>
+                <button class="browser-nav-button" id="browserForward" title="Forward" type="button">→</button>
+                <button class="browser-nav-button" id="browserRefresh" title="Refresh" type="button">↻</button>
+                <button class="browser-nav-button" id="browserHome" title="New tab" type="button">⌂</button>
+                <div class="browser-address"><span class="address-lock">⌕</span><input id="urlInput" type="text" placeholder="Search or enter a website address" autocomplete="off"><button id="searchButton" title="Go" type="button">↵</button></div>
+                <button class="browser-nav-button" id="browserFullscreen" title="Fullscreen browser" type="button">⛶</button>
+              </div>
+              <div class="iframe-container" id="iframeContainer">
+                <div class="browser-frames" id="browserFrames"><div class="browser-newtab" id="browserNewTab"><div class="newtab-k">K</div><h3>korona</h3><p>Search the web or enter a website address above.</p><span>+ opens a new tab</span></div></div>
+                <div class="proxy-opening-overlay" id="proxyOpeningOverlay"><div class="proxy-opening-text">OPENING WINDOW...</div></div>
+                <div class="iframe-toolbar"><button id="fullscreenButton" title="Press and hold for fullscreen" type="button">⛶</button><button id="reloadButton" title="Reload current site" type="button">↻</button></div>
+              </div>
             </div>
-
+          </div>
         </section>
 
 
@@ -3873,7 +3833,7 @@ body {
             </div>
             <div class="bookmarks-panel" id="bookmarksPanel">
                 <div class="empty-state">
-                    <div class="empty-icon">?</div>
+                    <div class="empty-icon">♡</div>
                     <h3>No bookmarks yet</h3>
                     <p>Use the star on a game card to save it here.</p>
                     <button class="empty-action" data-page-jump="games">Browse library</button>
@@ -3891,11 +3851,20 @@ body {
                 <p>A clean home for your browser tools and game library.</p>
             </div>
             <div class="about-grid">
-                <div class="about-card"><span class="about-icon">?</span><div><strong>Korona</strong><small>Build <span id="aboutVersion">v2.0.0</span></small></div></div>
-                <div class="about-card"><span class="about-icon">?</span><div><strong>Proxy</strong><small>Launch URLs through your configured Fern proxy.</small></div></div>
-                <div class="about-card"><span class="about-icon">?</span><div><strong>Library</strong><small>Game artwork is loaded automatically when available.</small></div></div>
-                <div class="about-card"><span class="about-icon">?</span><div><strong>Bookmarks</strong><small>Saved locally in this browser.</small></div></div>
+                <div class="about-card"><span class="about-icon">✦</span><div><strong>Korona</strong><small>Build <span id="aboutVersion">v2.1.0</span></small></div></div>
+                <div class="about-card"><span class="about-icon">⌁</span><div><strong>Proxy</strong><small>Launch URLs through your configured Fern proxy.</small></div></div>
+                <div class="about-card"><span class="about-icon">▦</span><div><strong>Library</strong><small>Game artwork is loaded automatically when available.</small></div></div>
+                <div class="about-card"><span class="about-icon">♡</span><div><strong>Bookmarks</strong><small>Saved locally in this browser.</small></div></div>
             </div>
+        </section>
+
+        <!-- =================================================
+             ACCOUNT PAGE
+             ================================================= -->
+        <section class="page" id="accountPage">
+          <div class="section-header"><div class="eyebrow">KORONA ACCOUNT</div><h2>Account</h2><p>Your Korona identity and local browser preferences.</p></div>
+          <div class="account-card"><div class="account-avatar">K</div><div class="account-details"><span class="account-label">Korona ID</span><strong id="accountUserId">Not signed in</strong><small id="accountUserName">Your account information will appear here.</small></div></div>
+          <div class="account-card compact"><div><strong>Browser session</strong><small>Authentication is checked against your Korona account.</small></div><span class="account-online-dot"></span></div>
         </section>
 
         <!-- =================================================
@@ -3909,7 +3878,7 @@ body {
 
             <div class="section-header">
                 <h2>Settings</h2>
-                <p>Customize the Korona interface.</p>
+                <p>Make Korona look and behave the way you want.</p>
             </div>
 
             <div class="settings-panel">
@@ -3917,7 +3886,7 @@ body {
                 <div class="settings-section">
                     <div>
                         <h3>Theme</h3>
-                        <p>Choose the look of Fern.</p>
+                        <p>Choose a color theme for the site. Changes apply immediately and persist across sessions.</p>
                     </div>
 
                     <div class="theme-grid" id="themeGrid">
@@ -4040,7 +4009,7 @@ body {
                 <div class="settings-section settings-about">
                     <div>
                         <h3>About Korona</h3>
-                        <p>Korona build <span id="settingsVersion">v2.0.0</span></p>
+                        <p>Korona build <span id="settingsVersion">v2.1.0</span></p>
                     </div>
                 </div>
 
@@ -4060,12 +4029,12 @@ body {
             <div class="section-header library-heading">
                 <div>
                     <div class="eyebrow">KORONA LIBRARY</div>
-                    <h2>Game Library <span class="heading-spark">?</span></h2>
+                    <h2>Game Library <span class="heading-spark">✦</span></h2>
                     <p>Pick a game and have fun.</p>
                 </div>
                 <div class="library-controls">
                     <div class="library-search">
-                        <span>?</span>
+                        <span>⌕</span>
                         <input id="gameSearch" type="search" placeholder="Search games..." autocomplete="off">
                     </div>
                     <select id="gameFilter" aria-label="Filter games">
@@ -4377,6 +4346,14 @@ if (koronaSavedUser) {
     showKoronaSetup();
 }
 
+function refreshKoronaAccountPage(){
+  const user=getKoronaLocalUser(),idEl=document.getElementById("accountUserId"),nameEl=document.getElementById("accountUserName");
+  if(!idEl||!nameEl)return;
+  if(user){idEl.textContent=user.id||"Unknown";nameEl.textContent=[user.first_name,user.last_name].filter(Boolean).join(" ")||"Korona account";}
+  else{idEl.textContent="Not signed in";nameEl.textContent="Your account information will appear here.";}
+}
+refreshKoronaAccountPage();
+
 /* ============================================================
    NAVIGATION
    ============================================================ */
@@ -4437,186 +4414,146 @@ navButtons.forEach(button => {
 
 
 
-/* ============================================================
-   GAME / SITE SHORTCUTS
-   ============================================================ */
-
-function openInProxy(targetURL) {
-
-    const proxyButton =
-        document.querySelector(
-            '.nav-button[data-page="proxy"]'
-        );
-
-    if (proxyButton) {
-        proxyButton.click();
-    }
-
-    launchURL(targetURL);
-}
-
+document.querySelectorAll("[data-page-jump]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    document.querySelector(`.nav-button[data-page="${button.dataset.pageJump}"]`)?.click();
+  });
+});
 
 /* ============================================================
-   URL LAUNCHER
+   KORONA TABBED BROWSER
    ============================================================ */
 
-const urlInput =
-    document.getElementById(
-        "urlInput"
-    );
+const urlInput = document.getElementById("urlInput");
+const iframeContainer = document.getElementById("iframeContainer");
+const browserFrames = document.getElementById("browserFrames");
+const browserTabs = document.getElementById("browserTabs");
+const proxyOpeningOverlay = document.getElementById("proxyOpeningOverlay");
+const browserNewTab = document.getElementById("browserNewTab");
+const newTabButton = document.getElementById("newTabButton");
+const homeTabButton = document.getElementById("browserHome");
+const backButton = document.getElementById("browserBack");
+const forwardButton = document.getElementById("browserForward");
+const refreshButton = document.getElementById("browserRefresh");
 
+let iframeWindow = null;
+let tabCounter = 1;
+let activeTabId = "tab-1";
 
-let iframeWindow =
-    document.getElementById(
-        "iframeWindow"
-    );
+const koronaTabs = new Map([["tab-1",{id:"tab-1",title:"New Tab",url:"",frame:null}]]);
 
-
-const iframeContainer =
-    document.getElementById(
-        "iframeContainer"
-    );
-
-
-function setProxyFrameVisible(visible) {
-    if (!iframeContainer) return;
-    const active = !!visible;
-    iframeContainer.classList.toggle("fern-visible", active);
-    document.body.classList.toggle("fern-proxy-active", active);
+function getActiveTab(){return koronaTabs.get(activeTabId);}
+function normalizeURL(value){
+  let url=String(value||"").trim();
+  if(!url)return "";
+  if(!/^https?:\/\//i.test(url)){
+    if(/^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(url)) url="https://"+url;
+    else url="https://www.google.com/search?q="+encodeURIComponent(url);
+  }
+  return url;
 }
-
-// Never show the empty proxy window on startup.
-setProxyFrameVisible(false);
-
-
-const proxyOpeningOverlay =
-    document.getElementById(
-        "proxyOpeningOverlay"
-    );
-
-
-const FERN_VERSION =
-    document.querySelector('meta[name="fern-version"]')?.content ||
-    "unknown";
-
-const versionDisplay =
-    document.getElementById("fernVersion");
-
-if (versionDisplay) {
-    versionDisplay.textContent = "v" + FERN_VERSION;
+function getSiteTitle(url){try{return new URL(url).hostname.replace(/^www\./,"")||"New Tab";}catch{return"New Tab";}}
+function getSiteIcon(url){try{return new URL(url).hostname.replace(/^www\./,"").slice(0,1).toUpperCase()||"K";}catch{return"K";}}
+function updateHomeTabCount(){const el=document.getElementById("homeTabCount");if(el)el.textContent=String(koronaTabs.size);}
+function renderTabButtons(){
+  browserTabs?.querySelectorAll(".browser-tab").forEach(button=>{
+    const tab=koronaTabs.get(button.dataset.tabId);
+    if(!tab){button.remove();return;}
+    button.classList.toggle("active",tab.id===activeTabId);
+    const title=button.querySelector(".tab-title"),icon=button.querySelector(".tab-favicon");
+    if(title)title.textContent=tab.title||"New Tab";
+    if(icon)icon.textContent=tab.url?getSiteIcon(tab.url):"K";
+  });
+  updateHomeTabCount();
 }
-
-
-// Show the proxy window when the user enters a link, but do not load anything
-// until Launch is pressed. Clearing the URL hides the empty window again.
-if (urlInput) {
-    urlInput.addEventListener("input", () => {
-        const value = urlInput.value.trim();
-        setProxyFrameVisible(value.length > 0);
-    });
+function createTabButton(tab){
+  const button=document.createElement("button");
+  button.className="browser-tab";button.dataset.tabId=tab.id;button.type="button";
+  button.innerHTML='<span class="tab-favicon">K</span><span class="tab-title">New Tab</span><span class="tab-close" title="Close tab">×</span>';
+  button.addEventListener("click",event=>{
+    if(event.target.closest(".tab-close")){closeBrowserTab(tab.id);return;}
+    switchBrowserTab(tab.id);
+  });
+  browserTabs.insertBefore(button,newTabButton);renderTabButtons();
 }
-
-async function launchURL(targetURL = null) {
-
-    let url =
-        targetURL ||
-        urlInput.value.trim();
-
-
-    if (!url) {
-
-        return;
-
-    }
-
-
-    if (
-        !url.startsWith("http://") &&
-        !url.startsWith("https://")
-    ) {
-
-        url =
-            "https://" + url;
-
-    }
-
-
-    // A proxy window should only exist after a URL has actually been entered.
-    setProxyFrameVisible(true);
-
-    // Do not force a reflow or animate the iframe: both add latency when a
-    // proxied page is doing heavy JavaScript/WebGL work.
-    if (proxyOpeningOverlay) proxyOpeningOverlay.classList.remove("show");
-
-
-    try {
-        const frame =
-            await createFernScramjetFrame();
-
-        await frame.go(url);
-
-        return;
-    } catch (error) {
-        console.error(
-            "Scramjet launch failed:",
-            error
-        );
-
-        if (proxyOpeningOverlay) {
-            proxyOpeningOverlay.classList.add("show");
-        }
-
-        return;
-    }
-
+function createBrowserTab(initialURL=""){
+  const id="tab-"+(++tabCounter),tab={id,title:"New Tab",url:"",frame:null};
+  koronaTabs.set(id,tab);createTabButton(tab);switchBrowserTab(id);
+  if(initialURL)launchURL(initialURL,id);return tab;
 }
-
-
-
-
-document
-    .getElementById("searchButton")
-    .addEventListener(
-        "click",
-        launchURL
-    );
-
-
-urlInput.addEventListener(
-    "keydown",
-    event => {
-
-        if (event.key === "Enter") {
-
-            launchURL();
-
-        }
-
-    }
-);
-
-
-
-/* ============================================================
-   IFRAME RELOAD
-   ============================================================ */
-
-document
-    .getElementById("reloadButton")
-    .addEventListener(
-        "click",
-        () => {
-
-            if (iframeWindow.src) {
-
-                iframeWindow.contentWindow.location.reload();
-
-            }
-
-        }
-    );
-
-
+function switchBrowserTab(id){
+  if(!koronaTabs.has(id))return;
+  activeTabId=id;
+  koronaTabs.forEach(tab=>{if(tab.frame?.frame)tab.frame.frame.style.display=tab.id===id?"block":"none";});
+  const tab=getActiveTab();iframeWindow=tab?.frame?.frame||null;
+  if(browserNewTab) browserNewTab.style.display = tab?.url ? "none" : "grid";
+  if(urlInput)urlInput.value=tab?.url||"";
+  renderTabButtons();setProxyFrameVisible(!!tab?.url);
+}
+function closeBrowserTab(id){
+  const tab=koronaTabs.get(id);if(!tab)return;
+  if(tab.frame?.frame)tab.frame.frame.remove();koronaTabs.delete(id);
+  if(!koronaTabs.size){
+    const replacement={id:"tab-1",title:"New Tab",url:"",frame:null};
+    koronaTabs.set(replacement.id,replacement);activeTabId=replacement.id;tabCounter=Math.max(tabCounter,1);
+    createTabButton(replacement);switchBrowserTab(replacement.id);return;
+  }
+  if(activeTabId===id)switchBrowserTab(Array.from(koronaTabs.keys()).pop());else renderTabButtons();
+}
+function setProxyFrameVisible(visible){
+  if(!iframeContainer)return;
+  iframeContainer.classList.toggle("fern-visible",!!visible);
+  document.body.classList.toggle("fern-proxy-active",!!visible);
+}
+function setTabLoading(loading){
+  const tab=getActiveTab();if(!tab)return;
+  browserTabs?.querySelector(`[data-tab-id="${tab.id}"]`)?.classList.toggle("loading",loading);
+}
+async function launchURL(targetURL=null,targetTabId=activeTabId){
+  const tab=koronaTabs.get(targetTabId);if(!tab)return;
+  const raw=targetURL===null||targetURL===undefined?(urlInput?.value||""):targetURL;
+  const url=normalizeURL(raw);if(!url)return;
+  activeTabId=targetTabId;tab.url=url;tab.title=getSiteTitle(url);
+  if(urlInput)urlInput.value=url;
+  if(browserNewTab) browserNewTab.style.display="none";
+  setProxyFrameVisible(true);setTabLoading(true);
+  if(proxyOpeningOverlay)proxyOpeningOverlay.classList.remove("show");
+  try{
+    if(!tab.frame)tab.frame=await createFernScramjetFrame(tab.id,browserFrames);
+    iframeWindow=tab.frame.frame;
+    koronaTabs.forEach(other=>{if(other.frame?.frame)other.frame.frame.style.display=other.id===tab.id?"block":"none";});
+    await tab.frame.go(url);tab.title=getSiteTitle(url);renderTabButtons();
+  }catch(error){
+    console.error("Korona Scramjet launch failed:",error);
+    if(proxyOpeningOverlay)proxyOpeningOverlay.classList.add("show");
+  }finally{setTabLoading(false);renderTabButtons();}
+}
+function openBrowserTab(targetURL){
+  const tab=createBrowserTab();
+  document.querySelector('.nav-button[data-page="proxy"]')?.click();
+  if(targetURL)launchURL(targetURL,tab.id);return tab;
+}
+function openInProxy(targetURL){return openBrowserTab(targetURL);}
+newTabButton?.addEventListener("click",()=>createBrowserTab());
+urlInput?.addEventListener("keydown",event=>{if(event.key==="Enter")launchURL();});
+document.getElementById("searchButton")?.addEventListener("click",()=>launchURL());
+refreshButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.location.reload();}catch(_){}});
+backButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.history.back();}catch(_){}});
+forwardButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.history.forward();}catch(_){}});
+homeTabButton?.addEventListener("click",()=>{
+  const tab=getActiveTab();if(!tab)return;
+  if(tab.frame?.frame)tab.frame.frame.remove();tab.frame=null;tab.url="";tab.title="New Tab";
+  if(urlInput)urlInput.value="";
+  if(browserNewTab) browserNewTab.style.display="grid";
+  setProxyFrameVisible(true);renderTabButtons();
+});
+document.getElementById("browserFullscreen")?.addEventListener("click",()=>{
+  if(iframeContainer?.requestFullscreen&&!document.fullscreenElement)iframeContainer.requestFullscreen().catch(()=>{});
+});
+document.addEventListener("click",event=>{
+  const launcher=event.target.closest(".quick-site,.app-tile");if(!launcher)return;openBrowserTab(launcher.dataset.url);
+});
+createTabButton(koronaTabs.get("tab-1"));switchBrowserTab("tab-1");
 
 /* ============================================================
    FULLSCREEN — PRESS AND HOLD + KEYBOARD LOCK
@@ -4643,7 +4580,7 @@ function updateFullscreenUI() {
     const active = fullscreenIsActive();
     const held = fullscreenMouseHeld || fullscreenTouchHeld;
 
-    fullscreenButton.textContent = active ? "?" : "?";
+    fullscreenButton.textContent = active ? "✕" : "⛶";
     fullscreenButton.title = active
         ? "Fullscreen active — hold Esc to exit"
         : "Press and hold for fullscreen";
@@ -4887,18 +4824,9 @@ updateFullscreenUI();
    ============================================================ */
 
 function openGame(targetURL) {
-    const proxyButton = document.querySelector('.nav-button[data-page="proxy"]');
-    if (proxyButton) proxyButton.click();
-
-    launchURL(targetURL);
-
-    // Try to enter fullscreen immediately from the card's user gesture.
-    // If the browser blocks programmatic fullscreen, the existing toolbar
-    // fullscreen button remains available.
-    const container = document.getElementById("iframeContainer");
-    if (container && document.fullscreenElement !== container && container.requestFullscreen) {
-        container.requestFullscreen().catch(() => {});
-    }
+    openBrowserTab(targetURL);
+    const container=document.getElementById("iframeContainer");
+    if(container && document.fullscreenElement!==container && container.requestFullscreen) container.requestFullscreen().catch(()=>{});
 }
 
 
@@ -5040,7 +4968,7 @@ function renderGames() {
         star.className = 'bookmark-button' + (isBookmarked(index) ? ' saved' : '');
         star.type = 'button';
         star.title = isBookmarked(index) ? 'Remove bookmark' : 'Bookmark game';
-        star.textContent = isBookmarked(index) ? '?' : '?';
+        star.textContent = isBookmarked(index) ? '★' : '☆';
         star.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleBookmark(index); });
 
         top.appendChild(title);
@@ -5076,7 +5004,7 @@ function renderBookmarks() {
     if (!panel) return;
     const bookmarks = getBookmarks();
     if (!bookmarks.length) {
-        panel.innerHTML = `<div class="empty-state"><div class="empty-icon">?</div><h3>No bookmarks yet</h3><p>Use the star on a game card to save it here.</p><button class="empty-action" data-page-jump="games">Browse library</button></div>`;
+        panel.innerHTML = `<div class="empty-state"><div class="empty-icon">♡</div><h3>No bookmarks yet</h3><p>Use the star on a game card to save it here.</p><button class="empty-action" data-page-jump="games">Browse library</button></div>`;
         panel.querySelector('[data-page-jump]')?.addEventListener('click', () => document.querySelector('.nav-button[data-page="games"]')?.click());
         return;
     }
@@ -5193,7 +5121,7 @@ function setDiagnosticLine(label, value, ok = null) {
 
     const line = document.createElement("div");
     line.textContent =
-        (ok === true ? "? " : ok === false ? "? " : "• ") +
+        (ok === true ? "✓ " : ok === false ? "✕ " : "• ") +
         label + ": " + value;
 
     if (ok === true) line.style.color = "var(--green)";
@@ -5661,4 +5589,4 @@ randomJoke();
 </script>
 
 </body>
-</html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+</html>
