@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Fern</title>
+    <title>Korona</title>
 
     <meta name="fern-version" content="2.0.0">
 
@@ -185,6 +185,9 @@
             return fernScramjetFrame;
         }
     </script>
+
+    <!-- Korona authentication -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -1622,7 +1625,7 @@
         }
 
         .theme-card.active::after {
-            content: "✓";
+            content: "?";
             margin-left: auto;
             color: var(--green);
             font-weight: 900;
@@ -2135,7 +2138,7 @@
         .game-card h3 { margin:0 !important; flex:1; font-size:14px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .game-card p { min-height:30px; margin:6px 0 12px !important; font-size:11px !important; color:var(--muted); line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .game-card a { padding:9px 11px !important; border-radius:10px !important; color:var(--text) !important; background:color-mix(in srgb,var(--green) 9%,transparent) !important; border-color:var(--border) !important; text-align:left !important; font-size:11px !important; }
-        .game-card a::after { content:"↗"; float:right; color:var(--green); font-size:14px; }
+        .game-card a::after { content:"?"; float:right; color:var(--green); font-size:14px; }
         .bookmark-button { width:30px; height:30px; flex:0 0 30px; border:1px solid var(--border); border-radius:9px; background:rgba(255,255,255,.035); color:var(--muted); cursor:pointer; font-size:16px; transition:.2s ease; }
         .bookmark-button:hover,.bookmark-button.saved { color:var(--green); border-color:var(--border-bright); background:color-mix(in srgb,var(--green) 10%,transparent); }
         .joke-card { margin-top:20px !important; }
@@ -2426,7 +2429,7 @@
             display: none !important;
         }
         .game-card-top::before {
-            content: '▶';
+            content: '?';
             color: var(--green);
             font-size: 10px;
             margin-right: 2px;
@@ -3493,6 +3496,142 @@ body.fern-proxy-active .fern-mist-layer {
     }
 }
 </style>
+
+<style id="korona-ui-overrides">
+:root {
+    --bg: #12020b; --bg-light: #210414; --panel: #210414; --panel-hover: #2b071a;
+    --green: #e63994; --green-dark: #b52b75; --green-soft: #ff9bc9;
+    --text: #fff1f7; --muted: #a87591;
+    --border: rgba(181,43,117,.24); --border-bright: rgba(230,57,148,.58);
+    --red: #ff4d79;
+}
+html, body { background:#12020b !important; color:#f3cbdc !important; font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif !important; }
+body {
+    background: radial-gradient(circle at 15% 10%,rgba(230,57,148,.08),transparent 30%),
+                radial-gradient(circle at 85% 90%,rgba(181,43,117,.06),transparent 32%),#12020b !important;
+}
+#loginScreen {
+    background:linear-gradient(rgba(230,57,148,.025) 1px,transparent 1px),
+               linear-gradient(90deg,rgba(230,57,148,.025) 1px,transparent 1px),#12020b !important;
+    background-size:42px 42px !important;
+}
+.korona-auth-box {
+    width:min(520px,100%) !important; padding:28px !important; background:#210414 !important;
+    border:1px solid #3d0a27 !important; border-radius:18px !important;
+    box-shadow:0 20px 70px rgba(0,0,0,.35) !important; backdrop-filter:none !important;
+}
+.korona-logo { display:flex !important; align-items:center !important; gap:12px !important; margin-bottom:5px !important; }
+.korona-icon {
+    width:48px !important; height:48px !important; display:flex !important; align-items:center !important;
+    justify-content:center !important; color:#fff !important; background:#3d0e28 !important;
+    border:1px solid #6b1847 !important; border-radius:10px !important; font-size:22px !important;
+    font-weight:800 !important; box-shadow:none !important;
+}
+.korona-logo h1 { color:white !important; font-size:42px !important; font-weight:700 !important; letter-spacing:-2px !important; margin:0 !important; }
+.korona-logo h1 span { color:#e63994 !important; text-shadow:none !important; }
+#loginTagline,.login-subtitle { color:#c99cb3 !important; font-size:14px !important; margin-bottom:20px !important; }
+.korona-auth-card { padding:22px !important; background:#210414 !important; border:1px solid #3d0a27 !important; border-radius:12px !important; }
+.korona-auth-title { color:white !important; font-size:19px !important; font-weight:600 !important; margin-bottom:20px !important; }
+.korona-field { margin-bottom:15px !important; text-align:left !important; }
+.korona-field label { display:block !important; margin-bottom:7px !important; color:#a87591 !important; font-size:12px !important; }
+.korona-field input,#auth-code,#first-name,#last-name {
+    width:100% !important; padding:13px 15px !important; background:#12020b !important;
+    border:1px solid #4a0d30 !important; border-radius:10px !important; outline:none !important;
+    color:white !important; font-size:15px !important;
+}
+.korona-field input:focus,#auth-code:focus,#first-name:focus,#last-name:focus {
+    border-color:#b52b75 !important; box-shadow:none !important;
+}
+.korona-primary {
+    width:100% !important; padding:13px 18px !important; margin-top:5px !important;
+    background:#3d0e28 !important; border:1px solid #6b1847 !important; border-radius:10px !important;
+    color:white !important; cursor:pointer !important; font-size:14px !important; font-weight:600 !important;
+}
+.korona-primary:hover { background:#b52b75 !important; border-color:#e63994 !important; transform:none !important; box-shadow:none !important; }
+.korona-message { min-height:20px !important; margin-top:15px !important; font-size:13px !important; color:#ff4d79 !important; }
+.korona-message.success { color:#63d6a0 !important; }
+.korona-user-id { margin-top:18px !important; color:#70445d !important; font-size:11px !important; }
+.korona-user-id strong { color:#c99cb3 !important; }
+.login-joke { color:#70445d !important; border-top-color:#301027 !important; }
+
+.topbar {
+    height:58px !important; min-height:58px !important; flex-basis:58px !important;
+    padding:9px 16px !important; gap:14px !important; background:#210414 !important;
+    border-bottom:1px solid #3d0a27 !important; backdrop-filter:none !important;
+}
+.brand { gap:9px !important; font-size:18px !important; }
+.brand-icon { color:#e63994 !important; text-shadow:none !important; font-weight:800 !important; }
+.brand-copy strong { color:#fff !important; } .brand-copy small { color:#a87591 !important; }
+.nav { gap:5px !important; }
+.nav-button {
+    padding:9px 12px !important; color:#c99cb3 !important; background:#1a0311 !important;
+    border:1px solid #3d0a27 !important; border-radius:8px !important;
+}
+.nav-button:hover,.nav-button.active { color:white !important; background:#3d0e28 !important; border-color:#6b1847 !important; }
+.online { color:#a87591 !important; }
+.online-dot { background:#e63994 !important; box-shadow:0 0 12px rgba(230,57,148,.7) !important; }
+.version-indicator { color:#70445d !important; }
+
+.hero,.settings-section,.bookmarks-panel,.about-grid,.library-controls,.game-card {
+    background:#210414 !important; border-color:#3d0a27 !important; border-radius:12px !important;
+    box-shadow:0 12px 35px rgba(0,0,0,.22) !important;
+}
+.hero { background:linear-gradient(135deg,rgba(230,57,148,.08),transparent 55%),#210414 !important; }
+.hero h2,.section-header h2,.game-card h3,.settings-section h3,.about-card strong { color:#fff !important; }
+.hero h2 span,.eyebrow,.heading-spark { color:#e63994 !important; text-shadow:none !important; }
+.hero p,.section-header p,.game-card p,.settings-section p,.about-card small { color:#a87591 !important; }
+
+#urlInput,.library-search input,select,#buttonStyleSelect {
+    background:#12020b !important; color:#fff !important; border:1px solid #4a0d30 !important; border-radius:10px !important;
+}
+#urlInput:focus,.library-search input:focus,select:focus { border-color:#b52b75 !important; box-shadow:none !important; }
+#searchButton,.empty-action,.bookmark-row button {
+    color:white !important; background:#3d0e28 !important; border:1px solid #6b1847 !important; border-radius:10px !important;
+}
+#searchButton:hover,.empty-action:hover,.bookmark-row button:hover { background:#b52b75 !important; border-color:#e63994 !important; }
+
+.iframe-container { background:#080408 !important; border:1px solid #4d1740 !important; border-radius:10px !important; }
+.iframe-toolbar button {
+    color:#e63994 !important; background:rgba(33,4,20,.94) !important; border:1px solid #6b1847 !important; border-radius:8px !important;
+}
+.iframe-toolbar button:hover { background:#b52b75 !important; color:white !important; box-shadow:none !important; }
+
+.game-card:hover,.theme-card:hover,.settings-section:hover { border-color:#6b1847 !important; }
+.game-card .game-media { border-radius:10px 10px 0 0 !important; }
+.bookmark-button { color:#e63994 !important; }
+.theme-card {
+    color:#f3cbdc !important; background:#1a0311 !important; border:1px solid #3d0a27 !important; border-radius:10px !important;
+}
+.theme-card.active,.theme-card:hover { background:#3d0e28 !important; border-color:#b52b75 !important; box-shadow:none !important; }
+.theme-fern { background:linear-gradient(135deg,#12020b,#e63994) !important; }
+.theme-midnight { background:linear-gradient(135deg,#090612,#8b5cf6) !important; }
+.theme-amber { background:linear-gradient(135deg,#160b02,#ffb020) !important; }
+.theme-ice { background:linear-gradient(135deg,#061016,#5de7ff) !important; }
+.theme-violet { background:linear-gradient(135deg,#0d0614,#b36bff) !important; }
+.theme-rose { background:linear-gradient(135deg,#160307,#ff6688) !important; }
+.theme-mono { background:linear-gradient(135deg,#070707,#d7d7d7) !important; }
+.theme-cyan { background:linear-gradient(135deg,#02100e,#20ffd4) !important; }
+.theme-light { background:linear-gradient(135deg,#f3f6f5,#087d3d) !important; }
+.theme-cyberpunk { background:linear-gradient(135deg,#10040e,#ff2dcc 48%,#00eaff) !important; }
+.theme-aurora { background:linear-gradient(135deg,#06100f,#63ffd0 52%,#7d8cff) !important; }
+.theme-sunset { background:linear-gradient(135deg,#12070a,#ff5e62 48%,#ffbd59) !important; }
+.theme-ocean { background:linear-gradient(135deg,#03101b,#43b8ff 52%,#6b7cff) !important; }
+.theme-dracula { background:linear-gradient(135deg,#0b0912,#bd93f9 52%,#ff79c6) !important; }
+
+.settings-toggle { background:#1a0311 !important; border-color:#3d0a27 !important; border-radius:10px !important; }
+#fernDiagnostics { background:#12020b !important; border-color:#3d0a27 !important; }
+#runDiagnosticsButton {
+    background:#210414 !important; color:#f3cbdc !important; border-color:#6b1847 !important; border-radius:10px !important;
+}
+.joke-card { background:#210414 !important; border-color:#3d0a27 !important; color:#a87591 !important; border-radius:12px !important; }
+
+@media (max-width:800px) {
+    .topbar { height:auto !important; min-height:58px !important; flex-wrap:wrap !important; }
+    .nav { order:3; width:100%; overflow-x:auto; }
+    .online,.version-indicator { display:none !important; }
+}
+</style>
+
 </head>
 
 
@@ -3509,55 +3648,65 @@ body.fern-proxy-active .fern-mist-layer {
 
 <div id="loginScreen">
 
-    <div class="login-box">
+    <div class="login-box korona-auth-box">
 
-        <div class="fern-logo">
-
-            <div class="fern-icon">
-                🌿
-            </div>
-
-            <h1>
-                Fern<span>.</span>
-            </h1>
-
+        <div class="fern-logo korona-logo">
+            <div class="fern-icon korona-icon">K</div>
+            <h1>korona<span>.</span></h1>
         </div>
 
+        <p class="login-subtitle" id="loginTagline">first-time setup</p>
 
-        <p class="login-subtitle">
-            Welcome back, mysterious internet person.
-        </p>
+        <div class="korona-auth-card" id="setup-card">
+            <div class="korona-auth-title">Create your Korona ID</div>
 
+            <div class="korona-field">
+                <label for="first-name">First name</label>
+                <input id="first-name" type="text" maxlength="40"
+                       autocomplete="given-name" placeholder="First name">
+            </div>
 
-        <label
-            class="field-label"
-            for="passwordInput"
-        >
-            Authentication
-        </label>
+            <div class="korona-field">
+                <label for="last-name">Last name</label>
+                <input id="last-name" type="text" maxlength="40"
+                       autocomplete="family-name" placeholder="Last name">
+            </div>
 
+            <button class="korona-primary" id="create-button" type="button">
+                Create Korona ID
+            </button>
 
-        <input
-            type="password"
-            id="passwordInput"
-            placeholder="Enter passcode..."
-            autocomplete="current-password"
-        >
+            <div id="setup-message" class="korona-message"></div>
+        </div>
 
+        <div class="korona-auth-card" id="login-card" style="display:none;">
+            <div class="korona-auth-title">Welcome back</div>
 
-        <button id="loginButton">
-            Enter Fern
-        </button>
+            <div class="korona-user-id">
+                Korona ID:
+                <strong id="login-user-id"></strong>
+            </div>
 
+            <div class="korona-field" style="margin-top:20px;">
+                <label for="auth-code">Authentication code</label>
+                <input id="auth-code" type="password" autocomplete="off"
+                       placeholder="Enter authentication code">
+            </div>
 
-        <div id="loginError"></div>
+            <button class="korona-primary" id="korona-login-button" type="button">
+                Unlock Korona
+            </button>
 
+            <div id="login-message" class="korona-message"></div>
+        </div>
 
-        <div
-            class="login-joke"
-            id="loginJoke"
-        >
-            The fern is judging your password.
+        <div class="korona-user-id" id="current-user" style="display:none;">
+            Korona ID:
+            <strong id="display-user-id"></strong>
+        </div>
+
+        <div class="login-joke" id="loginJoke">
+            The Korona gate is judging your credentials.
         </div>
 
     </div>
@@ -3578,10 +3727,10 @@ body.fern-proxy-active .fern-mist-layer {
     <header class="topbar">
 
         <div class="brand">
-            <span class="brand-icon">🌿</span>
+            <span class="brand-icon">K</span>
             <div class="brand-copy">
-                <strong>Fern</strong>
-                <small>Workspace</small>
+                <strong>Korona</strong>
+                <small>Browser</small>
             </div>
         </div>
 
@@ -3589,23 +3738,23 @@ body.fern-proxy-active .fern-mist-layer {
         <nav class="nav">
 
             <button class="nav-button active" data-page="proxy">
-                <span class="nav-symbol">⌁</span><span>Proxy</span>
+                <span class="nav-symbol">?</span><span>Proxy</span>
             </button>
 
             <button class="nav-button" data-page="games">
-                <span class="nav-symbol">▦</span><span>Games</span>
+                <span class="nav-symbol">?</span><span>Games</span>
             </button>
 
             <button class="nav-button" data-page="bookmarks">
-                <span class="nav-symbol">♡</span><span>Bookmarks</span>
+                <span class="nav-symbol">?</span><span>Bookmarks</span>
             </button>
 
             <button class="nav-button" data-page="settings">
-                <span class="nav-symbol">⚙</span><span>Settings</span>
+                <span class="nav-symbol">?</span><span>Settings</span>
             </button>
 
             <button class="nav-button" data-page="about">
-                <span class="nav-symbol">ⓘ</span><span>About</span>
+                <span class="nav-symbol">?</span><span>About</span>
             </button>
 
         </nav>
@@ -3619,8 +3768,8 @@ body.fern-proxy-active .fern-mist-layer {
 
         </div>
 
-        <div class="version-indicator" title="Fern build version">
-            BUILD <span id="fernVersion">v1.1.5</span>
+        <div class="version-indicator" title="Korona build version">
+            BUILD <span id="fernVersion">v2.0.0</span>
         </div>
 
     </header>
@@ -3644,7 +3793,7 @@ body.fern-proxy-active .fern-mist-layer {
             <div class="hero">
 
                 <h2>
-                    Welcome to <span>Fern</span>
+                    Welcome to <span>Korona</span>
                 </h2>
 
 
@@ -3684,14 +3833,14 @@ body.fern-proxy-active .fern-mist-layer {
                         id="fullscreenButton"
                         title="Fullscreen"
                     >
-                        ⛶
+                        ?
                     </button>
 
                     <button
                         id="reloadButton"
                         title="Reload"
                     >
-                        ↻
+                        ?
                     </button>
 
                 </div>
@@ -3724,7 +3873,7 @@ body.fern-proxy-active .fern-mist-layer {
             </div>
             <div class="bookmarks-panel" id="bookmarksPanel">
                 <div class="empty-state">
-                    <div class="empty-icon">♡</div>
+                    <div class="empty-icon">?</div>
                     <h3>No bookmarks yet</h3>
                     <p>Use the star on a game card to save it here.</p>
                     <button class="empty-action" data-page-jump="games">Browse library</button>
@@ -3737,15 +3886,15 @@ body.fern-proxy-active .fern-mist-layer {
              ================================================= -->
         <section class="page" id="aboutPage">
             <div class="section-header">
-                <div class="eyebrow">ABOUT FERN</div>
-                <h2>Fern Workspace</h2>
+                <div class="eyebrow">ABOUT KORONA</div>
+                <h2>Korona Browser</h2>
                 <p>A clean home for your browser tools and game library.</p>
             </div>
             <div class="about-grid">
-                <div class="about-card"><span class="about-icon">✦</span><div><strong>Fern</strong><small>Build <span id="aboutVersion">v1.1.5</span></small></div></div>
-                <div class="about-card"><span class="about-icon">⌁</span><div><strong>Proxy</strong><small>Launch URLs through your configured Fern proxy.</small></div></div>
-                <div class="about-card"><span class="about-icon">▦</span><div><strong>Library</strong><small>Game artwork is loaded automatically when available.</small></div></div>
-                <div class="about-card"><span class="about-icon">♡</span><div><strong>Bookmarks</strong><small>Saved locally in this browser.</small></div></div>
+                <div class="about-card"><span class="about-icon">?</span><div><strong>Korona</strong><small>Build <span id="aboutVersion">v2.0.0</span></small></div></div>
+                <div class="about-card"><span class="about-icon">?</span><div><strong>Proxy</strong><small>Launch URLs through your configured Fern proxy.</small></div></div>
+                <div class="about-card"><span class="about-icon">?</span><div><strong>Library</strong><small>Game artwork is loaded automatically when available.</small></div></div>
+                <div class="about-card"><span class="about-icon">?</span><div><strong>Bookmarks</strong><small>Saved locally in this browser.</small></div></div>
             </div>
         </section>
 
@@ -3760,7 +3909,7 @@ body.fern-proxy-active .fern-mist-layer {
 
             <div class="section-header">
                 <h2>Settings</h2>
-                <p>Customize the Fern interface.</p>
+                <p>Customize the Korona interface.</p>
             </div>
 
             <div class="settings-panel">
@@ -3775,7 +3924,7 @@ body.fern-proxy-active .fern-mist-layer {
 
                         <button class="theme-card" data-theme="fern">
                             <span class="theme-preview theme-fern"></span>
-                            <span>Fern</span>
+                            <span>Korona</span>
                         </button>
 
                         <button class="theme-card" data-theme="midnight">
@@ -3855,7 +4004,7 @@ body.fern-proxy-active .fern-mist-layer {
                     <div class="settings-toggle" style="margin-top:18px;">
                         <span>
                             <strong>Button style</strong>
-                            <small>Switch between Fern's standard controls and softer rounded buttons.</small>
+                            <small>Switch between Korona standard controls and softer rounded buttons.</small>
                         </span>
                         <select id="buttonStyleSelect" aria-label="Button style">
                             <option value="standard">Standard</option>
@@ -3866,7 +4015,7 @@ body.fern-proxy-active .fern-mist-layer {
                     <label class="settings-toggle">
                         <span>
                             <strong>Animations</strong>
-                            <small>Keep Fern's window and page animations enabled.</small>
+                            <small>Keep Korona window and page animations enabled.</small>
                         </span>
                         <input type="checkbox" id="animationsToggle" checked>
                     </label>
@@ -3876,11 +4025,11 @@ body.fern-proxy-active .fern-mist-layer {
                 <div class="settings-section">
                     <div>
                         <h3>Connection Diagnostics</h3>
-                        <p>Check Fern's UV setup without needing Developer Tools.</p>
+                        <p>Check Korona's proxy setup without needing Developer Tools.</p>
                     </div>
                     <div id="fernDiagnostics"
                          style="margin-top:18px;padding:14px;border:1px solid var(--border);background:var(--bg);font-family:monospace;font-size:12px;line-height:1.65;">
-                        Checking Fern...
+                        Checking Korona...
                     </div>
                     <button id="runDiagnosticsButton"
                             style="margin-top:12px;padding:10px 14px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer;border-radius:10px;">
@@ -3890,8 +4039,8 @@ body.fern-proxy-active .fern-mist-layer {
 
                 <div class="settings-section settings-about">
                     <div>
-                        <h3>About Fern</h3>
-                        <p>Fern build <span id="settingsVersion">v1.1.5</span></p>
+                        <h3>About Korona</h3>
+                        <p>Korona build <span id="settingsVersion">v2.0.0</span></p>
                     </div>
                 </div>
 
@@ -3910,13 +4059,13 @@ body.fern-proxy-active .fern-mist-layer {
 
             <div class="section-header library-heading">
                 <div>
-                    <div class="eyebrow">FERN LIBRARY</div>
-                    <h2>Game Library <span class="heading-spark">✦</span></h2>
+                    <div class="eyebrow">KORONA LIBRARY</div>
+                    <h2>Game Library <span class="heading-spark">?</span></h2>
                     <p>Pick a game and have fun.</p>
                 </div>
                 <div class="library-controls">
                     <div class="library-search">
-                        <span>⌕</span>
+                        <span>?</span>
                         <input id="gameSearch" type="search" placeholder="Search games..." autocomplete="off">
                     </div>
                     <select id="gameFilter" aria-label="Filter games">
@@ -3942,7 +4091,7 @@ body.fern-proxy-active .fern-mist-layer {
                         link: "https://game.com"
                     },
 
-                    That's it. Fern builds the cards automatically.
+                    That's it. Korona builds the cards automatically.
                     =====================================================
                 -->
 
@@ -3953,7 +4102,7 @@ body.fern-proxy-active .fern-mist-layer {
                 class="joke-card"
                 id="gameJoke"
             >
-                Fern is calculating how many games
+                Korona is calculating how many games
                 you can procrastinate with.
             </div>
 
@@ -3978,196 +4127,254 @@ body.fern-proxy-active .fern-mist-layer {
    FERN CONFIGURATION
    ============================================================ */
 
-const CORRECT_PASSWORD = "S1gmaGyat";
-const AUTH_KEY = "fern_authenticated";
-const COOKIE_NAME = "FernAuth";
+/* ============================================================
+   KORONA AUTHENTICATION
+   ============================================================ */
+
+const SUPABASE_URL = "https://wlzvcbisyueopwxcgwiv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
+
+const { createClient } = supabase;
+const koronaDB = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const KORONA_TABLE = "korona_users";
+const KORONA_LOCAL_USER = "korona_user";
 
 const jokes = [
     "Loading questionable technology...",
     "Reticulating splines...",
-    "Feeding the fern...",
+    "Feeding the Korona...",
     "Optimizing procrastination...",
-    "Bypassing quantum barriers..."
+    "Opening the royal browser...",
+    "The Korona gate is checking your credentials..."
 ];
 
-/* ============================================================
-   AUTHENTICATION / PERSISTENCE
-   ============================================================ */
-
-function storageAvailable() {
+function getKoronaLocalUser() {
     try {
-        const testKey = "__fern_storage_test__";
-        localStorage.setItem(testKey, "1");
-        localStorage.removeItem(testKey);
-        return true;
+        const raw = localStorage.getItem(KORONA_LOCAL_USER);
+        return raw ? JSON.parse(raw) : null;
     } catch (_) {
-        return false;
+        return null;
     }
 }
 
-function setAuthCookie() {
-    try {
-        if (location.protocol !== "http:" &&
-            location.protocol !== "https:") {
-            return false;
-        }
-
-        const maxAge = 60 * 60 * 24 * 365 * 20;
-        const secure = location.protocol === "https:" ? ";Secure" : "";
-
-        document.cookie =
-            COOKIE_NAME +
-            "=authenticated;" +
-            "Max-Age=" + maxAge +
-            ";Path=/;SameSite=Lax" +
-            secure;
-
-        return hasAuthCookie();
-    } catch (_) {
-        return false;
-    }
+function saveKoronaLocalUser(user) {
+    localStorage.setItem(KORONA_LOCAL_USER, JSON.stringify(user));
 }
 
-function hasAuthCookie() {
-    try {
-        return document.cookie
-            .split(";")
-            .some(cookie => {
-                const parts = cookie.trim().split("=");
-                return parts[0] === COOKIE_NAME &&
-                       parts.slice(1).join("=") === "authenticated";
-            });
-    } catch (_) {
-        return false;
-    }
+function makeKoronaUserId(first, last) {
+    const cleanFirst = first.trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const cleanLast = last.trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    return cleanFirst + "." + cleanLast;
 }
 
-function saveLocalAuthentication() {
-    try {
-        localStorage.setItem(AUTH_KEY, "authenticated");
-        return localStorage.getItem(AUTH_KEY) === "authenticated";
-    } catch (error) {
-        console.warn("Fern could not persist authentication:", error);
-        return false;
-    }
-}
-
-function hasLocalAuthentication() {
-    try {
-        return localStorage.getItem(AUTH_KEY) === "authenticated";
-    } catch (_) {
-        return false;
-    }
-}
-
-function clearLocalAuthentication() {
-    try {
-        localStorage.removeItem(AUTH_KEY);
-    } catch (_) {}
-}
-
-function isAuthenticated() {
-    if (hasLocalAuthentication()) return true;
-
-    if (location.protocol === "http:" ||
-        location.protocol === "https:") {
-        return hasAuthCookie();
-    }
-
-    return false;
+function showKoronaMessage(element, message, type = "error") {
+    if (!element) return;
+    element.textContent = message;
+    element.className = "korona-message " + type;
 }
 
 function showApplication() {
-    const loginScreen =
-        document.getElementById("loginScreen");
-
-    const app =
-        document.getElementById("app");
-
-    if (loginScreen) {
-        loginScreen.style.display = "none";
-    }
-
-    if (app) {
-        app.style.display = "flex";
-    }
+    const loginScreen = document.getElementById("loginScreen");
+    const app = document.getElementById("app");
+    if (loginScreen) loginScreen.style.display = "none";
+    if (app) app.style.display = "flex";
 }
 
 function showLogin() {
-    const loginScreen =
-        document.getElementById("loginScreen");
+    const loginScreen = document.getElementById("loginScreen");
+    const app = document.getElementById("app");
+    if (loginScreen) loginScreen.style.display = "flex";
+    if (app) app.style.display = "none";
+}
 
-    const app =
-        document.getElementById("app");
+function showKoronaSetup() {
+    document.getElementById("setup-card").style.display = "block";
+    document.getElementById("login-card").style.display = "none";
+    document.getElementById("current-user").style.display = "none";
+    document.getElementById("loginTagline").textContent = "first-time setup";
+}
 
-    if (loginScreen) {
-        loginScreen.style.display = "flex";
+function showKoronaLogin(user) {
+    document.getElementById("setup-card").style.display = "none";
+    document.getElementById("login-card").style.display = "block";
+    document.getElementById("current-user").style.display = "block";
+    document.getElementById("display-user-id").textContent = user.id;
+    document.getElementById("login-user-id").textContent = user.id;
+    document.getElementById("loginTagline").textContent = "enter credentials to unlock Korona";
+}
+
+async function createKoronaUser() {
+    const first = document.getElementById("first-name").value.trim();
+    const last = document.getElementById("last-name").value.trim();
+    const message = document.getElementById("setup-message");
+    const button = document.getElementById("create-button");
+
+    showKoronaMessage(message, "");
+
+    if (!first || !last) {
+        showKoronaMessage(message, "Enter both your first and last name.");
+        return;
     }
 
-    if (app) {
-        app.style.display = "none";
+    const id = makeKoronaUserId(first, last);
+
+    if (id.length < 3 || !id.includes(".")) {
+        showKoronaMessage(message, "Please enter a valid first and last name.");
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Creating...";
+
+    try {
+        const { data: existing, error: lookupError } = await koronaDB
+            .from(KORONA_TABLE)
+            .select("id")
+            .eq("id", id)
+            .limit(1);
+
+        if (lookupError) throw lookupError;
+
+        if (existing && existing.length > 0) {
+            showKoronaMessage(message, "That Korona ID already exists. Use a different name.");
+            return;
+        }
+
+        const { data, error } = await koronaDB
+            .from(KORONA_TABLE)
+            .insert({
+                id,
+                first_name: first,
+                last_name: last,
+                auth_code: "",
+                active: true
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        const user = {
+            id: data.id,
+            firstName: data.first_name,
+            lastName: data.last_name
+        };
+
+        saveKoronaLocalUser(user);
+        showKoronaLogin(user);
+        showKoronaMessage(
+            document.getElementById("login-message"),
+            "Korona ID created successfully.",
+            "success"
+        );
+    } catch (error) {
+        console.error("Korona create user error:", error);
+        showKoronaMessage(
+            message,
+            "Could not create ID: " + (error.message || "Unknown error")
+        );
+    } finally {
+        button.disabled = false;
+        button.textContent = "Create Korona ID";
     }
 }
 
-function authenticate() {
-    const input =
-        document.getElementById("passwordInput");
+async function authenticate() {
+    const user = getKoronaLocalUser();
+    const input = document.getElementById("auth-code");
+    const message = document.getElementById("login-message");
+    const button = document.getElementById("korona-login-button");
 
-    const error =
-        document.getElementById("loginError");
+    if (!user) {
+        showKoronaSetup();
+        return;
+    }
 
-    if (!input) return;
+    const code = input.value.trim();
 
-    if (input.value === CORRECT_PASSWORD) {
-        saveLocalAuthentication();
-        setAuthCookie();
+    if (!code) {
+        showKoronaMessage(message, "Enter your authentication code.");
+        return;
+    }
 
-        if (error) {
-            error.textContent = "";
+    button.disabled = true;
+    button.textContent = "Checking...";
+
+    try {
+        const { data, error } = await koronaDB
+            .from(KORONA_TABLE)
+            .select("id,first_name,last_name,auth_code,active")
+            .eq("id", user.id)
+            .limit(1)
+            .single();
+
+        if (error) throw error;
+
+        if (!data.active) {
+            showKoronaMessage(message, "Access has been revoked.");
+            return;
+        }
+
+        if (!data.auth_code) {
+            showKoronaMessage(
+                message,
+                "Your account has not been assigned an authentication code yet."
+            );
+            return;
+        }
+
+        if (data.auth_code !== code) {
+            showKoronaMessage(message, "Incorrect authentication code.");
+            input.value = "";
+            return;
         }
 
         input.value = "";
         showApplication();
         randomJoke();
-    } else {
-        if (error) {
-            error.textContent =
-                "Wrong password. The fern has lost respect for you.";
-        }
-
-        input.value = "";
-        input.focus();
+    } catch (error) {
+        console.error("Korona login error:", error);
+        showKoronaMessage(
+            message,
+            "Login failed: " + (error.message || "Unable to contact Supabase.")
+        );
+    } finally {
+        button.disabled = false;
+        button.textContent = "Unlock Korona";
     }
 }
 
-const loginButton =
-    document.getElementById("loginButton");
+const createButton = document.getElementById("create-button");
+if (createButton) createButton.addEventListener("click", createKoronaUser);
 
-if (loginButton) {
-    loginButton.addEventListener(
-        "click",
-        authenticate
-    );
+const koronaLoginButton = document.getElementById("korona-login-button");
+if (koronaLoginButton) koronaLoginButton.addEventListener("click", authenticate);
+
+const authCodeInput = document.getElementById("auth-code");
+if (authCodeInput) {
+    authCodeInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") authenticate();
+    });
 }
 
-const passwordInput =
-    document.getElementById("passwordInput");
+const firstNameInput = document.getElementById("first-name");
+const lastNameInput = document.getElementById("last-name");
 
-if (passwordInput) {
-    passwordInput.addEventListener(
-        "keydown",
-        event => {
-            if (event.key === "Enter") {
-                authenticate();
-            }
-        }
-    );
-}
+[firstNameInput, lastNameInput].forEach(input => {
+    if (!input) return;
+    input.addEventListener("keydown", event => {
+        if (event.key === "Enter") createKoronaUser();
+    });
+});
 
+const koronaSavedUser = getKoronaLocalUser();
 
-/* Migrate a previously saved Fern cookie into localStorage. */
-if (hasAuthCookie() && !hasLocalAuthentication()) {
-    saveLocalAuthentication();
+showLogin();
+if (koronaSavedUser) {
+    showKoronaLogin(koronaSavedUser);
+} else {
+    showKoronaSetup();
 }
 
 /* ============================================================
@@ -4436,7 +4643,7 @@ function updateFullscreenUI() {
     const active = fullscreenIsActive();
     const held = fullscreenMouseHeld || fullscreenTouchHeld;
 
-    fullscreenButton.textContent = active ? "✕" : "⛶";
+    fullscreenButton.textContent = active ? "?" : "?";
     fullscreenButton.title = active
         ? "Fullscreen active — hold Esc to exit"
         : "Press and hold for fullscreen";
@@ -4833,7 +5040,7 @@ function renderGames() {
         star.className = 'bookmark-button' + (isBookmarked(index) ? ' saved' : '');
         star.type = 'button';
         star.title = isBookmarked(index) ? 'Remove bookmark' : 'Bookmark game';
-        star.textContent = isBookmarked(index) ? '★' : '☆';
+        star.textContent = isBookmarked(index) ? '?' : '?';
         star.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleBookmark(index); });
 
         top.appendChild(title);
@@ -4869,7 +5076,7 @@ function renderBookmarks() {
     if (!panel) return;
     const bookmarks = getBookmarks();
     if (!bookmarks.length) {
-        panel.innerHTML = `<div class="empty-state"><div class="empty-icon">♡</div><h3>No bookmarks yet</h3><p>Use the star on a game card to save it here.</p><button class="empty-action" data-page-jump="games">Browse library</button></div>`;
+        panel.innerHTML = `<div class="empty-state"><div class="empty-icon">?</div><h3>No bookmarks yet</h3><p>Use the star on a game card to save it here.</p><button class="empty-action" data-page-jump="games">Browse library</button></div>`;
         panel.querySelector('[data-page-jump]')?.addEventListener('click', () => document.querySelector('.nav-button[data-page="games"]')?.click());
         return;
     }
@@ -4986,7 +5193,7 @@ function setDiagnosticLine(label, value, ok = null) {
 
     const line = document.createElement("div");
     line.textContent =
-        (ok === true ? "✓ " : ok === false ? "✕ " : "• ") +
+        (ok === true ? "? " : ok === false ? "? " : "• ") +
         label + ": " + value;
 
     if (ok === true) line.style.color = "var(--green)";
@@ -5178,18 +5385,15 @@ async function runFernDiagnostics() {
         );
     }
 
-    const localAuth = hasLocalAuthentication();
-    const cookieAuth =
-        webOrigin && hasAuthCookie();
+    const localUser = getKoronaLocalUser();
+    const koronaAuthReady = !!localUser;
 
     setDiagnosticLine(
-        "Fern authentication storage",
-        localAuth
-            ? "local authentication saved"
-            : cookieAuth
-                ? "cookie saved"
-                : "not currently saved",
-        localAuth || cookieAuth
+        "Korona authentication storage",
+        koronaAuthReady
+            ? "Korona ID saved locally"
+            : "no Korona ID saved",
+        koronaAuthReady
     );
 }
 
@@ -5204,9 +5408,9 @@ const FERN_BUTTON_STYLE_KEY = "fern_button_style";
 
 const FERN_THEMES = {
     fern: {
-        bg: "#030603", bgLight: "#071007", panel: "rgba(11, 18, 13, 0.85)", panelHover: "#101b13",
-        accent: "#00ff66", accentDark: "#00bd4b", accentSoft: "#7affad",
-        text: "#e9fff0", muted: "#769180", border: "rgba(0,255,102,.18)", borderBright: "rgba(0,255,102,.48)", mist1:"rgba(40,210,190,.18)", mist2:"rgba(80,55,180,.18)", mist3:"rgba(25,110,125,.13)"
+        bg: "#12020b", bgLight: "#210414", panel: "rgba(33, 4, 20, 0.88)", panelHover: "#2b071a",
+        accent: "#e63994", accentDark: "#b52b75", accentSoft: "#ff9bc9",
+        text: "#fff1f7", muted: "#a87591", border: "rgba(181,43,117,.22)", borderBright: "rgba(230,57,148,.55)", mist1:"rgba(230,57,148,.13)", mist2:"rgba(120,35,100,.12)", mist3:"rgba(70,15,45,.10)"
     },
     midnight: {
         bg: "#050612", bgLight: "#0a0d1d", panel: "rgba(11, 14, 32, 0.85)", panelHover: "#11152c",
@@ -5386,15 +5590,7 @@ document.querySelectorAll("[data-page-jump]").forEach(el => {
 const aboutVersion = document.getElementById("aboutVersion");
 if (aboutVersion) aboutVersion.textContent = "v" + FERN_VERSION;
 
-if (isAuthenticated()) {
-
-    showApplication();
-
-} else {
-
-    showLogin();
-
-}
+/* Korona authentication is initialized above. */
 
 
 randomJoke();
@@ -5465,4 +5661,4 @@ randomJoke();
 </script>
 
 </body>
-</html>
+</html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
