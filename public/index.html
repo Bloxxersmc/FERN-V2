@@ -16,7 +16,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
 /* =========================================================
    KORONA
    ========================================================= */
@@ -34,20 +33,17 @@
     --accent2: #23b85d;
 
     --border: #21452d;
-
     --danger: #ff5d68;
 
-    --shadow:
-        0 18px 60px rgba(0,0,0,.45);
+    --shadow: 0 18px 60px rgba(0,0,0,.45);
 }
 
 
 /* =========================================================
-   SWITCH THEME VARIABLES
+   SWITCH THEME
    ========================================================= */
 
 body.switch-theme {
-
     --bg: #242424;
 
     --panel: #303030;
@@ -61,11 +57,9 @@ body.switch-theme {
     --accent2: #42c8ff;
 
     --border: #505050;
-
     --danger: #ff5a5f;
 
-    --shadow:
-        0 20px 70px rgba(0,0,0,.45);
+    --shadow: 0 20px 70px rgba(0,0,0,.45);
 }
 
 
@@ -79,12 +73,9 @@ body.switch-theme {
 
 html,
 body {
-
     width: 100%;
     height: 100%;
-
     margin: 0;
-
     overflow: hidden;
 
     font-family:
@@ -102,19 +93,16 @@ body {
 button,
 input,
 select {
-
     font: inherit;
 }
 
 button {
-
     cursor: pointer;
 }
 
 button:focus,
 input:focus,
 select:focus {
-
     outline: none;
 }
 
@@ -124,13 +112,10 @@ select:focus {
    ========================================================= */
 
 #authGate {
-
     position: fixed;
-
     inset: 0;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
 
@@ -146,15 +131,11 @@ select:focus {
 }
 
 body.switch-theme #authGate {
-
     background: #242424;
 }
 
-
 .auth-card {
-
     width: min(440px, 92vw);
-
     padding: 38px;
 
     background: rgba(11,23,16,.96);
@@ -167,42 +148,26 @@ body.switch-theme #authGate {
 }
 
 body.switch-theme .auth-card {
-
     background: #303030;
-
     border: 0;
-
     box-shadow: none;
 }
 
-
 .auth-logo {
-
     font-size: 46px;
-
     font-weight: 900;
-
     letter-spacing: -3px;
 }
 
-
 .auth-sub {
-
     color: var(--muted);
-
-    margin:
-        8px
-        0
-        28px;
+    margin: 8px 0 28px;
 }
 
-
 .auth-input {
-
     width: 100%;
 
     padding: 14px 16px;
-
     margin-bottom: 12px;
 
     background: #07100a;
@@ -212,17 +177,12 @@ body.switch-theme .auth-card {
     color: var(--text);
 }
 
-
 body.switch-theme .auth-input {
-
     background: #242424;
-
     border-color: #555;
 }
 
-
 .auth-button {
-
     width: 100%;
 
     padding: 14px;
@@ -230,7 +190,6 @@ body.switch-theme .auth-input {
     border: 0;
 
     background: var(--accent);
-
     color: #031007;
 
     font-weight: 800;
@@ -238,9 +197,7 @@ body.switch-theme .auth-input {
     margin-top: 8px;
 }
 
-
 .auth-secondary {
-
     width: 100%;
 
     padding: 13px;
@@ -248,15 +205,12 @@ body.switch-theme .auth-input {
     border: 1px solid var(--border);
 
     background: transparent;
-
     color: var(--text);
 
     margin-top: 10px;
 }
 
-
 .auth-message {
-
     min-height: 22px;
 
     color: var(--muted);
@@ -272,16 +226,13 @@ body.switch-theme .auth-input {
    ========================================================= */
 
 #app {
-
     display: none;
 
     width: 100%;
     height: 100%;
 }
 
-
 #appShell {
-
     width: 100%;
     height: 100%;
 
@@ -296,9 +247,7 @@ body.switch-theme .auth-input {
    ========================================================= */
 
 .sidebar {
-
     display: flex;
-
     flex-direction: column;
 
     gap: 8px;
@@ -310,21 +259,13 @@ body.switch-theme .auth-input {
     border-right: 1px solid var(--border);
 }
 
-
 body.switch-theme .sidebar {
-
     background: #303030;
-
     border-right: 0;
 }
 
-
 .brand {
-
-    padding:
-        10px
-        12px
-        18px;
+    padding: 10px 12px 18px;
 
     font-size: 25px;
 
@@ -333,19 +274,14 @@ body.switch-theme .sidebar {
     letter-spacing: -1px;
 }
 
-
 .nav {
-
     display: flex;
-
     flex-direction: column;
 
     gap: 5px;
 }
 
-
 .nav button {
-
     width: 100%;
 
     border: 0;
@@ -365,25 +301,17 @@ body.switch-theme .sidebar {
         color .15s;
 }
 
-
 .nav button:hover {
-
     background: var(--panel2);
-
     color: var(--text);
 }
-
 
 .nav button.active {
-
     background: var(--panel2);
-
     color: var(--text);
 }
 
-
 .sidebar-bottom {
-
     margin-top: auto;
 }
 
@@ -393,24 +321,16 @@ body.switch-theme .sidebar {
    ========================================================= */
 
 body.switch-theme .sidebar {
-
     border-radius: 0;
-
 }
-
 
 body.switch-theme .nav button {
-
     border-radius: 0;
 
-    padding:
-        13px
-        14px;
+    padding: 13px 14px;
 }
 
-
 body.switch-theme .nav button.active {
-
     background: #414141;
 
     border-left:
@@ -424,13 +344,11 @@ body.switch-theme .nav button.active {
    ========================================================= */
 
 .main {
-
     min-width: 0;
 
     height: 100%;
 
     display: flex;
-
     flex-direction: column;
 }
 
@@ -440,14 +358,11 @@ body.switch-theme .nav button.active {
    ========================================================= */
 
 .tabstrip {
-
     display: flex;
 
     gap: 5px;
 
-    padding:
-        7px
-        10px;
+    padding: 7px 10px;
 
     background: #060d08;
 
@@ -458,15 +373,11 @@ body.switch-theme .nav button.active {
     scrollbar-width: none;
 }
 
-
 .tabstrip::-webkit-scrollbar {
-
     display: none;
 }
 
-
 body.switch-theme .tabstrip {
-
     background: #2a2a2a;
 
     border-bottom:
@@ -474,9 +385,7 @@ body.switch-theme .tabstrip {
         #454545;
 }
 
-
 .tab {
-
     display: flex;
 
     align-items: center;
@@ -487,9 +396,7 @@ body.switch-theme .tabstrip {
 
     min-width: 130px;
 
-    padding:
-        8px
-        11px;
+    padding: 8px 11px;
 
     background: var(--panel);
 
@@ -500,9 +407,7 @@ body.switch-theme .tabstrip {
         transparent;
 }
 
-
 .tab.active {
-
     background: var(--panel2);
 
     color: var(--text);
@@ -510,17 +415,13 @@ body.switch-theme .tabstrip {
     border-color: var(--border);
 }
 
-
 .tab .close {
-
     opacity: .7;
 
     margin-left: auto;
 }
 
-
 .tabadd {
-
     border: 0;
 
     background: transparent;
@@ -529,18 +430,15 @@ body.switch-theme .tabstrip {
 
     font-size: 20px;
 
-    padding:
-        4px
-        10px;
+    padding: 4px 10px;
 }
 
 
 /* =========================================================
-   TOP BROWSER BAR
+   TOP BAR
    ========================================================= */
 
 .topbar {
-
     height: 58px;
 
     display: flex;
@@ -549,9 +447,7 @@ body.switch-theme .tabstrip {
 
     gap: 10px;
 
-    padding:
-        8px
-        14px;
+    padding: 8px 14px;
 
     background: #08130b;
 
@@ -560,9 +456,7 @@ body.switch-theme .tabstrip {
         var(--border);
 }
 
-
 body.switch-theme .topbar {
-
     background: #242424;
 
     border-bottom:
@@ -570,23 +464,17 @@ body.switch-theme .topbar {
         #484848;
 }
 
-
 .topbar button {
-
     border: 0;
 
     background: var(--panel2);
 
     color: var(--text);
 
-    padding:
-        9px
-        12px;
+    padding: 9px 12px;
 }
 
-
 .address {
-
     flex: 1;
 
     min-width: 0;
@@ -596,16 +484,12 @@ body.switch-theme .topbar {
     gap: 8px;
 }
 
-
 .address input {
-
     flex: 1;
 
     min-width: 0;
 
-    padding:
-        10px
-        14px;
+    padding: 10px 14px;
 
     background: var(--panel);
 
@@ -616,11 +500,8 @@ body.switch-theme .topbar {
     color: var(--text);
 }
 
-
 body.switch-theme .address input {
-
     background: #303030;
-
     border-color: #505050;
 }
 
@@ -630,7 +511,6 @@ body.switch-theme .address input {
    ========================================================= */
 
 .workspace {
-
     position: relative;
 
     flex: 1;
@@ -640,9 +520,7 @@ body.switch-theme .address input {
     overflow: auto;
 }
 
-
 .view {
-
     display: none;
 
     min-height: 100%;
@@ -650,26 +528,17 @@ body.switch-theme .address input {
     padding: 28px;
 }
 
-
 .view.active {
-
     display: block;
 }
 
-
 h1 {
-
-    margin:
-        0
-        0
-        8px;
+    margin: 0 0 8px;
 
     font-size: 34px;
 }
 
-
 .muted {
-
     color: var(--muted);
 }
 
@@ -679,7 +548,6 @@ h1 {
    ========================================================= */
 
 .cards {
-
     display: grid;
 
     grid-template-columns:
@@ -693,9 +561,7 @@ h1 {
     margin-top: 24px;
 }
 
-
 .card {
-
     background: var(--panel);
 
     border:
@@ -711,19 +577,14 @@ h1 {
         border-color .15s;
 }
 
-
 .card:hover {
-
-    transform:
-        translateY(-2px);
+    transform: translateY(-2px);
 
     border-color:
         var(--accent);
 }
 
-
 .card img {
-
     width: 100%;
 
     aspect-ratio: 16 / 9;
@@ -735,18 +596,11 @@ h1 {
     margin-bottom: 12px;
 }
 
-
 .card h3 {
-
-    margin:
-        0
-        0
-        5px;
+    margin: 0 0 5px;
 }
 
-
 .card p {
-
     margin: 0;
 
     color: var(--muted);
@@ -760,18 +614,14 @@ h1 {
    ========================================================= */
 
 .browser {
-
     width: 100%;
     height: 100%;
 
     display: flex;
-
     flex-direction: column;
 }
 
-
 .browser-frame {
-
     flex: 1;
 
     min-height: 0;
@@ -781,9 +631,7 @@ h1 {
     position: relative;
 }
 
-
 .browser-frame iframe {
-
     display: block;
 
     width: 100%;
@@ -800,7 +648,6 @@ h1 {
    ========================================================= */
 
 .settings-grid {
-
     display: grid;
 
     grid-template-columns:
@@ -814,9 +661,7 @@ h1 {
     margin-top: 20px;
 }
 
-
 .setting-card {
-
     background: var(--panel);
 
     border:
@@ -826,15 +671,11 @@ h1 {
     padding: 18px;
 }
 
-
 .setting-card h3 {
-
     margin-top: 0;
 }
 
-
 select {
-
     width: 100%;
 
     padding: 12px;
@@ -848,9 +689,7 @@ select {
         var(--border);
 }
 
-
 .theme-preview {
-
     height: 75px;
 
     margin-bottom: 12px;
@@ -867,9 +706,7 @@ select {
         );
 }
 
-
 .theme-preview.switch {
-
     background:
         linear-gradient(
             135deg,
@@ -887,7 +724,6 @@ select {
    ========================================================= */
 
 .account {
-
     max-width: 600px;
 
     background: var(--panel);
@@ -899,9 +735,7 @@ select {
     padding: 24px;
 }
 
-
 .account-row {
-
     display: flex;
 
     justify-content: space-between;
@@ -915,18 +749,14 @@ select {
     padding: 13px 0;
 }
 
-
 .danger {
-
     background: var(--danger);
 
     color: white;
 
     border: 0;
 
-    padding:
-        12px
-        16px;
+    padding: 12px 16px;
 
     margin-top: 18px;
 }
@@ -937,7 +767,6 @@ select {
    ========================================================= */
 
 .switch-home {
-
     min-height: 100%;
 
     padding:
@@ -954,9 +783,7 @@ select {
     color: #f4f4f4;
 }
 
-
 .switch-status {
-
     display: flex;
 
     justify-content: space-between;
@@ -968,9 +795,7 @@ select {
     font-size: 14px;
 }
 
-
 .switch-profile {
-
     display: flex;
 
     align-items: center;
@@ -978,9 +803,7 @@ select {
     gap: 10px;
 }
 
-
 .switch-avatar {
-
     width: 38px;
     height: 38px;
 
@@ -995,9 +818,7 @@ select {
     font-weight: 800;
 }
 
-
 .switch-time {
-
     display: flex;
 
     align-items: center;
@@ -1011,7 +832,6 @@ select {
    ========================================================= */
 
 .switch-games {
-
     display: flex;
 
     gap: 14px;
@@ -1026,15 +846,11 @@ select {
     scrollbar-width: none;
 }
 
-
 .switch-games::-webkit-scrollbar {
-
     display: none;
 }
 
-
 .switch-game {
-
     flex:
         0 0
         190px;
@@ -1055,18 +871,14 @@ select {
         0 0 0 1px #444;
 }
 
-
 .switch-game img {
-
     width: 100%;
     height: 100%;
 
     object-fit: cover;
 }
 
-
 .switch-game span {
-
     position: absolute;
 
     left: 0;
@@ -1088,27 +900,17 @@ select {
         );
 }
 
-
 .switch-game:hover {
-
     box-shadow:
         0 0 0 3px #777;
 }
 
-
 .switch-game.selected {
-
     box-shadow:
         0 0 0 4px #f4f4f4;
 }
 
-
-/* =========================================================
-   SWITCH BOTTOM MENU
-   ========================================================= */
-
 .switch-more {
-
     margin-top: 8px;
 
     text-align: right;
@@ -1119,8 +921,11 @@ select {
 }
 
 
-.switch-bottom {
+/* =========================================================
+   SWITCH BOTTOM MENU
+   ========================================================= */
 
+.switch-bottom {
     margin-top: auto;
 
     border-top:
@@ -1140,9 +945,7 @@ select {
     flex-wrap: wrap;
 }
 
-
 .switch-icon {
-
     width: 58px;
     height: 58px;
 
@@ -1168,9 +971,7 @@ select {
         background .15s;
 }
 
-
 .switch-icon:hover {
-
     background: #fff;
 
     color: #222;
@@ -1185,7 +986,6 @@ select {
    ========================================================= */
 
 .switch-page {
-
     min-height: 100%;
 
     padding:
@@ -1197,15 +997,11 @@ select {
     color: #f4f4f4;
 }
 
-
 .switch-page h1 {
-
     font-weight: 500;
 }
 
-
 .switch-page .card {
-
     background: #303030;
 
     border-color: #4c4c4c;
@@ -1213,25 +1009,19 @@ select {
     border-radius: 0;
 }
 
-
 .switch-page .card:hover {
-
     transform: none;
 
     border-color: white;
 }
 
-
 .switch-page .setting-card {
-
     background: #303030;
 
     border-color: #4c4c4c;
 }
 
-
 .switch-page .account {
-
     background: #303030;
 
     border-color: #4c4c4c;
@@ -1243,7 +1033,6 @@ select {
    ========================================================= */
 
 #browserOverlay {
-
     position: absolute;
 
     inset: 0;
@@ -1259,9 +1048,7 @@ select {
     z-index: 50;
 }
 
-
 .loader {
-
     padding:
         18px
         24px;
@@ -1281,52 +1068,44 @@ select {
 @media(max-width: 800px) {
 
     #appShell {
-
         grid-template-columns:
             72px
             1fr;
     }
 
     .sidebar {
-
         padding:
             10px
             6px;
     }
 
     .brand {
-
         font-size: 0;
 
         text-align: center;
     }
 
     .brand::after {
-
         content: "K";
 
         font-size: 25px;
     }
 
     .nav button {
-
         font-size: 0;
 
         text-align: center;
     }
 
     .nav button::first-letter {
-
         font-size: 20px;
     }
 
     .view {
-
         padding: 20px;
     }
 
     .topbar {
-
         flex-wrap: wrap;
 
         height: auto;
@@ -1334,23 +1113,18 @@ select {
 
     .switch-home,
     .switch-page {
-
         padding:
             20px;
     }
 
     .switch-game {
-
         flex-basis: 150px;
     }
 }
-
 </style>
 </head>
 
-
 <body>
-
 
 <!-- =========================================================
      AUTH GATE
@@ -1367,9 +1141,6 @@ select {
         <div class="auth-sub">
             This browser is registered to a Korona workspace.
         </div>
-
-
-        <!-- LOGIN -->
 
         <div id="loginScreen">
 
@@ -1395,9 +1166,6 @@ select {
             </button>
 
         </div>
-
-
-        <!-- CREATE -->
 
         <div
             id="createScreen"
@@ -1444,7 +1212,6 @@ select {
 </div>
 
 
-
 <!-- =========================================================
      APPLICATION
      ========================================================= -->
@@ -1453,17 +1220,11 @@ select {
 
     <div id="appShell">
 
-
-        <!-- =================================================
-             SIDEBAR
-             ================================================= -->
-
         <aside class="sidebar">
 
             <div class="brand">
                 KORONA
             </div>
-
 
             <div class="nav">
 
@@ -1475,63 +1236,32 @@ select {
                     <span>Home</span>
                 </button>
 
-
                 <button data-view="games">
-
                     🎮
-
-                    <span>
-                        Games
-                    </span>
-
+                    <span>Games</span>
                 </button>
-
 
                 <button data-view="apps">
-
                     ▦
-
-                    <span>
-                        Apps
-                    </span>
-
+                    <span>Apps</span>
                 </button>
-
 
                 <button data-view="browser">
-
                     ◉
-
-                    <span>
-                        Browser
-                    </span>
-
+                    <span>Browser</span>
                 </button>
-
 
                 <button data-view="settings">
-
                     ⚙
-
-                    <span>
-                        Settings
-                    </span>
-
+                    <span>Settings</span>
                 </button>
 
-
                 <button data-view="account">
-
                     ●
-
-                    <span>
-                        Account
-                    </span>
-
+                    <span>Account</span>
                 </button>
 
             </div>
-
 
             <div class="sidebar-bottom">
 
@@ -1554,23 +1284,12 @@ select {
         </aside>
 
 
-
-        <!-- =================================================
-             MAIN
-             ================================================= -->
-
         <main class="main">
-
-
-            <!-- TABS -->
 
             <div
                 class="tabstrip"
                 id="tabStrip"
             ></div>
-
-
-            <!-- BROWSER BAR -->
 
             <div class="topbar">
 
@@ -1581,7 +1300,6 @@ select {
                     ←
                 </button>
 
-
                 <button
                     id="forwardButton"
                     title="Forward"
@@ -1589,14 +1307,12 @@ select {
                     →
                 </button>
 
-
                 <button
                     id="refreshButton"
                     title="Refresh"
                 >
                     ↻
                 </button>
-
 
                 <div class="address">
 
@@ -1611,7 +1327,6 @@ select {
 
                 </div>
 
-
                 <button
                     id="fullscreenButton"
                     title="Fullscreen"
@@ -1622,49 +1337,37 @@ select {
             </div>
 
 
-
-            <!-- =================================================
-                 WORKSPACE
-                 ================================================= -->
-
             <section class="workspace">
-
 
                 <div
                     id="view-home"
                     class="view active"
                 ></div>
 
-
                 <div
                     id="view-games"
                     class="view"
                 ></div>
-
 
                 <div
                     id="view-apps"
                     class="view"
                 ></div>
 
-
                 <div
                     id="view-browser"
                     class="view"
                 ></div>
-
 
                 <div
                     id="view-settings"
                     class="view"
                 ></div>
 
-
                 <div
                     id="view-account"
                     class="view"
                 ></div>
-
 
                 <div id="browserOverlay">
 
@@ -1681,7 +1384,6 @@ select {
     </div>
 
 </div>
-
 
 
 <script>
@@ -1990,7 +1692,6 @@ let currentCharacter =
     ||
     "none";
 
-
 let tabs = [];
 
 let activeTabId =
@@ -2037,9 +1738,7 @@ function escapeHTML(value) {
    ========================================================= */
 
 function isSwitch() {
-
     return currentTheme === "switch";
-
 }
 
 
@@ -2065,7 +1764,6 @@ function applyTheme() {
     );
 
     renderAll();
-
 }
 
 
@@ -2079,51 +1777,27 @@ function switchNavLabel(view) {
 
         return {
 
-            home:
-                "Home",
-
-            games:
-                "Games",
-
-            apps:
-                "Apps",
-
-            browser:
-                "Browser",
-
-            settings:
-                "Settings",
-
-            account:
-                "Account"
+            home: "Home",
+            games: "Games",
+            apps: "Apps",
+            browser: "Browser",
+            settings: "Settings",
+            account: "Account"
 
         }[view];
 
     }
 
-
     return {
 
-        home:
-            "Home",
-
-        games:
-            "More Games",
-
-        apps:
-            "Apps",
-
-        browser:
-            "Internet",
-
-        settings:
-            "System Settings",
-
-        account:
-            "User Page"
+        home: "Home",
+        games: "More Games",
+        apps: "Apps",
+        browser: "Internet",
+        settings: "System Settings",
+        account: "User Page"
 
     }[view];
-
 }
 
 
@@ -2136,7 +1810,6 @@ function showView(view) {
     currentView =
         view;
 
-
     document
         .querySelectorAll(".view")
         .forEach(
@@ -2146,21 +1819,14 @@ function showView(view) {
                 )
         );
 
-
     const element =
         document.getElementById(
             "view-" + view
         );
 
-
     if (element) {
-
-        element.classList.add(
-            "active"
-        );
-
+        element.classList.add("active");
     }
-
 
     document
         .querySelectorAll(
@@ -2175,9 +1841,7 @@ function showView(view) {
 
         });
 
-
     renderView(view);
-
 }
 
 
@@ -2189,7 +1853,6 @@ function createTab(url = "") {
 
     const id =
         crypto.randomUUID();
-
 
     const tab = {
 
@@ -2209,26 +1872,18 @@ function createTab(url = "") {
 
     };
 
-
     tabs.push(tab);
 
     activeTabId =
         id;
 
-
     renderTabs();
 
-
     if (url) {
-
         navigate(url);
-
     } else {
-
         showView("browser");
-
     }
-
 }
 
 
@@ -2242,7 +1897,6 @@ function activeTab() {
         tab =>
             tab.id === activeTabId
     ) || null;
-
 }
 
 
@@ -2256,7 +1910,6 @@ function renderTabs() {
         document.getElementById(
             "tabStrip"
         );
-
 
     strip.innerHTML =
 
@@ -2301,7 +1954,6 @@ function renderTabs() {
 
         `;
 
-
     strip
         .querySelectorAll(".tab")
         .forEach(element => {
@@ -2312,19 +1964,14 @@ function renderTabs() {
                     if (
                         event.target.dataset.close
                     ) {
-
                         return;
-
                     }
-
 
                     activeTabId =
                         element.dataset.id;
 
-
                     const tab =
                         activeTab();
-
 
                     if (tab) {
 
@@ -2337,18 +1984,12 @@ function renderTabs() {
 
                     }
 
-
-                    showView(
-                        "browser"
-                    );
-
+                    showView("browser");
 
                     renderTabs();
-
                 };
 
         });
-
 
     strip
         .querySelectorAll(
@@ -2369,14 +2010,12 @@ function renderTabs() {
 
         });
 
-
     document
         .getElementById(
             "newTabButton"
         )
         .onclick =
         () => createTab();
-
 }
 
 
@@ -2392,19 +2031,14 @@ function closeTab(id) {
                 tab.id === id
         );
 
-
     if (index < 0) {
-
         return;
-
     }
-
 
     tabs.splice(
         index,
         1
     );
-
 
     if (
         activeTabId === id
@@ -2420,20 +2054,16 @@ function closeTab(id) {
 
     }
 
-
     if (!tabs.length) {
 
         createTab();
 
         return;
-
     }
-
 
     renderTabs();
 
     renderBrowser();
-
 }
 
 
@@ -2446,43 +2076,30 @@ function normalizeURL(value) {
     value =
         value.trim();
 
-
     if (!value) {
-
         return "";
-
     }
-
 
     if (
         /^https?:\/\//i.test(
             value
         )
     ) {
-
         return value;
-
     }
-
 
     if (
         value.includes(".") &&
         !value.includes(" ")
     ) {
-
         return "https://" + value;
-
     }
-
 
     return (
         "https://www.google.com/search?q="
         +
-        encodeURIComponent(
-            value
-        )
+        encodeURIComponent(value)
     );
-
 }
 
 
@@ -2495,17 +2112,12 @@ function navigate(raw) {
     const url =
         normalizeURL(raw);
 
-
     if (!url) {
-
         return;
-
     }
-
 
     let tab =
         activeTab();
-
 
     if (!tab) {
 
@@ -2513,9 +2125,7 @@ function navigate(raw) {
 
         tab =
             activeTab();
-
     }
-
 
     if (
         tab.index <
@@ -2527,21 +2137,16 @@ function navigate(raw) {
                 0,
                 tab.index + 1
             );
-
     }
-
 
     tab.history.push(
         url
     );
 
-
     tab.index++;
-
 
     tab.url =
         url;
-
 
     try {
 
@@ -2554,9 +2159,7 @@ function navigate(raw) {
 
         tab.title =
             "Korona Browser";
-
     }
-
 
     document
         .getElementById(
@@ -2565,11 +2168,9 @@ function navigate(raw) {
         .value =
         url;
 
-
     renderTabs();
 
     renderBrowser();
-
 }
 
 
@@ -2580,18 +2181,14 @@ function navigate(raw) {
 function openURL(url) {
 
     if (!activeTab()) {
-
         createTab();
-
     }
-
 
     navigate(url);
 
     showView(
         "browser"
     );
-
 }
 
 
@@ -2606,10 +2203,8 @@ function renderBrowser() {
             "view-browser"
         );
 
-
     const tab =
         activeTab();
-
 
     if (!tab) {
 
@@ -2626,9 +2221,7 @@ function renderBrowser() {
         `;
 
         return;
-
     }
-
 
     view.innerHTML = `
 
@@ -2652,14 +2245,12 @@ function renderBrowser() {
 
     `;
 
-
     document
         .getElementById(
             "addressInput"
         )
         .value =
         tab.url || "";
-
 }
 
 
@@ -2699,7 +2290,6 @@ function gameCard(game) {
         </article>
 
     `;
-
 }
 
 
@@ -2714,7 +2304,6 @@ function renderHome() {
             "view-home"
         );
 
-
     if (isSwitch()) {
 
         const featured =
@@ -2723,14 +2312,11 @@ function renderHome() {
                 7
             );
 
-
         element.innerHTML = `
 
             <div class="switch-home">
 
-
                 <div class="switch-status">
-
 
                     <div class="switch-profile">
 
@@ -2753,7 +2339,6 @@ function renderHome() {
 
                         </div>
 
-
                         <div>
 
                             ${
@@ -2771,7 +2356,6 @@ function renderHome() {
 
                     </div>
 
-
                     <div class="switch-time">
 
                         <span
@@ -2788,9 +2372,7 @@ function renderHome() {
 
                     </div>
 
-
                 </div>
-
 
                 <div class="switch-games">
 
@@ -2837,16 +2419,11 @@ function renderHome() {
 
                 </div>
 
-
                 <div class="switch-more">
-
                     View more software →
-
                 </div>
 
-
                 <div class="switch-bottom">
-
 
                     <button
                         class="switch-icon"
@@ -2856,7 +2433,6 @@ function renderHome() {
                         ▦
                     </button>
 
-
                     <button
                         class="switch-icon"
                         onclick="showView('games')"
@@ -2864,7 +2440,6 @@ function renderHome() {
                     >
                         🎮
                     </button>
-
 
                     <button
                         class="switch-icon"
@@ -2874,7 +2449,6 @@ function renderHome() {
                         ◎
                     </button>
 
-
                     <button
                         class="switch-icon"
                         onclick="showView('settings')"
@@ -2882,7 +2456,6 @@ function renderHome() {
                     >
                         ⚙
                     </button>
-
 
                     <button
                         class="switch-icon"
@@ -2892,22 +2465,16 @@ function renderHome() {
                         ●
                     </button>
 
-
                 </div>
-
 
             </div>
 
         `;
 
-
         updateSwitchClock();
 
-
         return;
-
     }
-
 
     element.innerHTML = `
 
@@ -2931,7 +2498,6 @@ function renderHome() {
         </div>
 
     `;
-
 }
 
 
@@ -2945,7 +2511,6 @@ function renderGames() {
         document.getElementById(
             "view-games"
         );
-
 
     if (isSwitch()) {
 
@@ -2976,9 +2541,7 @@ function renderGames() {
         `;
 
         return;
-
     }
-
 
     element.innerHTML = `
 
@@ -3001,7 +2564,6 @@ function renderGames() {
         </div>
 
     `;
-
 }
 
 
@@ -3015,7 +2577,6 @@ function renderApps() {
         document.getElementById(
             "view-apps"
         );
-
 
     const cards =
         apps.map(
@@ -3047,7 +2608,6 @@ function renderApps() {
                         }
                     </div>
 
-
                     <h3>
                         ${
                             escapeHTML(
@@ -3055,7 +2615,6 @@ function renderApps() {
                             )
                         }
                     </h3>
-
 
                     <p>
                         Open application
@@ -3065,7 +2624,6 @@ function renderApps() {
 
             `
         ).join("");
-
 
     if (isSwitch()) {
 
@@ -3092,9 +2650,7 @@ function renderApps() {
         `;
 
         return;
-
     }
-
 
     element.innerHTML = `
 
@@ -3113,7 +2669,6 @@ function renderApps() {
         </div>
 
     `;
-
 }
 
 
@@ -3127,7 +2682,6 @@ function renderSettings() {
         document.getElementById(
             "view-settings"
         );
-
 
     const themeOptions =
         themes.map(
@@ -3153,7 +2707,6 @@ function renderSettings() {
 
             `
         ).join("");
-
 
     const characterOptions = `
 
@@ -3191,7 +2744,6 @@ function renderSettings() {
 
     `;
 
-
     if (isSwitch()) {
 
         element.innerHTML = `
@@ -3206,9 +2758,7 @@ function renderSettings() {
                     Korona system preferences.
                 </p>
 
-
                 <div class="settings-grid">
-
 
                     <div class="setting-card">
 
@@ -3226,7 +2776,6 @@ function renderSettings() {
 
                     </div>
 
-
                     <div class="setting-card">
 
                         <h3>
@@ -3243,7 +2792,6 @@ function renderSettings() {
 
                     </div>
 
-
                     <div class="setting-card">
 
                         <h3>
@@ -3259,7 +2807,6 @@ function renderSettings() {
                         </p>
 
                     </div>
-
 
                 </div>
 
@@ -3279,9 +2826,7 @@ function renderSettings() {
                 Customize Korona.
             </p>
 
-
             <div class="settings-grid">
-
 
                 <div class="setting-card">
 
@@ -3301,7 +2846,6 @@ function renderSettings() {
 
                 </div>
 
-
                 <div class="setting-card">
 
                     <h3>
@@ -3318,25 +2862,21 @@ function renderSettings() {
 
                 </div>
 
-
             </div>
 
         `;
 
     }
 
-
     const themeSelect =
         document.getElementById(
             "themeSelect"
         );
 
-
     const characterSelect =
         document.getElementById(
             "characterSelect"
         );
-
 
     themeSelect.onchange =
         event => {
@@ -3345,13 +2885,10 @@ function renderSettings() {
                 event.target.value;
 
             applyTheme();
-
         };
-
 
     characterSelect.value =
         currentCharacter;
-
 
     characterSelect.onchange =
         event => {
@@ -3360,9 +2897,7 @@ function renderSettings() {
                 event.target.value;
 
             applyTheme();
-
         };
-
 }
 
 
@@ -3377,7 +2912,6 @@ function renderAccount() {
             "view-account"
         );
 
-
     const id =
         localStorage.getItem(
             USER_KEY
@@ -3385,14 +2919,12 @@ function renderAccount() {
         ||
         "Not registered";
 
-
     const name =
         localStorage.getItem(
             "korona.user.name"
         )
         ||
         "Unknown";
-
 
     if (isSwitch()) {
 
@@ -3404,9 +2936,7 @@ function renderAccount() {
                     User Page
                 </h1>
 
-
                 <div class="account">
-
 
                     <div class="account-row">
 
@@ -3424,7 +2954,6 @@ function renderAccount() {
 
                     </div>
 
-
                     <div class="account-row">
 
                         <span>
@@ -3441,7 +2970,6 @@ function renderAccount() {
 
                     </div>
 
-
                     <div class="account-row">
 
                         <span>
@@ -3454,14 +2982,12 @@ function renderAccount() {
 
                     </div>
 
-
                     <button
                         class="danger"
                         onclick="koronaLogout()"
                     >
                         Lock Korona
                     </button>
-
 
                 </div>
 
@@ -3470,9 +2996,7 @@ function renderAccount() {
         `;
 
         return;
-
     }
-
 
     element.innerHTML = `
 
@@ -3480,9 +3004,7 @@ function renderAccount() {
             Account
         </h1>
 
-
         <div class="account">
-
 
             <div class="account-row">
 
@@ -3500,7 +3022,6 @@ function renderAccount() {
 
             </div>
 
-
             <div class="account-row">
 
                 <span>
@@ -3517,7 +3038,6 @@ function renderAccount() {
 
             </div>
 
-
             <div class="account-row">
 
                 <span>
@@ -3530,7 +3050,6 @@ function renderAccount() {
 
             </div>
 
-
             <button
                 class="danger"
                 onclick="koronaLogout()"
@@ -3538,11 +3057,9 @@ function renderAccount() {
                 Logout / Lock
             </button>
 
-
         </div>
 
     `;
-
 }
 
 
@@ -3569,7 +3086,6 @@ function renderView(view) {
 
     if (view === "account")
         renderAccount();
-
 }
 
 
@@ -3590,7 +3106,6 @@ function renderAll() {
                     "span"
                 );
 
-
             if (span) {
 
                 span.textContent =
@@ -3602,14 +3117,11 @@ function renderAll() {
 
         });
 
-
     renderView(
         currentView
     );
 
-
     renderTabs();
-
 }
 
 
@@ -3624,13 +3136,9 @@ function updateSwitchClock() {
             "switchClock"
         );
 
-
     if (!clock) {
-
         return;
-
     }
-
 
     clock.textContent =
         new Date()
@@ -3644,9 +3152,7 @@ function updateSwitchClock() {
                         "2-digit"
                 }
             );
-
 }
-
 
 setInterval(
     updateSwitchClock,
@@ -3694,7 +3200,6 @@ document
 
     };
 
-
 document
     .getElementById(
         "addressInput"
@@ -3734,7 +3239,6 @@ document
                 "browserFrame"
             );
 
-
         if (frame) {
 
             frame.src =
@@ -3759,7 +3263,6 @@ document
         const tab =
             activeTab();
 
-
         if (
             !tab ||
             tab.index <= 0
@@ -3769,14 +3272,12 @@ document
 
         }
 
-
         tab.index--;
 
         tab.url =
             tab.history[
                 tab.index
             ];
-
 
         renderBrowser();
 
@@ -3799,7 +3300,6 @@ document
         const tab =
             activeTab();
 
-
         if (
             !tab ||
             tab.index >=
@@ -3810,14 +3310,12 @@ document
 
         }
 
-
         tab.index++;
 
         tab.url =
             tab.history[
                 tab.index
             ];
-
 
         renderBrowser();
 
@@ -3867,6 +3365,22 @@ document
 
 
 /* =========================================================
+   LOGOUT BUTTON
+   ========================================================= */
+
+document
+    .getElementById(
+        "logoutButton"
+    )
+    .onclick =
+    () => {
+
+        koronaLogout();
+
+    };
+
+
+/* =========================================================
    AUTH
    ========================================================= */
 
@@ -3877,11 +3391,6 @@ async function checkSavedUser() {
             USER_KEY
         );
 
-
-    /*
-     * No saved ID.
-     */
-
     if (!savedId) {
 
         document
@@ -3891,14 +3400,12 @@ async function checkSavedUser() {
             .style.display =
             "flex";
 
-
         document
             .getElementById(
                 "app"
             )
             .style.display =
             "none";
-
 
         document
             .getElementById(
@@ -3907,29 +3414,18 @@ async function checkSavedUser() {
             .textContent =
             "This browser has no Korona account.";
 
-
         return false;
-
     }
-
 
     const message =
         document.getElementById(
             "authMessage"
         );
 
-
     message.textContent =
         "Checking Korona access…";
 
-
     try {
-
-        /*
-         * auth_code is intentionally NOT selected.
-         *
-         * It is completely ignored.
-         */
 
         const {
             data,
@@ -3952,7 +3448,6 @@ async function checkSavedUser() {
 
                 .maybeSingle();
 
-
         if (error) {
 
             console.error(
@@ -3964,13 +3459,7 @@ async function checkSavedUser() {
                 "Could not connect to Korona.";
 
             return false;
-
         }
-
-
-        /*
-         * User no longer exists.
-         */
 
         if (!data) {
 
@@ -3982,13 +3471,7 @@ async function checkSavedUser() {
                 "This Korona ID no longer exists.";
 
             return false;
-
         }
-
-
-        /*
-         * ACTIVE IS THE ONLY ACCESS CHECK.
-         */
 
         if (
             data.active !== true
@@ -4004,7 +3487,6 @@ async function checkSavedUser() {
                 .style.display =
                 "flex";
 
-
             document
                 .getElementById(
                     "app"
@@ -4012,31 +3494,18 @@ async function checkSavedUser() {
                 .style.display =
                 "none";
 
-
             return false;
-
         }
-
-
-        /*
-         * Save current user info.
-         */
 
         localStorage.setItem(
             "korona.user.id",
             data.id
         );
 
-
         localStorage.setItem(
             "korona.user.name",
             data.name || ""
         );
-
-
-        /*
-         * Automatically enter Korona.
-         */
 
         document
             .getElementById(
@@ -4045,7 +3514,6 @@ async function checkSavedUser() {
             .style.display =
             "none";
 
-
         document
             .getElementById(
                 "app"
@@ -4053,15 +3521,12 @@ async function checkSavedUser() {
             .style.display =
             "block";
 
-
         renderAll();
-
 
         console.log(
             "Korona automatically logged in:",
             data.id
         );
-
 
         return true;
 
@@ -4072,16 +3537,103 @@ async function checkSavedUser() {
             error
         );
 
-
         message.textContent =
             "Something went wrong connecting to Korona.";
 
-
         return false;
-
     }
-
 }
+
+
+/* =========================================================
+   PERIODIC ACCESS CHECK
+   ========================================================= */
+
+let accessCheckRunning = false;
+
+setInterval(
+    async () => {
+
+        const savedId =
+            localStorage.getItem(
+                USER_KEY
+            );
+
+        if (
+            !savedId ||
+            accessCheckRunning
+        ) {
+            return;
+        }
+
+        accessCheckRunning = true;
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .from(
+                        "korona_users"
+                    )
+                    .select(
+                        "id,active"
+                    )
+                    .eq(
+                        "id",
+                        savedId
+                    )
+                    .maybeSingle();
+
+            if (
+                error ||
+                !data ||
+                data.active !== true
+            ) {
+
+                document
+                    .getElementById(
+                        "app"
+                    )
+                    .style.display =
+                    "none";
+
+                document
+                    .getElementById(
+                        "authGate"
+                    )
+                    .style.display =
+                    "flex";
+
+                document
+                    .getElementById(
+                        "authMessage"
+                    )
+                    .textContent =
+                    !data
+                        ? "This Korona account no longer exists."
+                        : "Korona access has been disabled.";
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Periodic Korona access check failed:",
+                error
+            );
+
+        } finally {
+
+            accessCheckRunning = false;
+
+        }
+
+    },
+    5000
+);
 
 
 /* =========================================================
@@ -4090,15 +3642,6 @@ async function checkSavedUser() {
 
 function koronaLogout() {
 
-    /*
-     * IMPORTANT:
-     *
-     * USER_KEY IS NOT DELETED.
-     *
-     * This means the browser remains
-     * registered to the Korona account.
-     */
-
     document
         .getElementById(
             "app"
@@ -4106,14 +3649,12 @@ function koronaLogout() {
         .style.display =
         "none";
 
-
     document
         .getElementById(
             "authGate"
         )
         .style.display =
         "flex";
-
 
     document
         .getElementById(
@@ -4143,7 +3684,6 @@ document
             .style.display =
             "none";
 
-
         document
             .getElementById(
                 "createScreen"
@@ -4167,7 +3707,6 @@ document
             )
             .style.display =
             "none";
-
 
         document
             .getElementById(
@@ -4214,7 +3753,6 @@ document
                 .value
                 .trim();
 
-
         const lastName =
             document
                 .getElementById(
@@ -4223,13 +3761,11 @@ document
                 .value
                 .trim();
 
-
         const message =
             document
                 .getElementById(
                     "createMessage"
                 );
-
 
         if (
             !firstName ||
@@ -4240,17 +3776,7 @@ document
                 "Enter your first and last name.";
 
             return;
-
         }
-
-
-        /*
-         * John Smith
-         *
-         * becomes
-         *
-         * john.smith
-         */
 
         const id =
 
@@ -4263,12 +3789,7 @@ document
                     ""
                 );
 
-
         try {
-
-            /*
-             * Check ID.
-             */
 
             const {
                 data: existing,
@@ -4291,7 +3812,6 @@ document
 
                     .maybeSingle();
 
-
             if (checkError) {
 
                 console.error(
@@ -4302,9 +3822,7 @@ document
                     "Could not check that Korona ID.";
 
                 return;
-
             }
-
 
             if (existing) {
 
@@ -4312,15 +3830,7 @@ document
                     `"${id}" is already taken.`;
 
                 return;
-
             }
-
-
-            /*
-             * Create account.
-             *
-             * auth_code is NOT touched.
-             */
 
             const {
                 data,
@@ -4351,7 +3861,6 @@ document
 
                     .single();
 
-
             if (error) {
 
                 console.error(
@@ -4359,41 +3868,27 @@ document
                     error
                 );
 
-
                 message.textContent =
                     error.message ||
                     "Could not create the account.";
 
                 return;
-
             }
-
-
-            /*
-             * Save the browser identity.
-             */
 
             localStorage.setItem(
                 USER_KEY,
                 data.id
             );
 
-
             localStorage.setItem(
                 "korona.user.id",
                 data.id
             );
 
-
             localStorage.setItem(
                 "korona.user.name",
                 data.name || ""
             );
-
-
-            /*
-             * Immediately enter.
-             */
 
             document
                 .getElementById(
@@ -4402,7 +3897,6 @@ document
                 .style.display =
                 "none";
 
-
             document
                 .getElementById(
                     "app"
@@ -4410,15 +3904,12 @@ document
                 .style.display =
                 "block";
 
-
             renderAll();
-
 
             console.log(
                 "Korona account created:",
                 data.id
             );
-
 
         } catch (error) {
 
@@ -4427,12 +3918,9 @@ document
                 error
             );
 
-
             message.textContent =
                 "Something went wrong creating the account.";
-
         }
-
     };
 
 
@@ -4442,17 +3930,12 @@ document
 
 (async function init() {
 
-    /*
-     * Restore preferences.
-     */
-
     currentTheme =
         localStorage.getItem(
             "korona.theme"
         )
         ||
         "default";
-
 
     currentCharacter =
         localStorage.getItem(
@@ -4461,34 +3944,9 @@ document
         ||
         "none";
 
-
-    /*
-     * Start with one browser tab.
-     */
-
     createTab();
 
-
-    /*
-     * Apply theme.
-     */
-
     applyTheme();
-
-
-    /*
-     * THIS IS THE IMPORTANT PART:
-     *
-     * On every refresh:
-     *
-     * saved ID
-     *      ↓
-     * Supabase
-     *      ↓
-     * active === true
-     *      ↓
-     * Korona opens
-     */
 
     await checkSavedUser();
 
