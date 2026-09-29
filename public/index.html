@@ -4046,6 +4046,338 @@ body[data-theme="rose"] #koronaThemeCharacter { filter: drop-shadow(0 8px 22px r
   #koronaThemeCharacter { opacity: .32 !important; }
 }
 </style>
+
+<style id="korona-browser-chrome-rebuild-v1">
+/* ============================================================
+   KORONA BROWSER CHROME — COMPLETE VISUAL REBUILD
+   No legacy iframe borders, pink chrome, or grey toolbar seams.
+   ============================================================ */
+
+/* Kill legacy browser/iframe decoration */
+.browser-window,
+.browser-topline,
+.browser-tabs,
+.browser-toolbar,
+.browser-frames,
+#iframeContainer,
+#iframeContainer.fern-visible,
+.iframe-container,
+.iframe-toolbar,
+.iframe-toolbar::before,
+.iframe-toolbar::after,
+#iframeContainer::before,
+#iframeContainer::after {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.browser-window {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 0 !important;
+  background: var(--bg) !important;
+}
+
+/* Tabs */
+.browser-tabs {
+  flex: 0 0 43px !important;
+  height: 43px !important;
+  min-height: 43px !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 4px !important;
+  padding: 5px 7px 0 !important;
+  background: color-mix(in srgb, var(--bg-light) 96%, var(--green)) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--ui-border) !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+.browser-tab {
+  position: relative !important;
+  flex: 0 0 190px !important;
+  max-width: 240px !important;
+  min-width: 125px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 9px !important;
+  margin: 0 !important;
+  background: color-mix(in srgb, var(--panel) 86%, var(--bg)) !important;
+  border: 1px solid transparent !important;
+  border-bottom: 0 !important;
+  border-radius: 5px 5px 0 0 !important;
+  color: var(--muted) !important;
+}
+
+.browser-tab.active {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border-color: var(--ui-border) !important;
+  box-shadow: inset 0 2px 0 var(--green) !important;
+}
+
+.browser-tab:hover {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--green) 8%, var(--panel)) !important;
+  border-color: var(--ui-border) !important;
+}
+
+.tab-favicon {
+  width: 21px !important;
+  height: 21px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 21px !important;
+  color: var(--green) !important;
+  background: color-mix(in srgb, var(--green) 10%, var(--panel)) !important;
+  border: 1px solid var(--ui-border) !important;
+  font-size: 10px !important;
+}
+
+.tab-title {
+  min-width: 0 !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  text-align: left !important;
+  font-size: 12px !important;
+}
+
+.tab-close {
+  flex: 0 0 22px !important;
+  color: var(--muted) !important;
+  font-size: 16px !important;
+}
+
+.tab-close:hover { color: var(--text) !important; }
+
+.new-tab-button {
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  height: 38px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  color: var(--green) !important;
+  background: transparent !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 5px !important;
+}
+
+/* Fresh address/search row */
+.browser-toolbar {
+  flex: 0 0 58px !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: auto auto auto auto minmax(180px, 1fr) auto !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 8px 10px !important;
+  background: var(--bg) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--ui-border) !important;
+}
+
+.browser-nav-button,
+.browser-address button {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: var(--muted) !important;
+  background: color-mix(in srgb, var(--panel) 90%, var(--bg)) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 5px !important;
+}
+
+.browser-nav-button:hover,
+.browser-address button:hover {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--green) 10%, var(--panel)) !important;
+  border-color: var(--ui-border-bright) !important;
+}
+
+/* Address field is one clean component, not the old proxy search box. */
+.browser-address {
+  height: 38px !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 0 5px 0 12px !important;
+  background: color-mix(in srgb, var(--panel) 82%, var(--bg)) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 7px !important;
+  transition: border-color .15s ease, background .15s ease !important;
+}
+
+.browser-address:focus-within {
+  background: color-mix(in srgb, var(--panel) 92%, var(--bg)) !important;
+  border-color: var(--ui-border-bright) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 8%, transparent) !important;
+}
+
+.address-lock {
+  flex: 0 0 auto !important;
+  color: var(--green) !important;
+  font-size: 14px !important;
+}
+
+.browser-address input,
+#urlInput {
+  flex: 1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+  height: 36px !important;
+  padding: 0 6px !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  color: var(--text) !important;
+  font-size: 13px !important;
+}
+
+.browser-address input::placeholder,
+#urlInput::placeholder { color: var(--muted) !important; opacity: .8 !important; }
+
+.browser-address button {
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 30px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* Website surface: absolutely no old iframe frame. */
+.browser-frames {
+  position: relative !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  background: var(--bg) !important;
+  border: 0 !important;
+}
+
+#iframeContainer,
+.iframe-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: var(--bg) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.korona-browser-frame,
+#iframeWindow {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: var(--bg) !important;
+}
+
+/* Floating controls: no horizontal/grey seam underneath. */
+.iframe-toolbar {
+  position: absolute !important;
+  right: 14px !important;
+  bottom: 14px !important;
+  top: auto !important;
+  z-index: 50 !important;
+  display: flex !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.iframe-toolbar button {
+  width: 36px !important;
+  height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  color: var(--green-soft) !important;
+  background: color-mix(in srgb, var(--panel) 94%, var(--bg)) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 5px !important;
+  box-shadow: 0 7px 22px rgba(0,0,0,.25) !important;
+}
+
+.iframe-toolbar button:hover {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--green) 12%, var(--panel)) !important;
+  border-color: var(--ui-border-bright) !important;
+}
+
+/* New-tab surface */
+.browser-newtab {
+  position: absolute !important;
+  inset: 0 !important;
+  display: grid !important;
+  place-content: center !important;
+  justify-items: center !important;
+  gap: 8px !important;
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  text-align: center !important;
+}
+
+.browser-newtab .newtab-k {
+  width: 58px !important;
+  height: 58px !important;
+  display: grid !important;
+  place-items: center !important;
+  color: var(--green) !important;
+  background: color-mix(in srgb, var(--green) 8%, var(--panel)) !important;
+  border: 1px solid var(--ui-border-bright) !important;
+  font-size: 25px !important;
+  font-weight: 800 !important;
+}
+
+/* Do not let the character sit over browser controls. */
+#koronaThemeCharacter {
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+}
+
+@media (max-width: 800px) {
+  .browser-toolbar {
+    grid-template-columns: auto auto auto auto minmax(90px, 1fr) auto !important;
+  }
+  .browser-tab { flex-basis: 150px !important; }
+}
+</style>
 </head>
 
 
@@ -6046,67 +6378,48 @@ randomJoke();
 })();
 </script>
 
-<script id="korona-theme-character-switcher-v3">
+<script id="korona-theme-character-switcher-v4">
 (() => {
   const character = document.getElementById("koronaThemeCharacter");
   if (!character) return;
 
-  // Default = Neru. Miku and Teto get distinct transparent vector characters.
+  // Only these three character themes display a character.
+  // Default/Neru = amber, Miku = cyan, Teto = rose. All other themes hide it.
   const NERU_SRC = character.getAttribute("src");
+  const MIKU_SRC = "https://www.pngkey.com/png/detail/187-1871567_hatsune-miku.png";
+  const TETO_SRC = "https://www.nicepng.com/png/detail/243-2439750_diva-png.png";
 
-  const MIKU_SRC = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 700">
-    <defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#69f4ff"/><stop offset="1" stop-color="#16a8c7"/></linearGradient></defs>
-    <g stroke="#17232b" stroke-width="5" stroke-linejoin="round">
-      <path fill="url(#m)" d="M103 130C55 88 30 32 52 15c25-18 54 28 70 67 7-47 27-72 49-67 25 7 13 59-1 101z"/>
-      <path fill="url(#m)" d="M217 130c48-42 73-98 51-115-25-18-54 28-70 67-7-47-27-72-49-67-25 7-13 59 1 101z"/>
-      <path fill="#f7c9ad" d="M99 107c0-42 28-71 61-71s61 29 61 71v76c0 42-27 70-61 70s-61-28-61-70z"/>
-      <path fill="#202a32" d="M99 120c2-63 30-91 61-91 36 0 62 31 61 91-21-21-45-31-72-29-20 2-35 11-50 29z"/>
-      <circle fill="#2bd6e7" cx="135" cy="151" r="7"/><circle fill="#2bd6e7" cx="185" cy="151" r="7"/>
-      <path fill="none" stroke="#7d3944" d="M142 192q18 12 36 0"/>
-      <path fill="#242b33" d="M104 246h112l-9 155-47 18-47-18z"/>
-      <path fill="#e8fbff" d="M116 259h88l-12 54h-64z"/>
-      <path fill="#2bd6e7" d="M128 313h64l8 89-40 17-40-17z"/>
-      <path fill="#f7c9ad" d="M109 394l-25 142 33 6 32-123zM211 394l25 142-33 6-32-123z"/>
-      <path fill="#252b32" d="M87 525h35l-5 123-43 0zM198 525h35l13 123-43 0z"/>
-      <path fill="#111820" d="M65 643h55v30H54q-9-13 11-30zM203 643h55q20 17 11 30h-66z"/>
-      <path fill="none" stroke="#69f4ff" d="M97 286h126"/>
-    </g>
-  </svg>`);
-
-  const TETO_SRC = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 700">
-    <defs><linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff5a72"/><stop offset="1" stop-color="#c51f48"/></linearGradient></defs>
-    <g stroke="#28151c" stroke-width="5" stroke-linejoin="round">
-      <path fill="url(#t)" d="M105 126C61 108 31 65 45 31c10-24 42-16 60 15-8-30 3-49 23-44 27 7 19 51 5 79z"/>
-      <path fill="url(#t)" d="M215 126c44-18 74-61 60-95-10-24-42-16-60 15 8-30-3-49-23-44-27 7-19 51-5 79z"/>
-      <path fill="#f6c7ad" d="M99 109c0-42 28-72 61-72s61 30 61 72v76c0 42-27 70-61 70s-61-28-61-70z"/>
-      <path fill="#df3657" d="M99 119c-1-56 26-91 61-91 35 0 62 35 61 91-22-19-44-28-65-28-23 0-40 9-57 28z"/>
-      <circle fill="#ef4964" cx="135" cy="151" r="7"/><circle fill="#ef4964" cx="185" cy="151" r="7"/>
-      <path fill="none" stroke="#7c2638" d="M142 194q18 11 36 0"/>
-      <path fill="#d8dde3" d="M104 246h112l-8 158-48 17-48-17z"/>
-      <path fill="#b92b49" d="M117 258h86l-8 61h-70z"/>
-      <path fill="#292c35" d="M127 319h66l9 85-42 17-42-17z"/>
-      <path fill="#f6c7ad" d="M109 397l-25 139 33 6 32-121zM211 397l25 139-33 6-32-121z"/>
-      <path fill="#3a3036" d="M87 526h35l-5 122-43 0zM198 526h35l13 122-43 0z"/>
-      <path fill="#15141a" d="M65 644h55v29H54q-9-13 11-29zM203 644h55q20 16 11 29h-66z"/>
-      <path fill="none" stroke="#ff6178" d="M112 281h96"/>
-    </g>
-  </svg>`);
-
-  function wanted(theme) {
-    if (theme === "cyan") return MIKU_SRC;
-    if (theme === "rose") return TETO_SRC;
-    return NERU_SRC;
-  }
   function sync() {
     const theme = document.body.dataset.theme || "fern";
-    const src = wanted(theme);
+    let src = "";
+    let alt = "";
+
+    if (theme === "amber") {
+      src = NERU_SRC;
+      alt = "Akita Neru theme character";
+    } else if (theme === "cyan") {
+      src = MIKU_SRC;
+      alt = "Hatsune Miku theme character";
+    } else if (theme === "rose") {
+      src = TETO_SRC;
+      alt = "Kasane Teto theme character";
+    }
+
+    if (!src) {
+      character.style.display = "none";
+      return;
+    }
+
+    character.style.display = "block";
     if (character.getAttribute("src") !== src) character.src = src;
-    character.alt = theme === "cyan" ? "Hatsune Miku theme character" : theme === "rose" ? "Kasane Teto theme character" : "Akita Neru theme character";
+    character.alt = alt;
   }
+
   sync();
-  new MutationObserver(sync).observe(document.body, {attributes:true, attributeFilter:["data-theme"]});
+  new MutationObserver(sync).observe(document.body, {
+    attributes: true,
+    attributeFilter: ["data-theme"]
+  });
 })();
 </script>
 </body>
