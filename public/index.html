@@ -94,8 +94,10 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
 @media(max-width:1050px){.switchGameGrid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.switchGameGrid{grid-template-columns:repeat(2,1fr)}body.switch-mode #workspace{grid-template-columns:72px 1fr}body.switch-mode .brand span,body.switch-mode .sideBtn span{display:none}body.switch-mode .sideBtn{justify-content:center;padding:0}}
 
 </style>
+<style id="korona-failsafe-style">#koronaBootError{display:none;position:fixed;inset:0;z-index:2147483647;background:#080808;color:#fff;font:16px system-ui;padding:32px;overflow:auto}#koronaBootError h1{color:#00ff66;margin-top:0}#koronaBootError pre{white-space:pre-wrap;background:#111;padding:16px;border:1px solid #333}</style>
 </head>
 <body>
+<div id="koronaBootError"></div>
 <canvas id="particles"></canvas>
 <div id="authGate">
   <div class="authPanel">
@@ -293,38 +295,32 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
     return 'https://www.google.com/search?q='+encodeURIComponent(v);
   }
   async function ensureScram(){
-    if(scramReady) return;
-    if(!window.isSecureContext && location.protocol !== 'https:') throw new Error('Korona proxy requires HTTPS.');
-    if(typeof $scramjetLoadController !== 'function') throw new Error('Scramjet loader is unavailable.');
-    if(typeof BareMux === 'undefined' || typeof BareMux.BareMuxConnection !== 'function') throw new Error('BareMux is unavailable.');
+    if(scramReady) return true;
+    if(!('serviceWorker' in navigator)) throw new Error('Service workers are not supported by this browser.');
+    if(location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') throw new Error('Korona proxy requires HTTPS.');
+    if(typeof window.$scramjetLoadController !== 'function') throw new Error('Scramjet loader is unavailable at /scram/scramjet.all.js.');
+    if(typeof window.BareMux === 'undefined' || typeof window.BareMux.BareMuxConnection !== 'function') throw new Error('BareMux is unavailable at /baremux/index.js.');
 
-    // Restored from the previously working Fern Scramjet bootstrap.
-    const loaded=$scramjetLoadController();
-    const ScramjetController=loaded.ScramjetController;
+    const loaded=window.$scramjetLoadController();
+    const ScramjetController=loaded && (loaded.ScramjetController || window.ScramjetController);
     if(typeof ScramjetController !== 'function') throw new Error('ScramjetController is unavailable.');
 
-    scram=new ScramjetController({
-      files:{
-        wasm:'/scram/scramjet.wasm.wasm',
-        all:'/scram/scramjet.all.js',
-        sync:'/scram/scramjet.sync.js'
-      }
-    });
+    scram=new ScramjetController({files:{
+      wasm:'/scram/scramjet.wasm.wasm',
+      all:'/scram/scramjet.all.js',
+      sync:'/scram/scramjet.sync.js'
+    }});
     scram.init();
 
-    // Do not register this until a proxied page is actually requested.
-    // This keeps Scramjet from interfering with the normal Korona homepage.
-    await navigator.serviceWorker.register('/sw.js');
+    let registration=await navigator.serviceWorker.getRegistration('/');
+    if(!registration) registration=await navigator.serviceWorker.register('/sw.js',{scope:'/'});
     await navigator.serviceWorker.ready;
 
-    mux=new BareMux.BareMuxConnection('/baremux/worker.js');
-
-    // This is the original same-origin transport used by the working build.
-    // Do not read a cached/localStorage Wisp URL.
+    mux=new window.BareMux.BareMuxConnection('/baremux/worker.js');
     const websocket=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/wisp/';
     await mux.setTransport('/libcurl/index.mjs',[{websocket}]);
-
     scramReady=true;
+    return true;
   }
 
   async function navigate(tab,value,fromHistory=false){
@@ -508,22 +504,35 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
 
   $("#loginBtn").onclick=login;$("#createBtn").onclick=create;$("#showCreate").onclick=()=>showAuth("create");$("#showLogin").onclick=()=>showAuth("login");$("#loginId").addEventListener("keydown",e=>{if(e.key==="Enter")login()});$("#logoutBtn").onclick=lock;
 
-  async function boot(){
-    try{supa=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)}catch(e){console.error(e);}
-    renderThemes();renderApps();renderSwitchFeatured();applyStyleMode(selectedStyle);applyCharacter(selectedCharacter);initParticles();
-    const saved=loadUser();
-    if(saved) $('#loginId').value=saved.id;
-    $('#app').hidden=true;
+  async function ensureScram(){
+    if(scramReady) return true;
+    if(!('serviceWorker' in navigator)) throw new Error('Service workers are not supported by this browser.');
+    if(location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') throw new Error('Korona proxy requires HTTPS.');
+    if(typeof window.$scramjetLoadController !== 'function') throw new Error('Scramjet loader is unavailable at /scram/scramjet.all.js.');
+    if(typeof window.BareMux === 'undefined' || typeof window.BareMux.BareMuxConnection !== 'function') throw new Error('BareMux is unavailable at /baremux/index.js.');
 
-    if(saved&&supa){
-      const ok=await checkActiveStatus(true);
-      if(ok && !authLocked){
-        unlock();
-        startAuthWatcher();
-      }
-    }
+    const loaded=window.$scramjetLoadController();
+    const ScramjetController=loaded && (loaded.ScramjetController || window.ScramjetController);
+    if(typeof ScramjetController !== 'function') throw new Error('ScramjetController is unavailable.');
+
+    scram=new ScramjetController({files:{
+      wasm:'/scram/scramjet.wasm.wasm',
+      all:'/scram/scramjet.all.js',
+      sync:'/scram/scramjet.sync.js'
+    }});
+    scram.init();
+
+    let registration=await navigator.serviceWorker.getRegistration('/');
+    if(!registration) registration=await navigator.serviceWorker.register('/sw.js',{scope:'/'});
+    await navigator.serviceWorker.ready;
+
+    mux=new window.BareMux.BareMuxConnection('/baremux/worker.js');
+    const websocket=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/wisp/';
+    await mux.setTransport('/libcurl/index.mjs',[{websocket}]);
+    scramReady=true;
+    return true;
   }
-  boot();
+
 })();
 </script>
 </body>
