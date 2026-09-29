@@ -417,118 +417,85 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
 
   $('#characterSelect').onchange=e=>applyCharacter(e.target.value);
   $('#particleToggle').onchange=e=>{particlesOn=e.target.checked;localStorage.setItem(PARTICLES_KEY,particlesOn?'1':'0');paintParticles()};
-  function renderAccount(){const c=$('#accountCard');c.innerHTML='';if(!user){c.textContent='Not signed in.';return} [['Korona ID',user.id],['First name',user.firstName||''],['Last name',user.lastName||'']].forEach(([a,b])=>{const d=document.createElement('div');d.className='kv';d.innerHTML='<span></span><span></span>';d.children[0].textContent=a;d.children[1].textContent=b;c.appendChild(d)})}
+  function renderAccount(){const c=$('#accountCard');c.innerHTML='';if(!user){c.textContent='Not signed in.';return} [['Korona ID',user.id],['Name',user.name||'']].forEach(([a,b])=>{const d=document.createElement('div');d.className='kv';d.innerHTML='<span></span><span></span>';d.children[0].textContent=a;d.children[1].textContent=b;c.appendChild(d)})}
 
   function initParticles(){const c=$('#particles'),ctx=c.getContext('2d');let dots=[];function resize(){c.width=innerWidth*devicePixelRatio;c.height=innerHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);dots=Array.from({length:Math.min(80,Math.max(35,Math.floor(innerWidth/24)))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.4+.5}))}function tick(){ctx.clearRect(0,0,innerWidth,innerHeight);if(particlesOn){const accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();for(const d of dots){d.x+=d.vx;d.y+=d.vy;if(d.x<-10)d.x=innerWidth+10;if(d.x>innerWidth+10)d.x=-10;if(d.y<-10)d.y=innerHeight+10;if(d.y>innerHeight+10)d.y=-10;ctx.beginPath();ctx.fillStyle=accent;ctx.globalAlpha=.55;ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=.22;for(let i=0;i<dots.length;i++)for(let j=i+1;j<dots.length;j++){const a=dots[i],b=dots[j],dx=a.x-b.x,dy=a.y-b.y,dist=Math.hypot(dx,dy);if(dist<125){ctx.beginPath();ctx.strokeStyle=accent;ctx.globalAlpha=.18*(1-dist/125);ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}}requestAnimationFrame(tick)}addEventListener('resize',resize);resize();tick()}
   function paintParticles(){document.body.style.setProperty('--particle-accent',getComputedStyle(document.documentElement).getPropertyValue('--accent'))}
 
   function saveUser(u){localStorage.setItem(USER_KEY,JSON.stringify(u));user=u}
-  function loadUser(){try{return JSON.parse(localStorage.getItem(USER_KEY)||'null')}catch{return null}}
-  function msg(el,text,ok=false){el.textContent=text;el.style.color=ok?'var(--accent)':'var(--danger)'}
-  function showAuth(mode){$('#loginBox').classList.toggle('visible',mode==='login');$('#createBox').classList.toggle('visible',mode==='create')}
+  function loadUser(){try{return JSON.parse(localStorage.getItem(USER_KEY)||"null")}catch{return null}}
+  function msg(el,text,ok=false){el.textContent=text;el.style.color=ok?"var(--accent)":"var(--danger)"}
+  function showAuth(mode){$("#loginBox").classList.toggle("visible",mode==="login");$("#createBox").classList.toggle("visible",mode==="create")}
   let authLocked=false;
   let authPoll=null;
 
   async function getUserRecord(id){
-    if(!supa || !id) return {data:null,error:new Error('Supabase is not ready.')};
-    return await supa.from('korona_users').select('id,first_name,last_name,name,active').eq('id',id).maybeSingle();
+    if(!supa||!id)return {data:null,error:new Error("Supabase is not ready.")};
+    return await supa.from("korona_users").select("id,name,active").eq("id",id).maybeSingle();
   }
 
-  function accountObject(data){
-    return {id:data.id,firstName:data.first_name||String(data.name||'').split(' ')[0]||'',lastName:data.last_name||String(data.name||'').split(' ').slice(1).join(' ')||''};
-  }
+  function accountObject(data){return {id:data.id,name:data.name||data.id}}
 
   async function login(){
-    const id=$('#loginId').value.trim().toLowerCase();
-    msg($('#loginMsg'),'');
-    if(!id){msg($('#loginMsg'),'Enter your Korona ID.');return;}
+    const id=$("#loginId").value.trim().toLowerCase();
+    msg($("#loginMsg"),"");
+    if(!id){msg($("#loginMsg"),"Enter your Korona ID.");return}
     try{
       const {data,error}=await getUserRecord(id);
-      if(error) throw error;
-      if(!data) throw new Error('That Korona ID does not exist.');
-      if(data.active!==true){msg($('#loginMsg'),'Your Korona ID is waiting for approval.');return;}
-      authLocked=false;
-      saveUser(accountObject(data));
-      unlock();
-      startAuthWatcher();
-    }catch(e){console.error(e);msg($('#loginMsg'),e.message||'Authentication failed.');}
+      if(error)throw error;
+      if(!data){msg($("#loginMsg"),"That Korona ID does not exist.");return}
+      if(data.active!==true){msg($("#loginMsg"),"This Korona ID is not active yet.");return}
+      authLocked=false;saveUser(accountObject(data));unlock();startAuthWatcher();
+    }catch(e){console.error(e);msg($("#loginMsg"),e.message||"Authentication failed.")}
   }
 
   async function create(){
-    const first=$('#firstName').value.trim(), last=$('#lastName').value.trim(); msg($('#createMsg'),'');
-    if(!first||!last){msg($('#createMsg'),'Enter both names.');return;}
-    const id=(first+'.'+last).toLowerCase().replace(/[^a-z0-9.]/g,'');
-    if(!id){msg($('#createMsg'),'Those names could not make a valid Korona ID.');return;}
+    const first=$("#firstName").value.trim(),last=$("#lastName").value.trim();msg($("#createMsg"),"");
+    if(!first||!last){msg($("#createMsg"),"Enter both names.");return}
+    const id=(first+"."+last).toLowerCase().replace(/[^a-z0-9.]/g,"");
+    if(!id){msg($("#createMsg"),"Those names could not make a valid Korona ID.");return}
     try{
-      // No authentication code is generated or required. Approval is controlled by active=false/true.
-      const payload={id,name:first+' '+last,first_name:first,last_name:last,active:false};
-      const {data,error}=await supa.from('korona_users').insert(payload).select('id,first_name,last_name,name,active').single();
-      if(error) throw error;
+      const payload={id,name:first+" "+last,active:true};
+      const {data,error}=await supa.from("korona_users").insert(payload).select("id,name,active").single();
+      if(error)throw error;
       saveUser(accountObject(data));
-      $('#loginId').value=id;
-      showAuth('login');
-      msg($('#loginMsg'),'ID created. Waiting for approval.',true);
-      startAuthWatcher();
-    }catch(e){console.error(e);msg($('#createMsg'),e.message||'Could not create ID.');}
+      authLocked=false;
+      unlock();startAuthWatcher();
+    }catch(e){console.error(e);msg($("#createMsg"),e.message||"Could not create ID.")}
   }
 
   function lock(){
-    authLocked=true;
-    stopAuthWatcher();
-    localStorage.removeItem(USER_KEY);
-    user=null;
-    $('#app').hidden=true;
-    if(!$('#authGate')) location.reload();
-    else { $('#authGate').style.display='grid'; showAuth('login'); }
+    authLocked=true;stopAuthWatcher();localStorage.removeItem(USER_KEY);user=null;
+    $("#app").hidden=true;
+    let gate=$("#authGate");
+    if(!gate){location.reload();return}
+    gate.style.display="grid";showAuth("login");$("#loginId").value="";msg($("#loginMsg"),"");
   }
 
   function unlock(){
-    user=loadUser();
-    $('#authGate')?.remove();
-    $('#app').hidden=false;
-    renderAccount();
-    if(!tabs.length)makeTab();
+    user=loadUser();$("#authGate")?.remove();$("#app").hidden=false;renderAccount();if(!tabs.length)makeTab();
   }
 
-  async function checkActiveStatus(silent=false){
+  async function checkActiveStatus(){
     const saved=loadUser();
     if(!saved||!supa||authLocked)return false;
     try{
       const {data,error}=await getUserRecord(saved.id);
-      if(error){console.warn('Korona auth poll:',error);return true;} // network/RLS hiccups do not kick a user
+      if(error){console.warn("Korona auth poll:",error);return true}
       if(!data||data.active!==true){
-        stopAuthWatcher();
-        authLocked=true;
-        localStorage.removeItem(USER_KEY);
-        user=null;
-        $('#app').hidden=true;
-        let gate=$('#authGate');
-        if(!gate){location.reload();return false;}
-        gate.style.display='grid';
-        showAuth('login');
-        msg($('#loginMsg'),data?'Your Korona account is no longer active.':'Your Korona account no longer exists.');
-        return false;
+        stopAuthWatcher();authLocked=true;localStorage.removeItem(USER_KEY);user=null;$("#app").hidden=true;
+        let gate=$("#authGate");
+        if(!gate){location.reload();return false}
+        gate.style.display="grid";showAuth("login");msg($("#loginMsg"),data?"Your Korona account is no longer active.":"Your Korona account no longer exists.");return false
       }
-      user=accountObject(data);
-      localStorage.setItem(USER_KEY,JSON.stringify(user));
-      if(!silent)renderAccount();
-      return true;
-    }catch(e){console.warn('Korona auth poll:',e);return true;}
+      user=accountObject(data);localStorage.setItem(USER_KEY,JSON.stringify(user));return true;
+    }catch(e){console.warn("Korona auth poll:",e);return true}
   }
 
-  function startAuthWatcher(){
-    stopAuthWatcher();
-    authLocked=false;
-    authPoll=setInterval(()=>checkActiveStatus(true),5000);
-  }
-  function stopAuthWatcher(){if(authPoll){clearInterval(authPoll);authPoll=null;}}
+  function startAuthWatcher(){stopAuthWatcher();authLocked=false;authPoll=setInterval(()=>checkActiveStatus(),5000)}
+  function stopAuthWatcher(){if(authPoll){clearInterval(authPoll);authPoll=null}}
 
-  $('#loginBtn').onclick=login;
-  $('#createBtn').onclick=create;
-  $('#showCreate').onclick=()=>showAuth('create');
-  $('#showLogin').onclick=()=>showAuth('login');
-  $('#loginId').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-  $('#logoutBtn').onclick=lock;
+  $("#loginBtn").onclick=login;$("#createBtn").onclick=create;$("#showCreate").onclick=()=>showAuth("create");$("#showLogin").onclick=()=>showAuth("login");$("#loginId").addEventListener("keydown",e=>{if(e.key==="Enter")login()});$("#logoutBtn").onclick=lock;
 
   async function boot(){
     try{supa=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)}catch(e){console.error(e);}
