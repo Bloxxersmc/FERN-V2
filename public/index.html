@@ -299,11 +299,8 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
     if(typeof $scramjetLoadController !== 'function') throw new Error('Scramjet loader is unavailable.');
     if(typeof BareMux === 'undefined' || !BareMux.BareMuxConnection) throw new Error('BareMux is unavailable.');
 
-    // Register the controller service worker before creating the Scramjet controller.
-    let registration = await navigator.serviceWorker.getRegistration('/');
-    if(!registration) registration = await navigator.serviceWorker.register('/sw.js', {scope:'/'});
-    await navigator.serviceWorker.ready;
-
+    // This is the same bootstrap that was used by the working Fern Scramjet build.
+    // Keep the controller + BareMux + libcurl transport in this order.
     const loaded = $scramjetLoadController();
     const ScramjetController = loaded.ScramjetController || window.ScramjetController;
     if(!ScramjetController) throw new Error('ScramjetController is unavailable.');
@@ -315,18 +312,19 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
         sync: '/scram/scramjet.sync.js'
       }
     });
-    await Promise.resolve(scram.init());
+    scram.init();
+
+    // Register the service worker after the controller is initialized, matching the old working build.
+    let registration = await navigator.serviceWorker.getRegistration('/');
+    if(!registration) registration = await navigator.serviceWorker.register('/sw.js', {scope:'/'});
+    await navigator.serviceWorker.ready;
 
     mux = new BareMux.BareMuxConnection('/baremux/worker.js');
+
+    // The old working build used the same-origin Wisp endpoint.
+    // Always reset the transport so an old/stale BareMux configuration cannot keep a broken Wisp URL.
     const websocket = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/wisp/';
-    try {
-      const current = await mux.getTransport();
-      if(!current || !String(current).includes('/libcurl/')) {
-        await mux.setTransport('/libcurl/index.mjs', [{websocket}]);
-      }
-    } catch(_) {
-      await mux.setTransport('/libcurl/index.mjs', [{websocket}]);
-    }
+    await mux.setTransport('/libcurl/index.mjs', [{websocket}]);
 
     scramReady = true;
   }
@@ -356,7 +354,7 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
     }catch(err){
       console.error('Korona proxy error:',err);
       scramReady=false;
-      alert('Korona could not start the proxy. Make sure the Library Scramjet files and /wisp/ endpoint are deployed.');
+      alert('Korona could not start Scramjet. The Wisp WebSocket connection to /wisp/ failed.');
     }
   }
   function updateAddress(){const t=tabs.find(x=>x.id===activeTab);$('#address').value=t?.url||''}
@@ -455,12 +453,27 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
     const id=(first+"."+last).toLowerCase().replace(/[^a-z0-9.]/g,"");
     if(!id){msg($("#createMsg"),"Those names could not make a valid Korona ID.");return}
     try{
-      const payload={id,name:first+" "+last,active:true};
-      const {data,error}=await supa.from("korona_users").insert(payload).select("id,name,active").single();
-      if(error)throw error;
-      saveUser(accountObject(data));
+      // NEW ACCOUNT: it MUST start inactive. Approval is the admin's switch.
+      const payload={id,name:first+" "+last,active:false};
+      const {data:created,error:createError}=await supa.from("korona_users").insert(payload).select("id,name,active").single();
+      if(createError)throw createError;
+
+      // If the database has an old default/trigger that changes the value, explicitly
+      // put the account back to false before showing the login screen.
+      const {error:updateError}=await supa.from("korona_users").update({active:false}).eq("id",id);
+      if(updateError)throw updateError;
+
+      const {data,error:verifyError}=await getUserRecord(id);
+      if(verifyError)throw verifyError;
+      if(!data || data.active!==false){
+        throw new Error("The account was created, but Supabase did not keep active=false. Check the table default or trigger.");
+      }
+
       authLocked=false;
-      unlock();startAuthWatcher();
+      stopAuthWatcher();
+      $("#loginId").value=id;
+      showAuth("login");
+      msg($("#loginMsg"),"Korona ID created. Waiting for approval.",true);
     }catch(e){console.error(e);msg($("#createMsg"),e.message||"Could not create ID.")}
   }
 
