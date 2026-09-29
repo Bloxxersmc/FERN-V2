@@ -5,592 +5,4337 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Korona</title>
 <meta name="description" content="Korona browser">
+
+<!-- Scramjet -->
 <script src="/scram/scramjet.all.js"></script>
 <script src="/baremux/index.js"></script>
+
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
-html,body{width:100%;height:100%;margin:0;overflow:hidden}
-body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
-button,input,select{font:inherit;color:inherit}
-button{cursor:pointer}
-:root{
-  --bg:#100e05;--surface:#171306;--surface2:#201a08;--surface3:#2a210b;
-  --text:#f7efd0;--muted:#aa9b68;--line:#655018;--accent:#d9ad32;--accent2:#f0c84d;
-  --danger:#d85c62;--shadow:0 14px 50px rgba(0,0,0,.34)
-}
-body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% 15%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 35%);pointer-events:none;z-index:0}
-#particles{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.65}
-#app{position:relative;z-index:1;width:100%;height:100%;display:grid;grid-template-rows:38px 42px 1fr}
-#tabStrip{display:flex;align-items:stretch;background:color-mix(in srgb,var(--surface) 94%,transparent);border-bottom:1px solid var(--line);overflow:hidden}
-.tab{min-width:150px;max-width:230px;height:38px;display:flex;align-items:center;gap:9px;padding:0 10px 0 12px;border-right:1px solid var(--line);background:transparent;color:var(--muted);user-select:none;cursor:pointer}
-.tab.active{background:var(--surface2);color:var(--text);box-shadow:inset 0 -2px 0 var(--accent)}
-.tab-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:12px}
-.tab-close{border:0;background:none;color:var(--muted);width:22px;height:22px;padding:0;display:grid;place-items:center;border-radius:4px}.tab-close:hover{color:var(--text);background:var(--surface3)}
-.tab-icon{width:16px;height:16px;border:1px solid var(--accent);display:grid;place-items:center;font-size:9px;color:var(--accent);flex:0 0 auto}
-#newTab{width:42px;border:0;border-left:1px solid var(--line);background:transparent;color:var(--accent);font-size:20px}
-#newTab:hover{background:var(--surface2)}
-#browserBar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:6px 9px;background:var(--surface);border-bottom:1px solid var(--line)}
-#navButtons,#barActions{display:flex;gap:5px}
-.iconBtn{width:32px;height:30px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center;color:var(--muted)}
-.iconBtn:hover{color:var(--text);border-color:var(--accent);background:var(--surface3)}
-#addressWrap{height:30px;display:flex;align-items:center;border:1px solid var(--line);background:#0c0a04;min-width:0}
-#addressWrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)}
-#address{width:100%;height:28px;border:0;outline:0;background:transparent;padding:0 13px;color:var(--text);font-size:12px}
-#address::placeholder{color:#776b45}
-#workspace{min-height:0;display:grid;grid-template-columns:176px 1fr;background:var(--bg)}
-#side{border-right:1px solid var(--line);background:color-mix(in srgb,var(--surface) 96%,transparent);padding:13px 9px;display:flex;flex-direction:column;gap:5px;overflow:auto}
-.brand{display:flex;align-items:center;gap:10px;padding:8px 9px 18px;color:var(--text);font-weight:800;letter-spacing:.4px}
-.brandMark{width:26px;height:26px;border:1px solid var(--accent);display:grid;place-items:center;color:var(--accent);font-size:12px}
-.sideBtn{width:100%;height:38px;border:1px solid transparent;background:transparent;color:var(--muted);text-align:left;padding:0 11px;display:flex;align-items:center;gap:11px}
-.sideBtn:hover{background:var(--surface2);color:var(--text)}
-.sideBtn.active{background:var(--surface3);color:var(--text);border-color:var(--accent)}
-.sideIcon{width:18px;text-align:center;color:var(--accent)}
-.sideBottom{margin-top:auto;padding-top:10px;border-top:1px solid var(--line)}
-#main{min-width:0;min-height:0;position:relative;overflow:hidden}
-.view{position:absolute;inset:0;display:none;overflow:auto;padding:34px 42px}
-.view.active{display:block}
-.view h1{font-size:22px;margin:0 0 7px;text-transform:lowercase;letter-spacing:-.4px}
-.sub{color:var(--muted);font-size:12px;margin:0 0 25px}
-.panel{border-top:1px solid var(--line);padding:24px 0}
-.hero{max-width:720px;margin:13vh auto 0;text-align:center}
-.heroMark{width:58px;height:58px;border:1px solid var(--accent);display:grid;place-items:center;margin:0 auto 18px;color:var(--accent);font-size:24px;font-weight:800;background:var(--surface2)}
-.hero h1{font-size:31px}.hero p{color:var(--muted);font-size:13px}.heroSearch{margin:22px auto;max-width:650px;height:44px;border:1px solid var(--line);display:flex;background:var(--surface)}
-.heroSearch input{flex:1;border:0;background:transparent;outline:0;padding:0 14px;color:var(--text)}.heroSearch button{width:90px;border:0;border-left:1px solid var(--line);background:var(--surface2);color:var(--accent)}
-.quick{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.quick button{border:1px solid var(--line);background:var(--surface2);padding:9px 13px;color:var(--muted)}.quick button:hover{border-color:var(--accent);color:var(--text)}
-#browserView{padding:0;overflow:hidden;background:#050504}
-#frames{position:absolute;inset:0;background:#050504}
-.browserFrame{position:absolute;inset:0;width:100%;height:100%;border:0;display:none;background:#fff}
-.browserFrame.active{display:block}
-#browserOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#0d0b05,#080704);color:var(--muted)}
-#browserOverlay.hidden{display:none}
-.overlayBox{text-align:center}.overlayLogo{font-size:44px;color:var(--accent);font-weight:900}.overlayBox strong{display:block;color:var(--text);font-size:18px;margin-top:8px}.overlayBox span{display:block;margin-top:5px;font-size:12px}
-#gamesGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
-.game{background:var(--surface);border:1px solid var(--line);min-width:0;transition:.15s transform,.15s border-color}.game:hover{transform:translateY(-2px);border-color:var(--accent)}
-.gameImg{height:112px;background:var(--surface2);display:block;width:100%;object-fit:cover}.gameBody{padding:12px}.gameTitle{font-weight:750;font-size:13px}.gameDesc{font-size:11px;color:var(--muted);margin-top:5px;min-height:30px}.gameGo{margin-top:10px;width:100%;height:31px;border:1px solid var(--line);background:transparent;color:var(--accent)}.gameGo:hover{background:var(--surface2);border-color:var(--accent)}
-.controls{display:flex;gap:8px;margin-bottom:18px}.controls input,.controls select{height:34px;border:1px solid var(--line);background:var(--surface);outline:0;padding:0 10px}.controls input{flex:1}.controls select{min-width:145px}
-.settingsGrid{max-width:900px}.setting{padding:20px 0;border-top:1px solid var(--line)}.settingHead{display:flex;align-items:center;justify-content:space-between;gap:20px}.settingTitle{font-weight:750}.settingHelp{color:var(--muted);font-size:11px;margin-top:4px;max-width:650px}.themeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:15px}.themeBtn{height:54px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:9px;padding:0 10px;color:var(--muted);text-align:left}.themeBtn:hover,.themeBtn.selected{border-color:var(--accent);color:var(--text);background:var(--surface2)}.swatch{width:22px;height:22px;border:1px solid rgba(255,255,255,.12);flex:0 0 auto}
-#characterSelect{height:36px;border:1px solid var(--line);background:var(--surface);outline:0;padding:0 10px;min-width:220px}
-.check{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12px}.check input{accent-color:var(--accent)}
-#character{position:fixed;right:22px;bottom:0;width:min(280px,25vw);max-height:62vh;object-fit:contain;object-position:bottom right;opacity:.42;z-index:2;pointer-events:none;display:none;filter:drop-shadow(0 8px 25px rgba(0,0,0,.45))}
-#character.show{display:block}
-#accountCard{max-width:700px;border:1px solid var(--line);background:var(--surface);padding:22px}.kv{display:grid;grid-template-columns:130px 1fr;gap:8px;font-size:12px;padding:9px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}.kv span:first-child{color:var(--muted)}
-#authGate{position:fixed;inset:0;z-index:99999;background:#090804;display:grid;place-items:center;overflow:hidden}.authPanel{width:min(420px,calc(100vw - 36px));border:1px solid var(--accent);background:#100e05;padding:28px;box-shadow:var(--shadow)}.authLogo{width:48px;height:48px;border:1px solid var(--accent);display:grid;place-items:center;color:var(--accent);font-weight:900;margin-bottom:18px}.authPanel h2{margin:0 0 6px}.authPanel p{color:var(--muted);font-size:12px}.authPanel input{width:100%;height:38px;border:1px solid var(--line);background:#080703;outline:0;padding:0 10px;margin-top:8px}.authPanel button{height:38px;border:1px solid var(--accent);background:var(--surface2);color:var(--accent);padding:0 14px;margin-top:10px}.authPanel button:hover{background:var(--accent);color:#110d03}.authRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.authMsg{font-size:11px;min-height:18px;color:var(--danger);margin-top:8px}.authSwitch{font-size:11px;color:var(--muted);margin-top:17px}.authSwitch button{border:0;background:none;padding:0;margin:0;color:var(--accent);height:auto}.authOnly{display:none}.authOnly.visible{display:block}
-@media(max-width:850px){#workspace{grid-template-columns:64px 1fr}.brand span,.sideBtn span{display:none}.brand{justify-content:center}.sideBtn{justify-content:center;padding:0}.view{padding:25px 20px}.themeGrid{grid-template-columns:repeat(2,1fr)}#character{width:220px;opacity:.28}}
 
-/* Console interface mode */
-#styleSelect{height:36px;min-width:190px;border:1px solid var(--line);background:var(--surface);outline:0;padding:0 12px;color:var(--text)}
-#switchHome{display:none}.switchHomeTop{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px}.switchEyebrow{font-size:11px;font-weight:900;letter-spacing:2px;color:var(--accent)}.switchHomeTop h2{font-size:34px;margin:4px 0 0}.switchHomeTop button{border:0;border-radius:999px;background:var(--accent);color:#fff;padding:11px 17px;font-weight:800}.switchGameGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}.switchGameCard{min-height:215px;border-radius:18px;overflow:hidden;background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 65%,transparent);box-shadow:0 10px 30px rgba(0,0,0,.22);transition:.16s}.switchGameCard:hover{transform:translateY(-5px);box-shadow:0 16px 38px rgba(0,0,0,.3)}.switchGameCard img{width:100%;height:150px;object-fit:cover;display:block;background:var(--surface2)}.switchGameCard .sgBody{padding:12px 14px 15px}.switchGameCard .sgTitle{font-weight:850;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.switchGameCard .sgOpen{margin-top:9px;border:0;border-radius:999px;background:var(--accent);color:#fff;padding:7px 12px;font-size:11px;font-weight:800}
-body.switch-mode{--bg:#101114;--surface:#181a1e;--surface2:#22252b;--surface3:#2d3138;--text:#f7f8fb;--muted:#9ba0aa;--line:#3b4048;--accent:#e60012;--accent2:#ff3345;--danger:#ff5b6b;--shadow:0 18px 55px rgba(0,0,0,.34)}
-body.switch-mode::before{background:radial-gradient(circle at 12% 8%,rgba(230,0,18,.15),transparent 24%),radial-gradient(circle at 88% 12%,rgba(0,174,239,.13),transparent 26%)}
-body.switch-mode #app{grid-template-rows:58px 54px 1fr}body.switch-mode #tabStrip{background:#17191d;border-bottom:0;padding:7px 9px 0;gap:6px}body.switch-mode .tab{min-width:170px;height:51px;border:0;border-radius:13px 13px 0 0;background:#24272c;color:#aeb3bc;padding:0 13px;box-shadow:none}body.switch-mode .tab.active{background:#34383f;color:#fff;box-shadow:inset 0 -4px 0 var(--accent)}body.switch-mode .tab-icon{border:0;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-weight:900}body.switch-mode #newTab{width:48px;height:48px;border:0;border-radius:14px;background:#24272c;color:#fff;margin-left:2px}
-body.switch-mode #browserBar{grid-template-columns:auto 1fr auto;background:#1c1f24;border:0;padding:8px 12px;gap:10px}body.switch-mode .iconBtn{width:38px;height:38px;border:0;border-radius:50%;background:#2a2e34;color:#e8ebef}body.switch-mode .iconBtn:hover{background:#383d45;color:#fff}body.switch-mode #addressWrap{height:40px;border:0;border-radius:22px;background:#0f1114;box-shadow:inset 0 0 0 1px #343840}body.switch-mode #address{height:38px;font-size:13px;color:#fff}body.switch-mode #address::placeholder{color:#727780}
-body.switch-mode #workspace{grid-template-columns:210px 1fr;background:#111317}body.switch-mode #side{background:#17191d;border-right:1px solid #2c3036;padding:16px 12px;gap:8px}body.switch-mode .brand{padding:8px 12px 22px}body.switch-mode .brandMark{width:38px;height:38px;border:0;border-radius:50%;background:var(--accent);color:#fff;font-size:17px}body.switch-mode .sideBtn{height:48px;border:0;border-radius:14px;padding:0 14px;color:#b9bec7;font-weight:700}body.switch-mode .sideBtn:hover{background:#24272d;color:#fff}body.switch-mode .sideBtn.active{background:#2c3037;color:#fff;border:0;box-shadow:inset 4px 0 0 var(--accent)}body.switch-mode .sideIcon{color:#fff}body.switch-mode .sideBottom{border-top:1px solid #2c3036}
-body.switch-mode #main{background:#111317}body.switch-mode .view{padding:34px 42px}body.switch-mode #view-home{padding:0;overflow:auto}body.switch-mode #view-home>.hero{display:none}body.switch-mode #switchHome{display:block;padding:42px 48px 56px;min-height:100%}body.switch-mode #gamesGrid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}body.switch-mode .game{border:0;border-radius:16px;overflow:hidden;background:#1b1e23;box-shadow:0 8px 26px rgba(0,0,0,.22)}body.switch-mode .game:hover{border:0;transform:translateY(-4px)}body.switch-mode .gameImg{height:135px}body.switch-mode .gameBody{padding:14px}body.switch-mode .gameGo{border:0;border-radius:999px;background:#30343b;color:#fff}body.switch-mode .gameGo:hover{background:var(--accent)}
-body.switch-mode .controls input,body.switch-mode .controls select,body.switch-mode #characterSelect,body.switch-mode #styleSelect{border:0;border-radius:12px;background:#1d2025;box-shadow:inset 0 0 0 1px #353a42;color:#fff}body.switch-mode .themeBtn{border:0;border-radius:14px;background:#1d2025;color:#bfc4cc}body.switch-mode .themeBtn:hover,body.switch-mode .themeBtn.selected{background:#2c3037;color:#fff;border:0;box-shadow:inset 0 0 0 2px var(--accent)}body.switch-mode #accountCard{border:0;border-radius:18px;background:#1d2025}body.switch-mode .kv{border-bottom-color:#30343a}
-body.switch-mode #browserView,body.switch-mode #frames{background:#0d0f12}body.switch-mode #browserOverlay{background:#0d0f12}
-body.switch-mode #authGate{background:radial-gradient(circle at 15% 25%,rgba(230,0,18,.18),transparent 25%),radial-gradient(circle at 85% 75%,rgba(0,174,239,.16),transparent 27%),#0e1013}body.switch-mode .authPanel{width:min(470px,calc(100vw - 36px));border:0;border-radius:26px;background:#1b1e23;padding:34px;box-shadow:0 24px 80px rgba(0,0,0,.5);text-align:center}body.switch-mode .authLogo{width:72px;height:72px;border:0;border-radius:50%;margin:0 auto 18px;background:linear-gradient(135deg,#e60012 0 50%,#00aef0 50%);color:#fff;font-size:25px}body.switch-mode .authPanel input{border:0;border-radius:12px;background:#101216;box-shadow:inset 0 0 0 1px #373c45;color:#fff}body.switch-mode .authPanel button{border:0;border-radius:999px;background:#e60012;color:#fff;font-weight:800}body.switch-mode .authPanel button:hover{background:#ff2436;color:#fff}
-body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,0,.55))}
-@media(max-width:1050px){.switchGameGrid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.switchGameGrid{grid-template-columns:repeat(2,1fr)}body.switch-mode #workspace{grid-template-columns:72px 1fr}body.switch-mode .brand span,body.switch-mode .sideBtn span{display:none}body.switch-mode .sideBtn{justify-content:center;padding:0}}
+html,body{
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden
+}
+
+body{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--text)
+}
+
+button,input,select{
+  font:inherit;
+  color:inherit
+}
+
+button{cursor:pointer}
+
+:root{
+  --bg:#100e05;
+  --surface:#171306;
+  --surface2:#201a08;
+  --surface3:#2a210b;
+  --text:#f7efd0;
+  --muted:#aa9b68;
+  --line:#655018;
+  --accent:#d9ad32;
+  --accent2:#f0c84d;
+  --danger:#d85c62;
+  --shadow:0 14px 50px rgba(0,0,0,.34)
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:radial-gradient(
+    circle at 50% 15%,
+    color-mix(in srgb,var(--accent) 7%,transparent),
+    transparent 35%
+  );
+  pointer-events:none;
+  z-index:0
+}
+
+#particles{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+  opacity:.65
+}
+
+#app{
+  position:relative;
+  z-index:1;
+  width:100%;
+  height:100%;
+  display:grid;
+  grid-template-rows:38px 42px 1fr
+}
+
+/* =========================
+   TABS
+========================= */
+
+#tabStrip{
+  display:flex;
+  align-items:stretch;
+  background:color-mix(in srgb,var(--surface) 94%,transparent);
+  border-bottom:1px solid var(--line);
+  overflow:hidden
+}
+
+.tab{
+  min-width:150px;
+  max-width:230px;
+  height:38px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:0 10px 0 12px;
+  border-right:1px solid var(--line);
+  background:transparent;
+  color:var(--muted);
+  user-select:none;
+  cursor:pointer
+}
+
+.tab.active{
+  background:var(--surface2);
+  color:var(--text);
+  box-shadow:inset 0 -2px 0 var(--accent)
+}
+
+.tab-title{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  flex:1;
+  font-size:12px
+}
+
+.tab-close{
+  border:0;
+  background:none;
+  color:var(--muted);
+  width:22px;
+  height:22px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-radius:4px
+}
+
+.tab-close:hover{
+  color:var(--text);
+  background:var(--surface3)
+}
+
+.tab-icon{
+  width:16px;
+  height:16px;
+  border:1px solid var(--accent);
+  display:grid;
+  place-items:center;
+  font-size:9px;
+  color:var(--accent);
+  flex:0 0 auto
+}
+
+#newTab{
+  width:42px;
+  border:0;
+  border-left:1px solid var(--line);
+  background:transparent;
+  color:var(--accent);
+  font-size:20px
+}
+
+#newTab:hover{
+  background:var(--surface2)
+}
+
+/* =========================
+   BROWSER BAR
+========================= */
+
+#browserBar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:8px;
+  padding:6px 9px;
+  background:var(--surface);
+  border-bottom:1px solid var(--line)
+}
+
+#navButtons,
+#barActions{
+  display:flex;
+  gap:5px
+}
+
+.iconBtn{
+  width:32px;
+  height:30px;
+  border:1px solid var(--line);
+  background:var(--surface2);
+  display:grid;
+  place-items:center;
+  color:var(--muted)
+}
+
+.iconBtn:hover{
+  color:var(--text);
+  border-color:var(--accent);
+  background:var(--surface3)
+}
+
+#addressWrap{
+  height:30px;
+  display:flex;
+  align-items:center;
+  border:1px solid var(--line);
+  background:#0c0a04;
+  min-width:0
+}
+
+#addressWrap:focus-within{
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)
+}
+
+#address{
+  width:100%;
+  height:28px;
+  border:0;
+  outline:0;
+  background:transparent;
+  padding:0 13px;
+  color:var(--text);
+  font-size:12px
+}
+
+#address::placeholder{
+  color:#776b45
+}
+
+/* =========================
+   WORKSPACE
+========================= */
+
+#workspace{
+  min-height:0;
+  display:grid;
+  grid-template-columns:176px 1fr;
+  background:var(--bg)
+}
+
+#side{
+  border-right:1px solid var(--line);
+  background:color-mix(in srgb,var(--surface) 96%,transparent);
+  padding:13px 9px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  overflow:auto
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 9px 18px;
+  color:var(--text);
+  font-weight:800;
+  letter-spacing:.4px
+}
+
+.brandMark{
+  width:26px;
+  height:26px;
+  border:1px solid var(--accent);
+  display:grid;
+  place-items:center;
+  color:var(--accent);
+  font-size:12px
+}
+
+.sideBtn{
+  width:100%;
+  height:38px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  text-align:left;
+  padding:0 11px;
+  display:flex;
+  align-items:center;
+  gap:11px
+}
+
+.sideBtn:hover{
+  background:var(--surface2);
+  color:var(--text)
+}
+
+.sideBtn.active{
+  background:var(--surface3);
+  color:var(--text);
+  border-color:var(--accent)
+}
+
+.sideIcon{
+  width:18px;
+  text-align:center;
+  color:var(--accent)
+}
+
+.sideBottom{
+  margin-top:auto;
+  padding-top:10px;
+  border-top:1px solid var(--line)
+}
+
+#main{
+  min-width:0;
+  min-height:0;
+  position:relative;
+  overflow:hidden
+}
+
+.view{
+  position:absolute;
+  inset:0;
+  display:none;
+  overflow:auto;
+  padding:34px 42px
+}
+
+.view.active{
+  display:block
+}
+
+.view h1{
+  font-size:22px;
+  margin:0 0 7px;
+  text-transform:lowercase;
+  letter-spacing:-.4px
+}
+
+.sub{
+  color:var(--muted);
+  font-size:12px;
+  margin:0 0 25px
+}
+
+.panel{
+  border-top:1px solid var(--line);
+  padding:24px 0
+}
+
+/* =========================
+   HOME
+========================= */
+
+.hero{
+  max-width:720px;
+  margin:13vh auto 0;
+  text-align:center
+}
+
+.heroMark{
+  width:58px;
+  height:58px;
+  border:1px solid var(--accent);
+  display:grid;
+  place-items:center;
+  margin:0 auto 18px;
+  color:var(--accent);
+  font-size:24px;
+  font-weight:800;
+  background:var(--surface2)
+}
+
+.hero h1{
+  font-size:31px
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:13px
+}
+
+.heroSearch{
+  margin:22px auto;
+  max-width:650px;
+  height:44px;
+  border:1px solid var(--line);
+  display:flex;
+  background:var(--surface)
+}
+
+.heroSearch input{
+  flex:1;
+  border:0;
+  background:transparent;
+  outline:0;
+  padding:0 14px;
+  color:var(--text)
+}
+
+.heroSearch button{
+  width:90px;
+  border:0;
+  border-left:1px solid var(--line);
+  background:var(--surface2);
+  color:var(--accent)
+}
+
+.quick{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap
+}
+
+.quick button{
+  border:1px solid var(--line);
+  background:var(--surface2);
+  padding:9px 13px;
+  color:var(--muted)
+}
+
+.quick button:hover{
+  border-color:var(--accent);
+  color:var(--text)
+}
+
+/* =========================
+   BROWSER
+========================= */
+
+#view-browser{
+  padding:0;
+  overflow:hidden;
+  background:#050504
+}
+
+#frames{
+  position:absolute;
+  inset:0;
+  background:#050504
+}
+
+.browserFrame{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:none;
+  background:#fff
+}
+
+.browserFrame.active{
+  display:block
+}
+
+#browserOverlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg,#0d0b05,#080704);
+  color:var(--muted);
+  pointer-events:none
+}
+
+#browserOverlay.hidden{
+  display:none
+}
+
+.overlayBox{
+  text-align:center
+}
+
+.overlayLogo{
+  font-size:44px;
+  color:var(--accent);
+  font-weight:900
+}
+
+.overlayBox strong{
+  display:block;
+  color:var(--text);
+  font-size:18px;
+  margin-top:8px
+}
+
+.overlayBox span{
+  display:block;
+  margin-top:5px;
+  font-size:12px
+}
+
+/* =========================
+   GAMES
+========================= */
+
+#gamesGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:12px
+}
+
+.game{
+  background:var(--surface);
+  border:1px solid var(--line);
+  min-width:0;
+  transition:.15s transform,.15s border-color
+}
+
+.game:hover{
+  transform:translateY(-2px);
+  border-color:var(--accent)
+}
+
+.gameImg{
+  height:112px;
+  background:var(--surface2);
+  display:block;
+  width:100%;
+  object-fit:cover
+}
+
+.gameBody{
+  padding:12px
+}
+
+.gameTitle{
+  font-weight:750;
+  font-size:13px
+}
+
+.gameDesc{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:5px;
+  min-height:30px
+}
+
+.gameGo{
+  margin-top:10px;
+  width:100%;
+  height:31px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--accent)
+}
+
+.gameGo:hover{
+  background:var(--surface2);
+  border-color:var(--accent)
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls{
+  display:flex;
+  gap:8px;
+  margin-bottom:18px
+}
+
+.controls input,
+.controls select{
+  height:34px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  outline:0;
+  padding:0 10px
+}
+
+.controls input{
+  flex:1
+}
+
+.controls select{
+  min-width:145px
+}
+
+/* =========================
+   SETTINGS
+========================= */
+
+.settingsGrid{
+  max-width:900px
+}
+
+.setting{
+  padding:20px 0;
+  border-top:1px solid var(--line)
+}
+
+.settingHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px
+}
+
+.settingTitle{
+  font-weight:750
+}
+
+.settingHelp{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:4px;
+  max-width:650px
+}
+
+.themeGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+  margin-top:15px
+}
+
+.themeBtn{
+  height:54px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:0 10px;
+  color:var(--muted);
+  text-align:left
+}
+
+.themeBtn:hover,
+.themeBtn.selected{
+  border-color:var(--accent);
+  color:var(--text);
+  background:var(--surface2)
+}
+
+.swatch{
+  width:22px;
+  height:22px;
+  border:1px solid rgba(255,255,255,.12);
+  flex:0 0 auto
+}
+
+#characterSelect{
+  height:36px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  outline:0;
+  padding:0 10px;
+  min-width:220px
+}
+
+#styleSelect{
+  height:36px;
+  min-width:190px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  outline:0;
+  padding:0 12px;
+  color:var(--text)
+}
+
+.check{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:var(--muted);
+  font-size:12px
+}
+
+.check input{
+  accent-color:var(--accent)
+}
+
+/* =========================
+   CHARACTER
+========================= */
+
+#character{
+  position:fixed;
+  right:22px;
+  bottom:0;
+  width:min(280px,25vw);
+  max-height:62vh;
+  object-fit:contain;
+  object-position:bottom right;
+  opacity:.42;
+  z-index:2;
+  pointer-events:none;
+  display:none;
+  filter:drop-shadow(0 8px 25px rgba(0,0,0,.45))
+}
+
+#character.show{
+  display:block
+}
+
+/* =========================
+   ACCOUNT
+========================= */
+
+#accountCard{
+  max-width:700px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  padding:22px
+}
+
+.kv{
+  display:grid;
+  grid-template-columns:130px 1fr;
+  gap:8px;
+  font-size:12px;
+  padding:9px 0;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)
+}
+
+.kv span:first-child{
+  color:var(--muted)
+}
+
+/* =========================
+   AUTH
+========================= */
+
+#authGate{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:#090804;
+  display:grid;
+  place-items:center;
+  overflow:hidden
+}
+
+.authPanel{
+  width:min(420px,calc(100vw - 36px));
+  border:1px solid var(--accent);
+  background:#100e05;
+  padding:28px;
+  box-shadow:var(--shadow)
+}
+
+.authLogo{
+  width:48px;
+  height:48px;
+  border:1px solid var(--accent);
+  display:grid;
+  place-items:center;
+  color:var(--accent);
+  font-weight:900;
+  margin-bottom:18px
+}
+
+.authPanel h2{
+  margin:0 0 6px
+}
+
+.authPanel p{
+  color:var(--muted);
+  font-size:12px
+}
+
+.authPanel label{
+  display:block;
+  color:var(--text);
+  font-size:12px;
+  margin-top:10px
+}
+
+.authPanel input{
+  width:100%;
+  height:38px;
+  border:1px solid var(--line);
+  background:#080703;
+  outline:0;
+  padding:0 10px;
+  margin-top:8px
+}
+
+.authPanel button{
+  height:38px;
+  border:1px solid var(--accent);
+  background:var(--surface2);
+  color:var(--accent);
+  padding:0 14px;
+  margin-top:10px
+}
+
+.authPanel button:hover{
+  background:var(--accent);
+  color:#110d03
+}
+
+.authPanel button:disabled{
+  opacity:.55;
+  cursor:not-allowed
+}
+
+.authRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px
+}
+
+.authMsg{
+  font-size:11px;
+  min-height:18px;
+  color:var(--danger);
+  margin-top:8px;
+  line-height:1.55
+}
+
+.authSwitch{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:17px
+}
+
+.authSwitch button{
+  border:0;
+  background:none;
+  padding:0;
+  margin:0;
+  color:var(--accent);
+  height:auto
+}
+
+.authOnly{
+  display:none
+}
+
+.authOnly.visible{
+  display:block
+}
+
+/* =========================
+   SWITCH STYLE
+========================= */
+
+#switchHome{
+  display:none
+}
+
+.switchHomeTop{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:22px
+}
+
+.switchEyebrow{
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:2px;
+  color:var(--accent)
+}
+
+.switchHomeTop h2{
+  font-size:34px;
+  margin:4px 0 0
+}
+
+.switchHomeTop button{
+  border:0;
+  border-radius:999px;
+  background:var(--accent);
+  color:#fff;
+  padding:11px 17px;
+  font-weight:800
+}
+
+.switchGameGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:18px
+}
+
+.switchGameCard{
+  min-height:215px;
+  border-radius:18px;
+  overflow:hidden;
+  background:var(--surface);
+  border:1px solid color-mix(in srgb,var(--line) 65%,transparent);
+  box-shadow:0 10px 30px rgba(0,0,0,.22);
+  transition:.16s
+}
+
+.switchGameCard:hover{
+  transform:translateY(-5px);
+  box-shadow:0 16px 38px rgba(0,0,0,.3)
+}
+
+.switchGameCard img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
+  display:block;
+  background:var(--surface2)
+}
+
+.switchGameCard .sgBody{
+  padding:12px 14px 15px
+}
+
+.switchGameCard .sgTitle{
+  font-weight:850;
+  font-size:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+
+.switchGameCard .sgOpen{
+  margin-top:9px;
+  border:0;
+  border-radius:999px;
+  background:var(--accent);
+  color:#fff;
+  padding:7px 12px;
+  font-size:11px;
+  font-weight:800
+}
+
+body.switch-mode{
+  --bg:#101114;
+  --surface:#181a1e;
+  --surface2:#22252b;
+  --surface3:#2d3138;
+  --text:#f7f8fb;
+  --muted:#9ba0aa;
+  --line:#3b4048;
+  --accent:#e60012;
+  --accent2:#ff3345;
+  --danger:#ff5b6b;
+  --shadow:0 18px 55px rgba(0,0,0,.34)
+}
+
+body.switch-mode::before{
+  background:
+    radial-gradient(circle at 12% 8%,rgba(230,0,18,.15),transparent 24%),
+    radial-gradient(circle at 88% 12%,rgba(0,174,239,.13),transparent 26%)
+}
+
+body.switch-mode #app{
+  grid-template-rows:58px 54px 1fr
+}
+
+body.switch-mode #tabStrip{
+  background:#17191d;
+  border-bottom:0;
+  padding:7px 9px 0;
+  gap:6px
+}
+
+body.switch-mode .tab{
+  min-width:170px;
+  height:51px;
+  border:0;
+  border-radius:13px 13px 0 0;
+  background:#24272c;
+  color:#aeb3bc;
+  padding:0 13px;
+  box-shadow:none
+}
+
+body.switch-mode .tab.active{
+  background:#34383f;
+  color:#fff;
+  box-shadow:inset 0 -4px 0 var(--accent)
+}
+
+body.switch-mode .tab-icon{
+  border:0;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:var(--accent);
+  color:#fff;
+  font-weight:900
+}
+
+body.switch-mode #newTab{
+  width:48px;
+  height:48px;
+  border:0;
+  border-radius:14px;
+  background:#24272c;
+  color:#fff;
+  margin-left:2px
+}
+
+body.switch-mode #browserBar{
+  grid-template-columns:auto 1fr auto;
+  background:#1c1f24;
+  border:0;
+  padding:8px 12px;
+  gap:10px
+}
+
+body.switch-mode .iconBtn{
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:50%;
+  background:#2a2e34;
+  color:#e8ebef
+}
+
+body.switch-mode .iconBtn:hover{
+  background:#383d45;
+  color:#fff
+}
+
+body.switch-mode #addressWrap{
+  height:40px;
+  border:0;
+  border-radius:22px;
+  background:#0f1114;
+  box-shadow:inset 0 0 0 1px #343840
+}
+
+body.switch-mode #address{
+  height:38px;
+  font-size:13px;
+  color:#fff
+}
+
+body.switch-mode #address::placeholder{
+  color:#727780
+}
+
+body.switch-mode #workspace{
+  grid-template-columns:210px 1fr;
+  background:#111317
+}
+
+body.switch-mode #side{
+  background:#17191d;
+  border-right:1px solid #2c3036;
+  padding:16px 12px;
+  gap:8px
+}
+
+body.switch-mode .brand{
+  padding:8px 12px 22px
+}
+
+body.switch-mode .brandMark{
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:50%;
+  background:var(--accent);
+  color:#fff;
+  font-size:17px
+}
+
+body.switch-mode .sideBtn{
+  height:48px;
+  border:0;
+  border-radius:14px;
+  padding:0 14px;
+  color:#b9bec7;
+  font-weight:700
+}
+
+body.switch-mode .sideBtn:hover{
+  background:#24272d;
+  color:#fff
+}
+
+body.switch-mode .sideBtn.active{
+  background:#2c3037;
+  color:#fff;
+  border:0;
+  box-shadow:inset 4px 0 0 var(--accent)
+}
+
+body.switch-mode .sideIcon{
+  color:#fff
+}
+
+body.switch-mode .sideBottom{
+  border-top:1px solid #2c3036
+}
+
+body.switch-mode #main{
+  background:#111317
+}
+
+body.switch-mode .view{
+  padding:34px 42px
+}
+
+body.switch-mode #view-home{
+  padding:0;
+  overflow:auto
+}
+
+body.switch-mode #view-home>.hero{
+  display:none
+}
+
+body.switch-mode #switchHome{
+  display:block;
+  padding:42px 48px 56px;
+  min-height:100%
+}
+
+body.switch-mode #gamesGrid{
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:18px
+}
+
+body.switch-mode .game{
+  border:0;
+  border-radius:16px;
+  overflow:hidden;
+  background:#1b1e23;
+  box-shadow:0 8px 26px rgba(0,0,0,.22)
+}
+
+body.switch-mode .game:hover{
+  border:0;
+  transform:translateY(-4px)
+}
+
+body.switch-mode .gameImg{
+  height:135px
+}
+
+body.switch-mode .gameBody{
+  padding:14px
+}
+
+body.switch-mode .gameGo{
+  border:0;
+  border-radius:999px;
+  background:#30343b;
+  color:#fff
+}
+
+body.switch-mode .gameGo:hover{
+  background:var(--accent)
+}
+
+body.switch-mode .controls input,
+body.switch-mode .controls select,
+body.switch-mode #characterSelect,
+body.switch-mode #styleSelect{
+  border:0;
+  border-radius:12px;
+  background:#1d2025;
+  box-shadow:inset 0 0 0 1px #353a42;
+  color:#fff
+}
+
+body.switch-mode .themeBtn{
+  border:0;
+  border-radius:14px;
+  background:#1d2025;
+  color:#bfc4cc
+}
+
+body.switch-mode .themeBtn:hover,
+body.switch-mode .themeBtn.selected{
+  background:#2c3037;
+  color:#fff;
+  border:0;
+  box-shadow:inset 0 0 0 2px var(--accent)
+}
+
+body.switch-mode #accountCard{
+  border:0;
+  border-radius:18px;
+  background:#1d2025
+}
+
+body.switch-mode .kv{
+  border-bottom-color:#30343a
+}
+
+body.switch-mode #view-browser,
+body.switch-mode #frames{
+  background:#0d0f12
+}
+
+body.switch-mode #browserOverlay{
+  background:#0d0f12
+}
+
+body.switch-mode #authGate{
+  background:
+    radial-gradient(circle at 15% 25%,rgba(230,0,18,.18),transparent 25%),
+    radial-gradient(circle at 85% 75%,rgba(0,174,239,.16),transparent 27%),
+    #0e1013
+}
+
+body.switch-mode .authPanel{
+  width:min(470px,calc(100vw - 36px));
+  border:0;
+  border-radius:26px;
+  background:#1b1e23;
+  padding:34px;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+  text-align:center
+}
+
+body.switch-mode .authLogo{
+  width:72px;
+  height:72px;
+  border:0;
+  border-radius:50%;
+  margin:0 auto 18px;
+  background:linear-gradient(135deg,#e60012 0 50%,#00aef0 50%);
+  color:#fff;
+  font-size:25px
+}
+
+body.switch-mode .authPanel input{
+  border:0;
+  border-radius:12px;
+  background:#101216;
+  box-shadow:inset 0 0 0 1px #373c45;
+  color:#fff
+}
+
+body.switch-mode .authPanel button{
+  border:0;
+  border-radius:999px;
+  background:#e60012;
+  color:#fff;
+  font-weight:800
+}
+
+body.switch-mode .authPanel button:hover{
+  background:#ff2436;
+  color:#fff
+}
+
+body.switch-mode #character{
+  opacity:.34;
+  filter:drop-shadow(0 10px 30px rgba(0,0,0,.55))
+}
+
+@media(max-width:1050px){
+  .switchGameGrid{
+    grid-template-columns:repeat(3,1fr)
+  }
+}
+
+@media(max-width:850px){
+  #workspace{
+    grid-template-columns:64px 1fr
+  }
+
+  .brand span,
+  .sideBtn span{
+    display:none
+  }
+
+  .brand{
+    justify-content:center
+  }
+
+  .sideBtn{
+    justify-content:center;
+    padding:0
+  }
+
+  .view{
+    padding:25px 20px
+  }
+
+  .themeGrid{
+    grid-template-columns:repeat(2,1fr)
+  }
+
+  #character{
+    width:220px;
+    opacity:.28
+  }
+}
+
+@media(max-width:760px){
+  .switchGameGrid{
+    grid-template-columns:repeat(2,1fr)
+  }
+
+  body.switch-mode #workspace{
+    grid-template-columns:72px 1fr
+  }
+
+  body.switch-mode .brand span,
+  body.switch-mode .sideBtn span{
+    display:none
+  }
+
+  body.switch-mode .sideBtn{
+    justify-content:center;
+    padding:0
+  }
+}
 </style>
 </head>
+
 <body>
+
 <canvas id="particles"></canvas>
+
+<!-- =========================================================
+     AUTH GATE
+========================================================= -->
+
 <div id="authGate">
+
   <div class="authPanel">
+
     <div class="authLogo">K</div>
+
     <h2>korona</h2>
-    <p id="authLead">authenticate to enter the browser.</p>
+
+    <p id="authLead">
+      authenticate to enter the browser.
+    </p>
+
+    <!-- LOGIN -->
     <section id="loginBox" class="authOnly visible">
-      <label>Korona ID<input id="loginId" autocomplete="username" placeholder="name.lastname"></label>
-      <label>Authentication code<input id="loginCode" type="password" autocomplete="current-password" placeholder="authentication code"></label>
-      <button id="loginBtn">unlock korona</button>
+
+      <label>
+        Authentication code
+
+        <input
+          id="loginCode"
+          type="password"
+          autocomplete="current-password"
+          placeholder="authentication code"
+        >
+      </label>
+
+      <button id="loginBtn">
+        unlock korona
+      </button>
+
       <div id="loginMsg" class="authMsg"></div>
-      <div class="authSwitch">Need an ID? <button id="showCreate">create one</button></div>
+
+      <div class="authSwitch">
+        Need an ID?
+        <button id="showCreate">create one</button>
+      </div>
+
     </section>
+
+    <!-- ACCOUNT CREATION -->
     <section id="createBox" class="authOnly">
-      <div class="authRow"><label>First name<input id="firstName" autocomplete="given-name"></label><label>Last name<input id="lastName" autocomplete="family-name"></label></div>
-      <button id="createBtn">create korona id</button>
+
+      <div class="authRow">
+
+        <label>
+          First name
+          <input
+            id="firstName"
+            autocomplete="given-name"
+            placeholder="John"
+          >
+        </label>
+
+        <label>
+          Last name
+          <input
+            id="lastName"
+            autocomplete="family-name"
+            placeholder="Smith"
+          >
+        </label>
+
+      </div>
+
+      <button id="createBtn">
+        create korona id
+      </button>
+
       <div id="createMsg" class="authMsg"></div>
-      <div class="authSwitch">Already have one? <button id="showLogin">sign in</button></div>
+
+      <div class="authSwitch">
+        Already have one?
+        <button id="showLogin">sign in</button>
+      </div>
+
     </section>
+
   </div>
+
 </div>
+
+<!-- =========================================================
+     MAIN APP
+========================================================= -->
+
 <div id="app" hidden>
-  <div id="tabStrip"><button id="newTab" title="New tab">+</button></div>
+
+  <!-- TABS -->
+
+  <div id="tabStrip">
+
+    <button
+      id="newTab"
+      title="New tab"
+    >
+      +
+    </button>
+
+  </div>
+
+  <!-- BROWSER BAR -->
+
   <div id="browserBar">
-    <div id="navButtons"><button class="iconBtn" id="backBtn">←</button><button class="iconBtn" id="forwardBtn">→</button><button class="iconBtn" id="reloadBtn">↻</button><button class="iconBtn" id="homeBtn">⌂</button></div>
-    <div id="addressWrap"><input id="address" spellcheck="false" placeholder="Search Google or enter a web address"></div>
-    <div id="barActions"><button class="iconBtn" id="goBtn">↵</button><button class="iconBtn" id="fullBtn">⛶</button></div>
+
+    <div id="navButtons">
+
+      <button class="iconBtn" id="backBtn">←</button>
+      <button class="iconBtn" id="forwardBtn">→</button>
+      <button class="iconBtn" id="reloadBtn">↻</button>
+      <button class="iconBtn" id="homeBtn">⌂</button>
+
+    </div>
+
+    <div id="addressWrap">
+
+      <input
+        id="address"
+        spellcheck="false"
+        placeholder="Search Google or enter a web address"
+      >
+
+    </div>
+
+    <div id="barActions">
+
+      <button class="iconBtn" id="goBtn">↵</button>
+      <button class="iconBtn" id="fullBtn">⛶</button>
+
+    </div>
+
   </div>
+
+  <!-- WORKSPACE -->
+
   <div id="workspace">
+
     <aside id="side">
-      <div class="brand"><div class="brandMark">K</div><span>korona</span></div>
-      <button class="sideBtn active" data-view="home"><i class="sideIcon">⌂</i><span>Home</span></button>
-      <button class="sideBtn" data-view="games"><i class="sideIcon">▣</i><span>Games</span></button>
-      <button class="sideBtn" data-view="apps"><i class="sideIcon">▤</i><span>Apps</span></button>
-      <button class="sideBtn" data-view="browser"><i class="sideIcon">◎</i><span>Browser</span></button>
-      <button class="sideBtn" data-view="settings"><i class="sideIcon">⚙</i><span>Settings</span></button>
-      <button class="sideBtn" data-view="account"><i class="sideIcon">♙</i><span>Account</span></button>
-      <div class="sideBottom"><button class="sideBtn" id="logoutBtn"><i class="sideIcon">↪</i><span>Lock</span></button></div>
+
+      <div class="brand">
+
+        <div class="brandMark">
+          K
+        </div>
+
+        <span>
+          korona
+        </span>
+
+      </div>
+
+      <button class="sideBtn active" data-view="home">
+        <i class="sideIcon">⌂</i>
+        <span>Home</span>
+      </button>
+
+      <button class="sideBtn" data-view="games">
+        <i class="sideIcon">▣</i>
+        <span>Games</span>
+      </button>
+
+      <button class="sideBtn" data-view="apps">
+        <i class="sideIcon">▤</i>
+        <span>Apps</span>
+      </button>
+
+      <button class="sideBtn" data-view="browser">
+        <i class="sideIcon">◎</i>
+        <span>Browser</span>
+      </button>
+
+      <button class="sideBtn" data-view="settings">
+        <i class="sideIcon">⚙</i>
+        <span>Settings</span>
+      </button>
+
+      <button class="sideBtn" data-view="account">
+        <i class="sideIcon">♙</i>
+        <span>Account</span>
+      </button>
+
+      <div class="sideBottom">
+
+        <button class="sideBtn" id="logoutBtn">
+          <i class="sideIcon">↪</i>
+          <span>Lock</span>
+        </button>
+
+      </div>
+
     </aside>
+
     <main id="main">
-      <section class="view active" id="view-home"><div class="hero"><div class="heroMark">K</div><h1>korona</h1><p>A clean browser workspace with tabs, themes, games, and a proxy.</p><div class="heroSearch"><input id="homeSearch" placeholder="Search Google or enter a web address"><button id="homeGo">go</button></div><div class="quick"><button data-url="https://www.google.com">Google</button><button data-url="https://www.youtube.com">YouTube</button><button data-url="https://chatgpt.com">ChatGPT</button></div></div><div id="switchHome"><div class="switchHomeTop"><div><div class="switchEyebrow">KORONA PLAY</div><h2>Featured Games</h2></div><button id="switchMoreGames">More Games <span>→</span></button></div><div id="switchFeatured" class="switchGameGrid"></div></div></section>
-      <section class="view" id="view-games"><h1 id="gamesHeading">games</h1><p class="sub">Open a game in a real browser tab.</p><div class="controls"><input id="gameSearch" placeholder="Search games"><select id="gameFilter"><option value="all">All games</option><option value="saved">Saved</option></select></div><div id="gamesGrid"></div></section>
-      <section class="view" id="view-apps"><h1>apps</h1><p class="sub">Quick launch web apps in browser tabs.</p><div id="appGrid" class="quick" style="justify-content:flex-start"></div></section>
-      <section class="view" id="view-browser"><div id="frames"></div><div id="browserOverlay"><div class="overlayBox"><div class="overlayLogo">K</div><strong>browser ready</strong><span>enter an address or search term above</span></div></div></section>
-      <section class="view" id="view-settings"><h1>settings</h1><p class="sub">Change the appearance without changing the browser engine.</p><div class="settingsGrid">
-        <div class="setting"><div class="settingHead"><div><div class="settingTitle">interface style</div><div class="settingHelp">Change the entire interface between Korona and a console-inspired game layout.</div></div><select id="styleSelect" aria-label="Interface style"><option value="korona">Korona</option><option value="switch">Nintendo Switch</option></select></div></div>
-        <div class="setting"><div class="settingHead"><div><div class="settingTitle">theme</div><div class="settingHelp">Each theme owns its color palette. Character selection is independent and can be mixed or matched freely.</div></div></div><div id="themeGrid" class="themeGrid"></div></div>
-        <div class="setting"><div class="settingHead"><div><div class="settingTitle">character overlay</div><div class="settingHelp">Show one character overlay or none. Mismatching themes and characters is fully supported.</div></div>
-        <select id="characterSelect">
-          <option value="none">None</option>
-          <option value="neru">Akita Neru</option>
-          <option value="miku">Hatsune Miku</option>
-          <option value="teto">Kasane Teto</option>
-          <option value="luka">Megurine Luka</option>
-          <option value="rin">Kagamine Rin</option>
-          <option value="len">Kagamine Len</option>
-          <option value="kaito">KAITO</option>
-          <option value="meiko">MEIKO</option>
-        </select>
-        </div></div>
-        <div class="setting"><div class="settingTitle">particles</div><div class="settingHelp">Tiny moving orbs connect to nearby particles. Disable them if you want a completely still background.</div><label class="check" style="margin-top:12px"><input type="checkbox" id="particleToggle" checked> enable particle network</label></div>
-      </div></section>
-      <section class="view" id="view-account"><h1>account</h1><p class="sub">Current Korona identity.</p><div id="accountCard"></div></section>
+
+      <!-- HOME -->
+
+      <section class="view active" id="view-home">
+
+        <div class="hero">
+
+          <div class="heroMark">K</div>
+
+          <h1>korona</h1>
+
+          <p>
+            A clean browser workspace with tabs, themes, games, and a proxy.
+          </p>
+
+          <div class="heroSearch">
+
+            <input
+              id="homeSearch"
+              placeholder="Search Google or enter a web address"
+            >
+
+            <button id="homeGo">
+              go
+            </button>
+
+          </div>
+
+          <div class="quick">
+
+            <button data-url="https://www.google.com">
+              Google
+            </button>
+
+            <button data-url="https://www.youtube.com">
+              YouTube
+            </button>
+
+            <button data-url="https://chatgpt.com">
+              ChatGPT
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- SWITCH HOME -->
+
+        <div id="switchHome">
+
+          <div class="switchHomeTop">
+
+            <div>
+
+              <div class="switchEyebrow">
+                KORONA PLAY
+              </div>
+
+              <h2>
+                Featured Games
+              </h2>
+
+            </div>
+
+            <button id="switchMoreGames">
+              More Games <span>→</span>
+            </button>
+
+          </div>
+
+          <div
+            id="switchFeatured"
+            class="switchGameGrid"
+          ></div>
+
+        </div>
+
+      </section>
+
+      <!-- GAMES -->
+
+      <section class="view" id="view-games">
+
+        <h1 id="gamesHeading">
+          games
+        </h1>
+
+        <p class="sub">
+          Open a game in a browser tab.
+        </p>
+
+        <div class="controls">
+
+          <input
+            id="gameSearch"
+            placeholder="Search games"
+          >
+
+          <select id="gameFilter">
+            <option value="all">All games</option>
+            <option value="saved">Saved</option>
+          </select>
+
+        </div>
+
+        <div id="gamesGrid"></div>
+
+      </section>
+
+      <!-- APPS -->
+
+      <section class="view" id="view-apps">
+
+        <h1>
+          apps
+        </h1>
+
+        <p class="sub">
+          Quick launch web apps in browser tabs.
+        </p>
+
+        <div
+          id="appGrid"
+          class="quick"
+          style="justify-content:flex-start"
+        ></div>
+
+      </section>
+
+      <!-- BROWSER -->
+
+      <section class="view" id="view-browser">
+
+        <div id="frames"></div>
+
+        <div id="browserOverlay">
+
+          <div class="overlayBox">
+
+            <div class="overlayLogo">
+              K
+            </div>
+
+            <strong>
+              browser ready
+            </strong>
+
+            <span>
+              enter an address or search term above
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- SETTINGS -->
+
+      <section class="view" id="view-settings">
+
+        <h1>
+          settings
+        </h1>
+
+        <p class="sub">
+          Change the appearance without changing the browser engine.
+        </p>
+
+        <div class="settingsGrid">
+
+          <!-- STYLE -->
+
+          <div class="setting">
+
+            <div class="settingHead">
+
+              <div>
+
+                <div class="settingTitle">
+                  interface style
+                </div>
+
+                <div class="settingHelp">
+                  Change the entire interface between Korona and a console-inspired game layout.
+                </div>
+
+              </div>
+
+              <select
+                id="styleSelect"
+                aria-label="Interface style"
+              >
+
+                <option value="korona">
+                  Korona
+                </option>
+
+                <option value="switch">
+                  Nintendo Switch
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          <!-- THEME -->
+
+          <div class="setting">
+
+            <div class="settingHead">
+
+              <div>
+
+                <div class="settingTitle">
+                  theme
+                </div>
+
+                <div class="settingHelp">
+                  Each theme owns its color palette. Character selection is independent and can be mixed or matched freely.
+                </div>
+
+              </div>
+
+            </div>
+
+            <div
+              id="themeGrid"
+              class="themeGrid"
+            ></div>
+
+          </div>
+
+          <!-- CHARACTER -->
+
+          <div class="setting">
+
+            <div class="settingHead">
+
+              <div>
+
+                <div class="settingTitle">
+                  character overlay
+                </div>
+
+                <div class="settingHelp">
+                  Show one character overlay or none. Mismatching themes and characters is fully supported.
+                </div>
+
+              </div>
+
+              <select id="characterSelect">
+
+                <option value="none">
+                  None
+                </option>
+
+                <option value="neru">
+                  Akita Neru
+                </option>
+
+                <option value="miku">
+                  Hatsune Miku
+                </option>
+
+                <option value="teto">
+                  Kasane Teto
+                </option>
+
+                <option value="luka">
+                  Megurine Luka
+                </option>
+
+                <option value="rin">
+                  Kagamine Rin
+                </option>
+
+                <option value="len">
+                  Kagamine Len
+                </option>
+
+                <option value="kaito">
+                  KAITO
+                </option>
+
+                <option value="meiko">
+                  MEIKO
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          <!-- PARTICLES -->
+
+          <div class="setting">
+
+            <div class="settingTitle">
+              particles
+            </div>
+
+            <div class="settingHelp">
+              Tiny moving orbs connect to nearby particles. Disable them if you want a completely still background.
+            </div>
+
+            <label
+              class="check"
+              style="margin-top:12px"
+            >
+
+              <input
+                type="checkbox"
+                id="particleToggle"
+                checked
+              >
+
+              enable particle network
+
+            </label>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ACCOUNT -->
+
+      <section class="view" id="view-account">
+
+        <h1>
+          account
+        </h1>
+
+        <p class="sub">
+          Current Korona identity.
+        </p>
+
+        <div id="accountCard"></div>
+
+      </section>
+
     </main>
+
   </div>
+
 </div>
-<img id="character" alt="">
+
+<img
+  id="character"
+  alt=""
+>
+
 <script>
 (() => {
-  const $ = s => document.querySelector(s);   const $$ = s => [...document.querySelectorAll(s)];
-  const THEME_KEY = 'korona.theme.v3';
-  const CHARACTER_KEY = 'korona.character.v3';
-  const PARTICLES_KEY = 'korona.particles.v3';
-  const STYLE_KEY = 'korona.style.v1';
-  const USER_KEY = 'korona.user.v3';
+
+  /* =========================================================
+     SUPABASE
+     
+     PUT YOUR EXISTING SUPABASE VALUES HERE.
+     
+     Do NOT put a service-role key here.
+  ========================================================= */
+
+  const SUPABASE_URL = "https://wlzvcbisyueopwxcgwiv.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
+
+  const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+
+  const $ = selector => document.querySelector(selector);
+
+  const $$ = selector => [
+    ...document.querySelectorAll(selector)
+  ];
+
+
+  /* =========================================================
+     STORAGE KEYS
+  ========================================================= */
+
+  const THEME_KEY =
+    "korona.theme.v3";
+
+  const CHARACTER_KEY =
+    "korona.character.v3";
+
+  const PARTICLES_KEY =
+    "korona.particles.v3";
+
+  const STYLE_KEY =
+    "korona.style.v1";
+
+  /*
+   * IMPORTANT:
+   *
+   * This stores ONLY the Korona ID.
+   *
+   * The login screen never displays an ID field.
+   */
+  const USER_KEY =
+    "korona.user.v3";
+
+
+  /* =========================================================
+     THEMES
+  ========================================================= */
 
   const themes = {
-    default:{label:'Default',accent:'#d9ad32',accent2:'#f0c84d',bg:'#100e05',surface:'#171306',surface2:'#201a08',surface3:'#2a210b',text:'#f7efd0',muted:'#aa9b68',line:'#655018'},
-    miku:{label:'Teal Miku',accent:'#39c5bb',accent2:'#75efe7',bg:'#061010',surface:'#0b1a19',surface2:'#102522',surface3:'#15302d',text:'#e7fffd',muted:'#7fb6b1',line:'#275d58'},
-    teto:{label:'Crimson Teto',accent:'#ef4864',accent2:'#ff7890',bg:'#13070a',surface:'#1d0b0f',surface2:'#291116',surface3:'#37151c',text:'#ffecef',muted:'#c28a95',line:'#6e2633'},
-    neru:{label:'Amber Neru',accent:'#f1c73b',accent2:'#ffe57a',bg:'#110e04',surface:'#1a1608',surface2:'#26200a',surface3:'#332b0d',text:'#fff4c9',muted:'#bca76a',line:'#6f5b18'},
-    luka:{label:'Soft Luka Pink',accent:'#ffb3c6',accent2:'#ffccd5',bg:'#12080a',surface:'#1c0d10',surface2:'#291217',surface3:'#36181f',text:'#fff0f3',muted:'#c28d98',line:'#703542'},
-    rinlen:{label:'Kagamine Gold',accent:'#ffc800',accent2:'#ffdf66',bg:'#121004',surface:'#1c1806',surface2:'#282308',surface3:'#362e0c',text:'#fffde6',muted:'#c2b477',line:'#70621d'},
-    kaito:{label:'Deep Blue Kaito',accent:'#0066ff',accent2:'#5c9cff',bg:'#040812',surface:'#060e1c',surface2:'#0a162b',surface3:'#0f1d38',text:'#e6f0ff',muted:'#779cc2',line:'#1d4070'},
-    magma:{label:'Magma',accent:'#ff7b45',accent2:'#ffad80',bg:'#120804',surface:'#1c0d07',surface2:'#291209',surface3:'#36180c',text:'#fff0e7',muted:'#c28d77',line:'#70351e'},
-    minty:{label:'Minty',accent:'#64f29a',accent2:'#9fffc0',bg:'#06100a',surface:'#0b1a10',surface2:'#102719',surface3:'#163521',text:'#eafff1',muted:'#83b99a',line:'#2d6945'},
-    cyberpunk:{label:'Cyberpunk Neon',accent:'#ff0055',accent2:'#00f0ff',bg:'#080010',surface:'#120024',surface2:'#1c0038',surface3:'#28004f',text:'#ffffff',muted:'#a060d0',line:'#500090'},
-    obsidian:{label:'Obsidian',accent:'#ffffff',accent2:'#cccccc',bg:'#050505',surface:'#0f0f0f',surface2:'#181818',surface3:'#222222',text:'#ffffff',muted:'#888888',line:'#444444'}
+
+    default:{
+      label:"Default",
+      accent:"#d9ad32",
+      accent2:"#f0c84d",
+      bg:"#100e05",
+      surface:"#171306",
+      surface2:"#201a08",
+      surface3:"#2a210b",
+      text:"#f7efd0",
+      muted:"#aa9b68",
+      line:"#655018"
+    },
+
+    miku:{
+      label:"Teal Miku",
+      accent:"#39c5bb",
+      accent2:"#75efe7",
+      bg:"#061010",
+      surface:"#0b1a19",
+      surface2:"#102522",
+      surface3:"#15302d",
+      text:"#e7fffd",
+      muted:"#7fb6b1",
+      line:"#275d58"
+    },
+
+    teto:{
+      label:"Crimson Teto",
+      accent:"#ef4864",
+      accent2:"#ff7890",
+      bg:"#13070a",
+      surface:"#1d0b0f",
+      surface2:"#291116",
+      surface3:"#37151c",
+      text:"#ffecef",
+      muted:"#c28a95",
+      line:"#6e2633"
+    },
+
+    neru:{
+      label:"Amber Neru",
+      accent:"#f1c73b",
+      accent2:"#ffe57a",
+      bg:"#110e04",
+      surface:"#1a1608",
+      surface2:"#26200a",
+      surface3:"#332b0d",
+      text:"#fff4c9",
+      muted:"#bca76a",
+      line:"#6f5b18"
+    },
+
+    luka:{
+      label:"Soft Luka Pink",
+      accent:"#ffb3c6",
+      accent2:"#ffccd5",
+      bg:"#12080a",
+      surface:"#1c0d10",
+      surface2:"#291217",
+      surface3:"#36181f",
+      text:"#fff0f3",
+      muted:"#c28d98",
+      line:"#703542"
+    },
+
+    rinlen:{
+      label:"Kagamine Gold",
+      accent:"#ffc800",
+      accent2:"#ffdf66",
+      bg:"#121004",
+      surface:"#1c1806",
+      surface2:"#282308",
+      surface3:"#362e0c",
+      text:"#fffde6",
+      muted:"#c2b477",
+      line:"#70621d"
+    },
+
+    kaito:{
+      label:"Deep Blue Kaito",
+      accent:"#0066ff",
+      accent2:"#5c9cff",
+      bg:"#040812",
+      surface:"#060e1c",
+      surface2:"#0a162b",
+      surface3:"#0f1d38",
+      text:"#e6f0ff",
+      muted:"#779cc2",
+      line:"#1d4070"
+    },
+
+    magma:{
+      label:"Magma",
+      accent:"#ff7b45",
+      accent2:"#ffad80",
+      bg:"#120804",
+      surface:"#1c0d07",
+      surface2:"#291209",
+      surface3:"#36180c",
+      text:"#fff0e7",
+      muted:"#c28d77",
+      line:"#70351e"
+    },
+
+    minty:{
+      label:"Minty",
+      accent:"#64f29a",
+      accent2:"#9fffc0",
+      bg:"#06100a",
+      surface:"#0b1a10",
+      surface2:"#102719",
+      surface3:"#163521",
+      text:"#eafff1",
+      muted:"#83b99a",
+      line:"#2d6945"
+    },
+
+    cyberpunk:{
+      label:"Cyberpunk Neon",
+      accent:"#ff0055",
+      accent2:"#00f0ff",
+      bg:"#080010",
+      surface:"#120024",
+      surface2:"#1c0038",
+      surface3:"#28004f",
+      text:"#ffffff",
+      muted:"#a060d0",
+      line:"#500090"
+    },
+
+    obsidian:{
+      label:"Obsidian",
+      accent:"#ffffff",
+      accent2:"#cccccc",
+      bg:"#050505",
+      surface:"#0f0f0f",
+      surface2:"#181818",
+      surface3:"#222222",
+      text:"#ffffff",
+      muted:"#888888",
+      line:"#444444"
+    }
+
   };
+
+
+  /* =========================================================
+     CHARACTERS
+  ========================================================= */
 
   const characterSources = {
-    neru: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAIzCAYAAABxzsBYAAEAAElEQVR4nOz9d7glyXneCf4iIs2x199b3nS1Q1t4NCzRAEiAJEiQFEk5UhRFSSuN5lnNjh5JK82OltJIK42keXalGe0jzZIiJVKiaESJIEUQ3gMNNBrdaLSr7uquLm+uN8eliYj9I08ek/fY66oa7Og+9d0338g8eSIjvnjzy4hIceKQhwUEbLNp2oatRQjRItq495EsFtG02/k0ZfGA1OeErYXWabyedpeGXZ5R8b7Z9IKPyndjIUSz3qp1ptOnh0m3Ywfi9Idvw4CgHx7WDl63B2FlyzmZ5kXtwMlF7YGFxBjb4fxSLDBYEBJj21ikuOUEJbaF6Y1NUhkSZyZJvr5ZO2UTt3xugts+OD1OWqf2Hzf/yOAx+awdxu+ntXuE983aMfk2bjs7kXF+TUxm+xBMP8wgnLX02T6abYmNEfmDwllRtI3P2kG8GLBfL34ELE4c8khT6vxaOFV2w3CHc2tjMIBsOb00pSexvYfM8ttSeu6t7+/4Tf33+t5KA4qnJ78Nt6/PwfAj4lbdHIHvvOCj8AxWbNsUXqued+fbN0x3O8jyfQp6RJy1+83vxqbpoHiQ3UpPtpWeafaIGeVnU+fWrCSdyk90KT+QqSLsVHYdWGRwWwnKbcovUXwpThVfhxJsXpTeNr1m7e304enf++FtSm0Iv5/KbBi/DdsD5kfEdgyeHvkH8MMU2zaFN0zZ7TVmMA+7wVnbzafOoI17891OZAQltyPL/vCiH0+iAPv7xyZuKb1037TSpc4rVY7duHfML9uTjJD6HKaz4389DUnDCqpfB5/F+yYIMhd0j/i2j+yn9Hrw6e7N7b3qdS8+WzAJ2mnB7VnBvm4HWLmTmB+ZmJ8YK+aXYp3Y3pA802f/u3O35jS4b8w3z/18Y2e4b3yR2m/mS8U20z0Xg0kZp9jOnO3M6U9c5d+vI2439d/N2C50pzeC/x/8f74+P",
-    miku: "https://upload.wikimedia.org/wikipedia/en/2/22/Hatsune_Miku_NT.png",
-    teto: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Kasane_Teto_Synthesizer_V_AI_official_illustration.png",
-    luka: "https://upload.wikimedia.org/wikipedia/en/a/a2/Megurine_Luka.png",
-    rin: "https://upload.wikimedia.org/wikipedia/en/8/82/Kagamine_Rin_and_Len.png",
-    len: "https://upload.wikimedia.org/wikipedia/en/8/82/Kagamine_Rin_and_Len.png",
-    kaito: "https://upload.wikimedia.org/wikipedia/en/d/da/Kaito_V3.png",
-    meiko: "https://upload.wikimedia.org/wikipedia/en/d/db/Meiko_V3.png"
+
+    neru:
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAIzCAYAAABxzsBYAAEAAElEQVR4nOz9d7glyXneCf4iIs2x199b3nS1Q1t4NCzRAEiAJEiQFEk5UhRFSSuN5lnNjh5JK82OltJIK42keXalGe0jzZIiJVKiaESJIEUQ3gMNNBrdaLSr7uquLm+uN8eliYj9I08ek/fY66oa7Og+9d0338g8eSIjvnjzy4hIceKQhwUEbLNp2oatRQjRItq495EsFtG02/k0ZfGA1OeErYXWabyedpeGXZ5R8b7Z9IKPyndjIUSz3qp1ptOnh0m3Ywfi9Idvw4CgHx7WDl63B2FlyzmZ5kXtwMlF7YGFxBjb4fxSLDBYEBJj21ikuOUEJbaF6Y1NUhkSZyZJvr5ZO2UTt3xugts+OD1OWqf2Hzf/yOAx+awdxu+ntXuE983aMfk2bjs7kXF+TUxm+xBMP8wgnLX02T6abYmNEfmDwllRtI3P2kG8GLBfL34ELE4c8khT6vxaOFV2w3CHc2tjMIBsOb00pSexvYfM8ttSeu6t7+/4Tf33+t5KA4qnJ78Nt6/PwfAj4lbdHIHvvOCj8AxWbNsUXqued+fbN0x3O8jyfQp6RJy1+83vxqbpoHiQ3UpPtpWeafaIGeVnU+fWrCSdyk90KT+QqSLsVHYdWGRwWwnKbcovUXwpThVfhxJsXpTeNr1m7e304enf++FtSm0Iv5/KbBi/DdsD5kfEdgyeHvkH8MMU2zaFN0zZ7TVmMA+7wVnbzafOoI17891OZAQltyPL/vCiH0+iAPv7xyZuKb1037TSpc4rVY7duHfML9uTjJD6HKaz4389DUnDCqpfB5/F+yYIMhd0j/i2j+yn9Hrw6e7N7b3qdS8+WzAJ2mnB7VnBvm4HWLmTmB+ZmJ8YK+aXYp3Y3pA802f/u3O35jS4b8w3z/18Y2e4b3yR2m/mS8U20z0Xg0kZp9jOnO3M6U9c5d+vI2439d/N2C50pzeC/x/8f74+P",
+
+    miku:
+      "https://static.wikia.nocookie.net/vocaloid/images/f/f9/Miku_Chinese.png/revision/latest?cb=20220327221551",
+
+    teto:
+      "https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834",
+
+    luka:
+      "https://upload.wikimedia.org/wikipedia/en/a/a2/Megurine_Luka.png",
+
+    rin:
+      "https://upload.wikimedia.org/wikipedia/en/8/82/Kagamine_Rin_and_Len.png",
+
+    len:
+      "https://upload.wikimedia.org/wikipedia/en/8/82/Kagamine_Rin_and_Len.png",
+
+    kaito:
+      "https://upload.wikimedia.org/wikipedia/en/d/da/Kaito_V3.png",
+
+    meiko:
+      "https://upload.wikimedia.org/wikipedia/en/d/db/Meiko_V3.png"
+
   };
 
+
+  /* =========================================================
+     GAMES
+  ========================================================= */
+
   const games = [
-    ['Friday Night Funkin\'','https://ninja-muffin24.itch.io/funkin'],
-    ['NowGG.fun','https://nowgg.fun'],
-    ['Shitty 2D Rocket League','https://skempisty.github.io/rocket_league_2d/'],
-    ['Minecraft','https://eaglercraft1-8.github.io'],
-    ['GeForceNow','https://play.geforcenow.com'],
-    ['ChatGPT','https://chatgpt.com'],
-    ['YouTube','https://youtube.com'],
-    ['Google Snake','https://www.google.com/search?q=google+snake']
+
+    [
+      "Friday Night Funkin'",
+      "https://ninja-muffin24.itch.io/funkin"
+    ],
+
+    [
+      "NowGG.fun",
+      "https://nowgg.fun"
+    ],
+
+    [
+      "Shitty 2D Rocket League",
+      "https://skempisty.github.io/rocket_league_2d/"
+    ],
+
+    [
+      "Minecraft",
+      "https://eaglercraft1-8.github.io"
+    ],
+
+    [
+      "GeForceNow",
+      "https://play.geforcenow.com"
+    ],
+
+    [
+      "ChatGPT",
+      "https://chatgpt.com"
+    ],
+
+    [
+      "YouTube",
+      "https://youtube.com"
+    ],
+
+    [
+      "Google Snake",
+      "https://www.google.com/search?q=google+snake"
+    ]
+
   ];
-  
+
+
+  /* =========================================================
+     APPS
+  ========================================================= */
+
   const apps = [
-    ['Google','https://www.google.com'],
-    ['YouTube','https://www.youtube.com'],
-    ['ChatGPT','https://chatgpt.com'],
-    ['GitHub','https://github.com'],
-    ['Piapro','https://piapro.net/'],
-    ['Kasane Teto','https://kasaneteto.jp/']
+
+    [
+      "Google",
+      "https://www.google.com"
+    ],
+
+    [
+      "YouTube",
+      "https://www.youtube.com"
+    ],
+
+    [
+      "ChatGPT",
+      "https://chatgpt.com"
+    ],
+
+    [
+      "GitHub",
+      "https://github.com"
+    ],
+
+    [
+      "Piapro",
+      "https://piapro.net/"
+    ],
+
+    [
+      "Kasane Teto",
+      "https://kasaneteto.jp/"
+    ]
+
   ];
+
+
+  /* =========================================================
+     TAB STATE
+  ========================================================= */
 
   let tabs = [];
+
   let activeTabId = null;
 
-  // Helper: Smart search/URL routing
-  function processInputToUrl(input) {
+
+  /* =========================================================
+     URL PROCESSING
+  ========================================================= */
+
+  function processInputToUrl(input){
+
     let str = input.trim();
-    if (!str) return 'https://www.google.com';
-    
-    // Explicit scheme
-    if (/^https?:\/\//i.test(str)) return str;
-    
-    // Looks like a valid domain or IP (e.g. site.com, localhost:3000, 192.168.1.1/path)
-    const urlPattern = /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
-    const localhostPattern = /^localhost(:\d+)?(\/.*)?$/;
-    const ipPattern = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/;
 
-    if (urlPattern.test(str) || localhostPattern.test(str) || ipPattern.test(str)) {
-      return 'https://' + str;
+    if(!str){
+      return "https://www.google.com";
     }
 
-    // Default: Perform Google search
-    return `https://www.google.com/search?q=${encodeURIComponent(str)}`;
+    if(/^https?:\/\//i.test(str)){
+      return str;
+    }
+
+    const urlPattern =
+      /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
+
+    const localhostPattern =
+      /^localhost(:\d+)?(\/.*)?$/;
+
+    const ipPattern =
+      /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/;
+
+    if(
+      urlPattern.test(str) ||
+      localhostPattern.test(str) ||
+      ipPattern.test(str)
+    ){
+
+      return "https://" + str;
+
+    }
+
+    return (
+      "https://www.google.com/search?q=" +
+      encodeURIComponent(str)
+    );
+
   }
 
-  // Application State Management
-  function init() {
-    setupAuth();
+
+  /* =========================================================
+     INITIALIZATION
+  ========================================================= */
+
+  async function init(){
+
     setupViews();
+
     setupSettings();
+
     setupTabEngine();
+
     setupParticles();
+
     renderAppGrid();
+
     renderGamesGrid();
+
+    setupAuth();
+
   }
 
-  function setupAuth() {
-    const savedUser = localStorage.getItem(USER_KEY);
-    if (savedUser) {
-      $('#authGate').style.display = 'none';
-      $('#app').hidden = false;
-      renderAccountCard(JSON.parse(savedUser));
+
+  /* =========================================================
+     AUTHENTICATION
+     
+     IMPORTANT:
+     
+     The ID is NEVER entered during login.
+     
+     It is silently retrieved from localStorage.
+  ========================================================= */
+
+  async function setupAuth(){
+
+    const savedId =
+      localStorage.getItem(USER_KEY);
+
+
+    /*
+     * Existing installation.
+     *
+     * Check the saved ID against Supabase.
+     */
+    if(savedId){
+
+      try{
+
+        const {
+          data,
+          error
+        } = await supabase
+
+          .from("korona_users")
+
+          .select(
+            "id,name,active"
+          )
+
+          .eq(
+            "id",
+            savedId
+          )
+
+          .eq(
+            "active",
+            true
+          )
+
+          .maybeSingle();
+
+
+        if(!error && data){
+
+          unlockApp(data);
+
+        }
+
+      }catch(error){
+
+        console.error(
+          "Korona automatic authentication failed:",
+          error
+        );
+
+      }
+
     }
 
-    $('#loginBtn').onclick = () => {
-      const id = $('#loginId').value.trim();
-      if (!id) return $('#loginMsg').textContent = 'Please enter a valid ID';
-      const user = { id, name: id.split('.')[0] || 'User' };
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
-      $('#authGate').style.display = 'none';
-      $('#app').hidden = false;
-      renderAccountCard(user);
+
+    /* =====================================================
+       LOGIN
+    ===================================================== */
+
+    $("#loginBtn").onclick = async () => {
+
+      const code =
+        $("#loginCode").value.trim();
+
+      /*
+       * THIS is the hidden ID.
+       *
+       * There is no ID input field.
+       */
+      const storedId =
+        localStorage.getItem(USER_KEY);
+
+
+      $("#loginMsg").textContent = "";
+
+
+      if(!storedId){
+
+        $("#loginMsg").textContent =
+          "This browser is not registered with Korona.";
+
+        return;
+
+      }
+
+
+      if(!code){
+
+        $("#loginMsg").textContent =
+          "Please enter your authentication code.";
+
+        return;
+
+      }
+
+
+      $("#loginBtn").disabled = true;
+
+      $("#loginBtn").textContent =
+        "checking...";
+
+
+      try{
+
+        const {
+          data,
+          error
+        } = await supabase
+
+          .from("korona_users")
+
+          .select(
+            "id,name,auth_code,active"
+          )
+
+          .eq(
+            "id",
+            storedId
+          )
+
+          .eq(
+            "active",
+            true
+          )
+
+          .maybeSingle();
+
+
+        if(error){
+
+          console.error(error);
+
+          $("#loginMsg").textContent =
+            "Authentication server error.";
+
+          return;
+
+        }
+
+
+        if(!data){
+
+          /*
+           * The saved ID is no longer valid.
+           */
+          localStorage.removeItem(USER_KEY);
+
+          $("#loginMsg").textContent =
+            "This Korona installation is not registered.";
+
+          return;
+
+        }
+
+
+        /*
+         * Check the authentication code
+         * against the silently retrieved ID.
+         */
+        if(data.auth_code !== code){
+
+          $("#loginMsg").textContent =
+            "Incorrect authentication code.";
+
+          return;
+
+        }
+
+
+        /*
+         * Keep the ID saved.
+         *
+         * The user never needs to type it.
+         */
+        localStorage.setItem(
+          USER_KEY,
+          data.id
+        );
+
+
+        unlockApp(data);
+
+        $("#loginCode").value = "";
+
+      }catch(error){
+
+        console.error(error);
+
+        $("#loginMsg").textContent =
+          "Could not contact the authentication server.";
+
+      }finally{
+
+        $("#loginBtn").disabled = false;
+
+        $("#loginBtn").textContent =
+          "unlock korona";
+
+      }
+
     };
 
-    $('#createBtn').onclick = () => {
-      const fn = $('#firstName').value.trim();
-      const ln = $('#lastName').value.trim();
-      if (!fn || !ln) return $('#createMsg').textContent = 'First and last name required';
-      const user = { id: `${fn.toLowerCase()}.${ln.toLowerCase()}`, name: `${fn} ${ln}` };
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
-      $('#authGate').style.display = 'none';
-      $('#app').hidden = false;
-      renderAccountCard(user);
+
+    /* =====================================================
+       CREATE ACCOUNT
+    ===================================================== */
+
+    $("#createBtn").onclick = async () => {
+
+      const fn =
+        $("#firstName").value.trim();
+
+      const ln =
+        $("#lastName").value.trim();
+
+
+      $("#createMsg").textContent = "";
+
+
+      if(!fn || !ln){
+
+        $("#createMsg").textContent =
+          "First and last name required.";
+
+        return;
+
+      }
+
+
+      /*
+       * Name becomes Korona ID.
+       *
+       * Example:
+       *
+       * John + Smith
+       *       ↓
+       * john.smith
+       */
+      const id =
+        `${fn}.${ln}`
+          .toLowerCase()
+          .replace(/[^a-z0-9.]/g,"");
+
+
+      if(
+        !id ||
+        !id.includes(".")
+      ){
+
+        $("#createMsg").textContent =
+          "Please enter a valid name.";
+
+        return;
+
+      }
+
+
+      $("#createBtn").disabled = true;
+
+      $("#createBtn").textContent =
+        "checking...";
+
+
+      try{
+
+        /*
+         * Check whether the ID is already taken.
+         */
+        const {
+          data: existing,
+          error: checkError
+        } = await supabase
+
+          .from("korona_users")
+
+          .select("id")
+
+          .eq(
+            "id",
+            id
+          )
+
+          .maybeSingle();
+
+
+        if(checkError){
+
+          console.error(checkError);
+
+          $("#createMsg").textContent =
+            "Could not check ID availability.";
+
+          return;
+
+        }
+
+
+        /*
+         * ID ALREADY EXISTS.
+         */
+        if(existing){
+
+          $("#createMsg").textContent =
+            `"${id}" is already taken. Please choose another name.`;
+
+          return;
+
+        }
+
+
+        /*
+         * Generate the authentication code.
+         *
+         * It is shown during account creation.
+         */
+        const authCode =
+          crypto.randomUUID()
+            .replace(/-/g,"")
+            .slice(0,12)
+            .toUpperCase();
+
+
+        /*
+         * Create the account in Supabase.
+         */
+        const {
+          data,
+          error
+        } = await supabase
+
+          .from("korona_users")
+
+          .insert({
+
+            id:id,
+
+            name:`${fn} ${ln}`,
+
+            auth_code:authCode,
+
+            active:true
+
+          })
+
+          .select(
+            "id,name,auth_code,active"
+          )
+
+          .single();
+
+
+        if(error){
+
+          console.error(error);
+
+          /*
+           * Database-level duplicate protection.
+           */
+          if(
+            error.code === "23505" ||
+            error.message
+              ?.toLowerCase()
+              .includes("duplicate")
+          ){
+
+            $("#createMsg").textContent =
+              `"${id}" was taken while creating the account.`;
+
+          }else{
+
+            $("#createMsg").textContent =
+              "Could not create the Korona account.";
+
+          }
+
+          return;
+
+        }
+
+
+        /*
+         * SAVE THE ID IN THE BACKGROUND.
+         *
+         * This is the important part.
+         *
+         * The login screen will never ask for this ID.
+         */
+        localStorage.setItem(
+          USER_KEY,
+          data.id
+        );
+
+
+        /*
+         * Show the code ONCE.
+         */
+        $("#createMsg").innerHTML = `
+
+          <span style="color:var(--accent)">
+            Korona account created.
+          </span>
+
+          <br><br>
+
+          <span style="color:var(--text)">
+            Authentication code:
+            <strong>${escapeHtml(data.auth_code)}</strong>
+          </span>
+
+          <br><br>
+
+          <span style="color:var(--muted)">
+            Save this authentication code.
+            It will not be displayed again.
+          </span>
+
+        `;
+
+
+        $("#createBtn").disabled = true;
+
+        $("#createBtn").textContent =
+          "created";
+
+
+        /*
+         * Give them time to see the code,
+         * then return to the login screen.
+         */
+        setTimeout(() => {
+
+          $("#createBox")
+            .classList
+            .remove("visible");
+
+          $("#loginBox")
+            .classList
+            .add("visible");
+
+          $("#authLead").textContent =
+            "enter your authentication code to unlock korona.";
+
+          $("#loginMsg").textContent =
+            "Account created. Enter your authentication code.";
+
+          $("#createBtn").disabled = false;
+
+          $("#createBtn").textContent =
+            "create korona id";
+
+        },3500);
+
+
+      }catch(error){
+
+        console.error(error);
+
+        $("#createMsg").textContent =
+          "Could not create the Korona account.";
+
+        $("#createBtn").disabled = false;
+
+        $("#createBtn").textContent =
+          "create korona id";
+
+      }
+
     };
 
-    $('#showCreate').onclick = () => { $('#loginBox').classList.remove('visible'); $('#createBox').classList.add('visible'); };
-    $('#showLogin').onclick = () => { $('#createBox').classList.remove('visible'); $('#loginBox').classList.add('visible'); };
-    $('#logoutBtn').onclick = () => { localStorage.removeItem(USER_KEY); location.reload(); };
+
+    /* =====================================================
+       AUTH SCREEN SWITCHING
+    ===================================================== */
+
+    $("#showCreate").onclick = () => {
+
+      $("#loginBox")
+        .classList
+        .remove("visible");
+
+      $("#createBox")
+        .classList
+        .add("visible");
+
+      $("#authLead").textContent =
+        "create your Korona identity.";
+
+    };
+
+
+    $("#showLogin").onclick = () => {
+
+      $("#createBox")
+        .classList
+        .remove("visible");
+
+      $("#loginBox")
+        .classList
+        .add("visible");
+
+      $("#authLead").textContent =
+        "authenticate to enter the browser.";
+
+    };
+
+
+    /* =====================================================
+       LOCK
+       
+       IMPORTANT:
+       
+       We DON'T remove USER_KEY.
+       
+       The computer remains associated with
+       the Korona ID.
+    ===================================================== */
+
+    $("#logoutBtn").onclick = () => {
+
+      $("#app").hidden = true;
+
+      $("#authGate").style.display =
+        "grid";
+
+      $("#loginCode").value = "";
+
+      $("#loginMsg").textContent =
+        "";
+
+      $("#authLead").textContent =
+        "authenticate to enter the browser.";
+
+    };
+
   }
 
-  function renderAccountCard(user) {
-    $('#accountCard').innerHTML = `
-      <div class="kv"><span>Korona ID</span><span>${user.id}</span></div>
-      <div class="kv"><span>User Name</span><span>${user.name || 'User'}</span></div>
-      <div class="kv"><span>Status</span><span>Active Workspace</span></div>
+
+  /* =========================================================
+     UNLOCK APP
+  ========================================================= */
+
+  function unlockApp(user){
+
+    $("#authGate").style.display =
+      "none";
+
+    $("#app").hidden =
+      false;
+
+    renderAccountCard(user);
+
+  }
+
+
+  /* =========================================================
+     ESCAPE HTML
+  ========================================================= */
+
+  function escapeHtml(value){
+
+    return String(value)
+
+      .replace(/&/g,"&amp;")
+
+      .replace(/</g,"&lt;")
+
+      .replace(/>/g,"&gt;")
+
+      .replace(/"/g,"&quot;")
+
+      .replace(/'/g,"&#039;");
+
+  }
+
+
+  /* =========================================================
+     ACCOUNT CARD
+  ========================================================= */
+
+  function renderAccountCard(user){
+
+    $("#accountCard").innerHTML = `
+
+      <div class="kv">
+
+        <span>
+          Korona ID
+        </span>
+
+        <span>
+          ${escapeHtml(user.id)}
+        </span>
+
+      </div>
+
+      <div class="kv">
+
+        <span>
+          User Name
+        </span>
+
+        <span>
+          ${escapeHtml(user.name || "User")}
+        </span>
+
+      </div>
+
+      <div class="kv">
+
+        <span>
+          Status
+        </span>
+
+        <span>
+          Active Workspace
+        </span>
+
+      </div>
+
+      <div class="kv">
+
+        <span>
+          Device
+        </span>
+
+        <span>
+          Registered browser
+        </span>
+
+      </div>
+
     `;
+
   }
 
-  function setupViews() {
-    $$('.sideBtn[data-view]').forEach(btn => {
-      btn.onclick = () => {
-        $$('.sideBtn').forEach(b => b.classList.remove('active'));$$
-('.view').forEach(v => v.classList.remove('active'));
-        btn.classList.add('active');
-        $(`#view-${btn.dataset.view}`).classList.add('active');
-      };
-    });
 
-    // Home search & quick launchers
+  /* =========================================================
+     VIEWS
+  ========================================================= */
+
+  function setupViews(){
+
+    $$(".sideBtn[data-view]")
+      .forEach(btn => {
+
+        btn.onclick = () => {
+
+          $$(".sideBtn")
+            .forEach(b =>
+              b.classList.remove("active")
+            );
+
+          $$(".view")
+            .forEach(v =>
+              v.classList.remove("active")
+            );
+
+          btn.classList.add("active");
+
+          $(`#view-${btn.dataset.view}`)
+            .classList
+            .add("active");
+
+        };
+
+      });
+
+
     const handleHomeSearch = () => {
-      const val = $('#homeSearch').value;
-      if (!val) return;
-      const targetUrl = processInputToUrl(val);
+
+      const val =
+        $("#homeSearch").value;
+
+      if(!val)return;
+
+      const targetUrl =
+        processInputToUrl(val);
+
       openInBrowserTab(targetUrl);
-      $('#homeSearch').value = '';
+
+      $("#homeSearch").value =
+        "";
+
     };
 
-    $('#homeGo').onclick = handleHomeSearch;
-    $('#homeSearch').onkeydown = e => { if (e.key === 'Enter') handleHomeSearch(); };      $$('.quick button').forEach(btn => {
-      btn.onclick = () => openInBrowserTab(btn.dataset.url);
-    });
+
+    $("#homeGo").onclick =
+      handleHomeSearch;
+
+
+    $("#homeSearch").onkeydown =
+      e => {
+
+        if(e.key === "Enter"){
+
+          handleHomeSearch();
+
+        }
+
+      };
+
+
+    $$(".quick button")
+      .forEach(btn => {
+
+        btn.onclick = () => {
+
+          openInBrowserTab(
+            btn.dataset.url
+          );
+
+        };
+
+      });
+
   }
 
-  function setupSettings() {
-    // Interface Style
-    const savedStyle = localStorage.getItem(STYLE_KEY) || 'korona';
-    $('#styleSelect').value = savedStyle;
-    if (savedStyle === 'switch') document.body.classList.add('switch-mode');
 
-    $('#styleSelect').onchange = (e) => {
-      const val = e.target.value;
-      localStorage.setItem(STYLE_KEY, val);
-      if (val === 'switch') document.body.classList.add('switch-mode');
-      else document.body.classList.remove('switch-mode');
-    };
+  /* =========================================================
+     SETTINGS
+  ========================================================= */
 
-    // Color Themes
-    const savedTheme = localStorage.getItem(THEME_KEY) || 'default';
+  function setupSettings(){
+
+    const savedStyle =
+      localStorage.getItem(STYLE_KEY) ||
+      "korona";
+
+
+    $("#styleSelect").value =
+      savedStyle;
+
+
+    if(savedStyle === "switch"){
+
+      document.body
+        .classList
+        .add("switch-mode");
+
+    }
+
+
+    $("#styleSelect").onchange =
+      e => {
+
+        const val =
+          e.target.value;
+
+        localStorage.setItem(
+          STYLE_KEY,
+          val
+        );
+
+        if(val === "switch"){
+
+          document.body
+            .classList
+            .add("switch-mode");
+
+        }else{
+
+          document.body
+            .classList
+            .remove("switch-mode");
+
+        }
+
+      };
+
+
+    const savedTheme =
+      localStorage.getItem(THEME_KEY) ||
+      "default";
+
+
     applyTheme(savedTheme);
+
     renderThemeGrid(savedTheme);
 
-    // Character Selection
-    const savedChar = localStorage.getItem(CHARACTER_KEY) || 'none';
-    $('#characterSelect').value = savedChar;
+
+    const savedChar =
+      localStorage.getItem(CHARACTER_KEY) ||
+      "none";
+
+
+    $("#characterSelect").value =
+      savedChar;
+
+
     applyCharacter(savedChar);
 
-    $('#characterSelect').onchange = (e) => {
-      const val = e.target.value;
-      localStorage.setItem(CHARACTER_KEY, val);
-      applyCharacter(val);
-    };
-  }
 
-  function applyTheme(key) {
-    const t = themes[key] || themes.default;
-    const r = document.documentElement;
-    r.style.setProperty('--bg', t.bg);
-    r.style.setProperty('--surface', t.surface);
-    r.style.setProperty('--surface2', t.surface2);
-    r.style.setProperty('--surface3', t.surface3);
-    r.style.setProperty('--text', t.text);
-    r.style.setProperty('--muted', t.muted);
-    r.style.setProperty('--line', t.line);
-    r.style.setProperty('--accent', t.accent);
-    r.style.setProperty('--accent2', t.accent2);
-    localStorage.setItem(THEME_KEY, key);
-  }
+    $("#characterSelect").onchange =
+      e => {
 
-  function renderThemeGrid(activeKey) {
-    const grid = $('#themeGrid');
-    grid.innerHTML = '';
-    Object.keys(themes).forEach(key => {
-      const t = themes[key];
-      const btn = document.createElement('button');
-      btn.className = `themeBtn ${key === activeKey ? 'selected' : ''}`;
-      btn.innerHTML = `<div class="swatch" style="background:${t.accent}"></div><span>${t.label}</span>`;
-      btn.onclick = () => {
-        $$('.themeBtn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        applyTheme(key);
+        const val =
+          e.target.value;
+
+        localStorage.setItem(
+          CHARACTER_KEY,
+          val
+        );
+
+        applyCharacter(val);
+
       };
-      grid.appendChild(btn);
-    });
+
+
+    $("#switchMoreGames").onclick =
+      () => {
+
+        $$(".sideBtn[data-view='games']")[0]
+          .click();
+
+      };
+
   }
 
-  function applyCharacter(key) {
-    const img = $('#character');
-    if (key === 'none' || !characterSources[key]) {
-      img.classList.remove('show');
-      img.src = '';
-    } else {
-      img.src = characterSources[key];
-      img.classList.add('show');
+
+  /* =========================================================
+     APPLY THEME
+  ========================================================= */
+
+  function applyTheme(key){
+
+    const t =
+      themes[key] ||
+      themes.default;
+
+    const r =
+      document.documentElement;
+
+
+    r.style.setProperty(
+      "--bg",
+      t.bg
+    );
+
+    r.style.setProperty(
+      "--surface",
+      t.surface
+    );
+
+    r.style.setProperty(
+      "--surface2",
+      t.surface2
+    );
+
+    r.style.setProperty(
+      "--surface3",
+      t.surface3
+    );
+
+    r.style.setProperty(
+      "--text",
+      t.text
+    );
+
+    r.style.setProperty(
+      "--muted",
+      t.muted
+    );
+
+    r.style.setProperty(
+      "--line",
+      t.line
+    );
+
+    r.style.setProperty(
+      "--accent",
+      t.accent
+    );
+
+    r.style.setProperty(
+      "--accent2",
+      t.accent2
+    );
+
+    localStorage.setItem(
+      THEME_KEY,
+      key
+    );
+
+  }
+
+
+  /* =========================================================
+     THEME GRID
+  ========================================================= */
+
+  function renderThemeGrid(activeKey){
+
+    const grid =
+      $("#themeGrid");
+
+    grid.innerHTML =
+      "";
+
+
+    Object.keys(themes)
+      .forEach(key => {
+
+        const t =
+          themes[key];
+
+        const btn =
+          document.createElement("button");
+
+        btn.className =
+          `themeBtn ${
+            key === activeKey
+              ? "selected"
+              : ""
+          }`;
+
+
+        btn.innerHTML = `
+
+          <div
+            class="swatch"
+            style="background:${t.accent}"
+          ></div>
+
+          <span>
+            ${escapeHtml(t.label)}
+          </span>
+
+        `;
+
+
+        btn.onclick = () => {
+
+          $$(".themeBtn")
+            .forEach(b =>
+              b.classList.remove("selected")
+            );
+
+          btn.classList.add("selected");
+
+          applyTheme(key);
+
+        };
+
+
+        grid.appendChild(btn);
+
+      });
+
+  }
+
+
+  /* =========================================================
+     CHARACTER
+  ========================================================= */
+
+  function applyCharacter(key){
+
+    const img =
+      $("#character");
+
+
+    if(
+      key === "none" ||
+      !characterSources[key]
+    ){
+
+      img.classList.remove(
+        "show"
+      );
+
+      img.src =
+        "";
+
+      return;
+
     }
+
+
+    img.src =
+      characterSources[key];
+
+    img.classList.add(
+      "show"
+    );
+
   }
 
-  function setupTabEngine() {
-    $('#newTab').onclick = () => createTab('New Tab', '');
-    
+
+  /* =========================================================
+     BROWSER / TABS
+  ========================================================= */
+
+  function setupTabEngine(){
+
+    $("#newTab").onclick =
+      () => {
+
+        createTab(
+          "New Tab",
+          ""
+        );
+
+      };
+
+
     const handleAddressSubmit = () => {
-      const raw = $('#address').value;
-      if (!raw) return;
-      const targetUrl = processInputToUrl(raw);
-      if (activeTabId) {
-        updateTab(activeTabId, targetUrl);
-      } else {
-        createTab(targetUrl, targetUrl);
+
+      const raw =
+        $("#address").value;
+
+      if(!raw)return;
+
+
+      const targetUrl =
+        processInputToUrl(raw);
+
+
+      if(activeTabId){
+
+        updateTab(
+          activeTabId,
+          targetUrl
+        );
+
+      }else{
+
+        createTab(
+          targetUrl,
+          targetUrl
+        );
+
       }
+
     };
 
-    $('#goBtn').onclick = handleAddressSubmit;
-    $('#address').onkeydown = e => { if (e.key === 'Enter') handleAddressSubmit(); };
 
-    $('#reloadBtn').onclick = () => {
-      if (!activeTabId) return;
-      const iframe = $(`#frame-${activeTabId}`);
-      if (iframe) iframe.src = iframe.src;
-    };
+    $("#goBtn").onclick =
+      handleAddressSubmit;
 
-    $('#homeBtn').onclick = () => {       $$('.sideBtn[data-view="home"]')[0].click();
-    };
 
-    createTab('Korona Home', '');
+    $("#address").onkeydown =
+      e => {
+
+        if(e.key === "Enter"){
+
+          handleAddressSubmit();
+
+        }
+
+      };
+
+
+    $("#reloadBtn").onclick =
+      () => {
+
+        if(!activeTabId)return;
+
+        const iframe =
+          $(`#frame-${activeTabId}`);
+
+        if(iframe){
+
+          try{
+
+            iframe.contentWindow.location.reload();
+
+          }catch{
+
+            iframe.src =
+              iframe.src;
+
+          }
+
+        }
+
+      };
+
+
+    $("#backBtn").onclick =
+      () => {
+
+        const iframe =
+          activeFrame();
+
+        if(!iframe)return;
+
+        try{
+
+          iframe.contentWindow.history.back();
+
+        }catch{}
+
+      };
+
+
+    $("#forwardBtn").onclick =
+      () => {
+
+        const iframe =
+          activeFrame();
+
+        if(!iframe)return;
+
+        try{
+
+          iframe.contentWindow.history.forward();
+
+        }catch{}
+
+      };
+
+
+    $("#homeBtn").onclick =
+      () => {
+
+        $$(".sideBtn[data-view='home']")[0]
+          .click();
+
+      };
+
+
+    $("#fullBtn").onclick =
+      async () => {
+
+        const browser =
+          $("#view-browser");
+
+        if(!document.fullscreenElement){
+
+          try{
+
+            await browser.requestFullscreen();
+
+          }catch{
+
+            try{
+
+              await $("#frames").requestFullscreen();
+
+            }catch{}
+
+          }
+
+        }else{
+
+          try{
+
+            await document.exitFullscreen();
+
+          }catch{}
+
+        }
+
+      };
+
+
+    createTab(
+      "Korona Home",
+      ""
+    );
+
   }
 
-  function createTab(title, url) {
-    const id = 'tab_' + Math.random().toString(36).substr(2, 9);
-    const tabObj = { id, title: title || 'New Tab', url };
-    tabs.push(tabObj);
 
-    // Frame
-    const frame = document.createElement('iframe');
-    frame.className = 'browserFrame';
-    frame.id = `frame-${id}`;
-    if (url) frame.src = url;
-    $('#frames').appendChild(frame);
+  /* =========================================================
+     ACTIVE FRAME
+  ========================================================= */
+
+  function activeFrame(){
+
+    if(!activeTabId){
+      return null;
+    }
+
+    return $(
+      `#frame-${activeTabId}`
+    );
+
+  }
+
+
+  /* =========================================================
+     CREATE TAB
+  ========================================================= */
+
+  function createTab(title,url){
+
+    const id =
+      "tab_" +
+      Math.random()
+        .toString(36)
+        .substr(2,9);
+
+
+    const tabObj = {
+
+      id,
+
+      title:
+        title ||
+        "New Tab",
+
+      url
+
+    };
+
+
+    tabs.push(
+      tabObj
+    );
+
+
+    const frame =
+      document.createElement("iframe");
+
+
+    frame.className =
+      "browserFrame";
+
+
+    frame.id =
+      `frame-${id}`;
+
+
+    /*
+     * Keep browser functionality working
+     * using the current Korona iframe engine.
+     *
+     * If your Scramjet build exposes a controller,
+     * the hook below can be connected without
+     * changing the rest of Korona.
+     */
+    if(url){
+
+      loadBrowserFrame(
+        frame,
+        url
+      );
+
+    }
+
+
+    $("#frames")
+      .appendChild(frame);
+
 
     renderTabs();
+
     switchTab(id);
+
   }
 
-  function updateTab(id, url) {
-    const t = tabs.find(x => x.id === id);
-    if (!t) return;
-    t.url = url;
-    t.title = url.replace(/^https?:\/\//, '');
-    const iframe = $(`#frame-${id}`);
-    if (iframe) iframe.src = url;
+
+  /* =========================================================
+     LOAD BROWSER FRAME
+     
+     This function is isolated so Scramjet can be
+     connected without rewriting the entire UI.
+  ========================================================= */
+
+  function loadBrowserFrame(
+    frame,
+    url
+  ){
+
+    /*
+     * Prevent javascript: URLs from being loaded.
+     */
+    if(
+      /^javascript:/i.test(url)
+    ){
+
+      return;
+
+    }
+
+
+    frame.src =
+      url;
+
+  }
+
+
+  /* =========================================================
+     UPDATE TAB
+  ========================================================= */
+
+  function updateTab(id,url){
+
+    const t =
+      tabs.find(
+        x => x.id === id
+      );
+
+
+    if(!t)return;
+
+
+    t.url =
+      url;
+
+
+    t.title =
+      url.replace(
+        /^https?:\/\//,
+        ""
+      );
+
+
+    const iframe =
+      $(`#frame-${id}`);
+
+
+    if(iframe){
+
+      loadBrowserFrame(
+        iframe,
+        url
+      );
+
+    }
+
+
     renderTabs();
-    if (activeTabId === id) $('#address').value = url;
-  }
 
-  function switchTab(id) {
-    activeTabId = id;
-    $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.id === id));$$
-('.browserFrame').forEach(f => f.classList.toggle('active', f.id === `frame-${id}`));
-    
-    const t = tabs.find(x => x.id === id);
-    if (t) {
-      $('#address').value = t.url;
-      $('#browserOverlay').classList.toggle('hidden', !!t.url);
+
+    if(activeTabId === id){
+
+      $("#address").value =
+        url;
+
     }
+
   }
 
-  function closeTab(id, e) {
+
+  /* =========================================================
+     SWITCH TAB
+  ========================================================= */
+
+  function switchTab(id){
+
+    activeTabId =
+      id;
+
+
+    $$(".tab")
+      .forEach(t => {
+
+        t.classList.toggle(
+          "active",
+          t.dataset.id === id
+        );
+
+      });
+
+
+    $$(".browserFrame")
+      .forEach(f => {
+
+        f.classList.toggle(
+          "active",
+          f.id === `frame-${id}`
+        );
+
+      });
+
+
+    const t =
+      tabs.find(
+        x => x.id === id
+      );
+
+
+    if(t){
+
+      $("#address").value =
+        t.url;
+
+
+      $("#browserOverlay")
+        .classList
+        .toggle(
+          "hidden",
+          !!t.url
+        );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CLOSE TAB
+  ========================================================= */
+
+  function closeTab(id,e){
+
     e.stopPropagation();
-    tabs = tabs.filter(t => t.id !== id);
-    const frame = $(`#frame-${id}`);
-    if (frame) frame.remove();
 
-    if (activeTabId === id) {
-      activeTabId = tabs.length ? tabs[tabs.length - 1].id : null;
+
+    tabs =
+      tabs.filter(
+        t => t.id !== id
+      );
+
+
+    const frame =
+      $(`#frame-${id}`);
+
+
+    if(frame){
+
+      frame.remove();
+
     }
 
-    if (!tabs.length) {
-      createTab('New Tab', '');
-    } else {
+
+    if(activeTabId === id){
+
+      activeTabId =
+        tabs.length
+          ? tabs[tabs.length - 1].id
+          : null;
+
+    }
+
+
+    if(!tabs.length){
+
+      createTab(
+        "New Tab",
+        ""
+      );
+
+    }else{
+
       renderTabs();
-      if (activeTabId) switchTab(activeTabId);
+
+      if(activeTabId){
+
+        switchTab(
+          activeTabId
+        );
+
+      }
+
     }
+
   }
 
-  function renderTabs() {
-    const strip = $('#tabStrip');     $$('#tabStrip .tab').forEach(el => el.remove());
+
+  /* =========================================================
+     RENDER TABS
+  ========================================================= */
+
+  function renderTabs(){
+
+    const strip =
+      $("#tabStrip");
+
+
+    $$("#tabStrip .tab")
+      .forEach(
+        el => el.remove()
+      );
+
 
     tabs.forEach(t => {
-      const el = document.createElement('div');
-      el.className = `tab ${t.id === activeTabId ? 'active' : ''}`;
-      el.dataset.id = t.id;
+
+      const el =
+        document.createElement("div");
+
+
+      el.className =
+        `tab ${
+          t.id === activeTabId
+            ? "active"
+            : ""
+        }`;
+
+
+      el.dataset.id =
+        t.id;
+
+
       el.innerHTML = `
-        <div class="tab-icon">◎</div>
-        <span class="tab-title">${t.title}</span>
-        <button class="tab-close">×</button>
-      `;
-      el.onclick = () => switchTab(t.id);
-      el.querySelector('.tab-close').onclick = (e) => closeTab(t.id, e);
-      strip.insertBefore(el, $('#newTab'));     });   }    function openInBrowserTab(url) {     $$('.sideBtn[data-view="browser"]')[0].click();
-    if (activeTabId && !tabs.find(x => x.id === activeTabId).url) {
-      updateTab(activeTabId, url);
-    } else {
-      createTab(url, url);
-    }
-  }
 
-  function renderGamesGrid() {
-    const grid = $('#gamesGrid');
-    grid.innerHTML = '';
-    games.forEach(([name, url]) => {
-      const card = document.createElement('div');
-      card.className = 'game';
-      card.innerHTML = `
-        <div class="gameBody">
-          <div class="gameTitle">${name}</div>
-          <div class="gameDesc">${url}</div>
-          <button class="gameGo">Play Game</button>
+        <div class="tab-icon">
+          ◎
         </div>
+
+        <span class="tab-title">
+          ${escapeHtml(t.title)}
+        </span>
+
+        <button class="tab-close">
+          ×
+        </button>
+
       `;
-      card.querySelector('.gameGo').onclick = () => openInBrowserTab(url);
-      grid.appendChild(card);
+
+
+      el.onclick =
+        () => switchTab(t.id);
+
+
+      el.querySelector(
+        ".tab-close"
+      ).onclick =
+        e => closeTab(
+          t.id,
+          e
+        );
+
+
+      strip.insertBefore(
+        el,
+        $("#newTab")
+      );
+
     });
+
   }
 
-  function renderAppGrid() {
-    const grid = $('#appGrid');
-    grid.innerHTML = '';
-    apps.forEach(([name, url]) => {
-      const btn = document.createElement('button');
-      btn.textContent = name;
-      btn.onclick = () => openInBrowserTab(url);
-      grid.appendChild(btn);
-    });
-  }
 
-  function setupParticles() {
-    const canvas = $('#particles');
-    const ctx = canvas.getContext('2d');
-    let pts = [];
-    let enabled = true;
+  /* =========================================================
+     OPEN IN BROWSER TAB
+  ========================================================= */
 
-    $('#particleToggle').onchange = (e) => {
-      enabled = e.target.checked;
-      canvas.style.display = enabled ? 'block' : 'none';
-    };
+  function openInBrowserTab(url){
 
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    $$(".sideBtn[data-view='browser']")[0]
+      .click();
+
+
+    const current =
+      activeTabId
+        ? tabs.find(
+            x => x.id === activeTabId
+          )
+        : null;
+
+
+    if(
+      current &&
+      !current.url
+    ){
+
+      updateTab(
+        activeTabId,
+        url
+      );
+
+    }else{
+
+      createTab(
+        url,
+        url
+      );
+
     }
-    window.onresize = resize;
+
+  }
+
+
+  /* =========================================================
+     GAMES
+  ========================================================= */
+
+  function renderGamesGrid(){
+
+    const grid =
+      $("#gamesGrid");
+
+
+    grid.innerHTML =
+      "";
+
+
+    games.forEach(
+      ([name,url]) => {
+
+        const card =
+          document.createElement("div");
+
+
+        card.className =
+          "game";
+
+
+        card.innerHTML = `
+
+          <div class="gameBody">
+
+            <div class="gameTitle">
+              ${escapeHtml(name)}
+            </div>
+
+            <div class="gameDesc">
+              ${escapeHtml(url)}
+            </div>
+
+            <button class="gameGo">
+              Play Game
+            </button>
+
+          </div>
+
+        `;
+
+
+        card.querySelector(
+          ".gameGo"
+        ).onclick =
+          () => openInBrowserTab(url);
+
+
+        grid.appendChild(
+          card
+        );
+
+      }
+
+    );
+
+
+    setupGameSearch();
+
+  }
+
+
+  /* =========================================================
+     GAME SEARCH
+  ========================================================= */
+
+  function setupGameSearch(){
+
+    const input =
+      $("#gameSearch");
+
+
+    input.oninput =
+      () => {
+
+        const query =
+          input.value
+            .trim()
+            .toLowerCase();
+
+
+        $$("#gamesGrid .game")
+          .forEach(card => {
+
+            const title =
+              card.querySelector(
+                ".gameTitle"
+              )?.textContent
+                .toLowerCase() || "";
+
+
+            card.style.display =
+              !query ||
+              title.includes(query)
+                ? ""
+                : "none";
+
+          });
+
+      };
+
+  }
+
+
+  /* =========================================================
+     APPS
+  ========================================================= */
+
+  function renderAppGrid(){
+
+    const grid =
+      $("#appGrid");
+
+
+    grid.innerHTML =
+      "";
+
+
+    apps.forEach(
+      ([name,url]) => {
+
+        const btn =
+          document.createElement("button");
+
+
+        btn.textContent =
+          name;
+
+
+        btn.onclick =
+          () => openInBrowserTab(url);
+
+
+        grid.appendChild(
+          btn
+        );
+
+      }
+
+    );
+
+  }
+
+
+  /* =========================================================
+     SWITCH FEATURED GAMES
+  ========================================================= */
+
+  function renderSwitchFeatured(){
+
+    const grid =
+      $("#switchFeatured");
+
+
+    if(!grid)return;
+
+
+    grid.innerHTML =
+      "";
+
+
+    games.slice(0,6)
+      .forEach(
+        ([name,url],index) => {
+
+          const card =
+            document.createElement("div");
+
+
+          card.className =
+            "switchGameCard";
+
+
+          card.innerHTML = `
+
+            <div
+              style="
+                height:150px;
+                display:grid;
+                place-items:center;
+                background:
+                  linear-gradient(
+                    135deg,
+                    color-mix(
+                      in srgb,
+                      var(--accent) 22%,
+                      var(--surface2)
+                    ),
+                    var(--surface2)
+                  );
+                font-size:42px;
+                font-weight:900;
+                color:var(--accent);
+              "
+            >
+              ${index + 1}
+            </div>
+
+            <div class="sgBody">
+
+              <div class="sgTitle">
+                ${escapeHtml(name)}
+              </div>
+
+              <button class="sgOpen">
+                Open
+              </button>
+
+            </div>
+
+          `;
+
+
+          card.querySelector(
+            ".sgOpen"
+          ).onclick =
+            () => openInBrowserTab(url);
+
+
+          grid.appendChild(
+            card
+          );
+
+        }
+
+      );
+
+  }
+
+
+  /* =========================================================
+     PARTICLES
+  ========================================================= */
+
+  function setupParticles(){
+
+    const canvas =
+      $("#particles");
+
+
+    const ctx =
+      canvas.getContext("2d");
+
+
+    let pts = [];
+
+
+    let enabled =
+      localStorage.getItem(
+        PARTICLES_KEY
+      ) !== "false";
+
+
+    $("#particleToggle").checked =
+      enabled;
+
+
+    canvas.style.display =
+      enabled
+        ? "block"
+        : "none";
+
+
+    $("#particleToggle").onchange =
+      e => {
+
+        enabled =
+          e.target.checked;
+
+
+        localStorage.setItem(
+          PARTICLES_KEY,
+          enabled
+        );
+
+
+        canvas.style.display =
+          enabled
+            ? "block"
+            : "none";
+
+      };
+
+
+    function resize(){
+
+      canvas.width =
+        window.innerWidth;
+
+      canvas.height =
+        window.innerHeight;
+
+    }
+
+
+    window.addEventListener(
+      "resize",
+      resize
+    );
+
+
     resize();
 
-    for (let i = 0; i < 45; i++) {
+
+    for(
+      let i = 0;
+      i < 45;
+      i++
+    ){
+
       pts.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        vx: (Math.random() - .5) * .6,
-        vy: (Math.random() - .5) * .6
+
+        x:
+          Math.random() *
+          window.innerWidth,
+
+        y:
+          Math.random() *
+          window.innerHeight,
+
+        vx:
+          (Math.random() - .5) *
+          .6,
+
+        vy:
+          (Math.random() - .5) *
+          .6
+
       });
+
     }
 
-    function loop() {
-      if (enabled) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d9ad32';
-        ctx.strokeStyle = ctx.fillStyle;
 
-        pts.forEach((p, i) => {
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    function loop(){
 
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
-          ctx.fill();
+      if(enabled){
 
-          for (let j = i + 1; j < pts.length; j++) {
-            const p2 = pts[j];
-            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if (dist < 110) {
-              ctx.globalAlpha = (1 - dist / 110) * 0.25;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.stroke();
-              ctx.globalAlpha = 1.0;
+        ctx.clearRect(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+
+        const accent =
+          getComputedStyle(
+            document.documentElement
+          )
+          .getPropertyValue(
+            "--accent"
+          )
+          .trim() ||
+          "#d9ad32";
+
+
+        ctx.fillStyle =
+          accent;
+
+        ctx.strokeStyle =
+          accent;
+
+
+        pts.forEach(
+          (p,i) => {
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+
+            if(
+              p.x < 0 ||
+              p.x > canvas.width
+            ){
+
+              p.vx *= -1;
+
             }
+
+
+            if(
+              p.y < 0 ||
+              p.y > canvas.height
+            ){
+
+              p.vy *= -1;
+
+            }
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+              p.x,
+              p.y,
+              1.8,
+              0,
+              Math.PI * 2
+            );
+
+            ctx.fill();
+
+
+            for(
+              let j = i + 1;
+              j < pts.length;
+              j++
+            ){
+
+              const p2 =
+                pts[j];
+
+
+              const dist =
+                Math.hypot(
+                  p.x - p2.x,
+                  p.y - p2.y
+                );
+
+
+              if(dist < 110){
+
+                ctx.globalAlpha =
+                  (1 - dist / 110) *
+                  .25;
+
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                  p.x,
+                  p.y
+                );
+
+                ctx.lineTo(
+                  p2.x,
+                  p2.y
+                );
+
+                ctx.stroke();
+
+
+                ctx.globalAlpha =
+                  1;
+
+              }
+
+            }
+
           }
-        });
+
+        );
+
       }
-      requestAnimationFrame(loop);
+
+
+      requestAnimationFrame(
+        loop
+      );
+
     }
+
+
     loop();
+
   }
 
-  window.onload = init;
+
+  /* =========================================================
+     START
+  ========================================================= */
+
+  window.addEventListener(
+    "load",
+    async () => {
+
+      renderSwitchFeatured();
+
+      await init();
+
+      renderSwitchFeatured();
+
+    }
+  );
+
 })();
 </script>
+
 </body>
 </html>
