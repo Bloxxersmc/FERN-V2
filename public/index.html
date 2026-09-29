@@ -104,7 +104,6 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
     <p id="authLead">authenticate to enter the browser.</p>
     <section id="loginBox" class="authOnly visible">
       <label>Korona ID<input id="loginId" autocomplete="username" placeholder="name.lastname"></label>
-      <label>Authentication code<input id="loginCode" type="password" autocomplete="current-password" placeholder="authentication code"></label>
       <button id="loginBtn">unlock korona</button>
       <div id="loginMsg" class="authMsg"></div>
       <div class="authSwitch">Need an ID? <button id="showCreate">create one</button></div>
@@ -297,36 +296,35 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
     if(scramReady) return;
     if(!window.isSecureContext && location.protocol !== 'https:') throw new Error('Korona proxy requires HTTPS.');
     if(typeof $scramjetLoadController !== 'function') throw new Error('Scramjet loader is unavailable.');
-    if(typeof BareMux === 'undefined' || !BareMux.BareMuxConnection) throw new Error('BareMux is unavailable.');
+    if(typeof BareMux === 'undefined' || typeof BareMux.BareMuxConnection !== 'function') throw new Error('BareMux is unavailable.');
 
-    // This is the same bootstrap that was used by the working Fern Scramjet build.
-    // Keep the controller + BareMux + libcurl transport in this order.
-    const loaded = $scramjetLoadController();
-    const ScramjetController = loaded.ScramjetController || window.ScramjetController;
-    if(!ScramjetController) throw new Error('ScramjetController is unavailable.');
+    // Restored from the previously working Fern Scramjet bootstrap.
+    const loaded=$scramjetLoadController();
+    const ScramjetController=loaded.ScramjetController;
+    if(typeof ScramjetController !== 'function') throw new Error('ScramjetController is unavailable.');
 
-    scram = new ScramjetController({
-      files: {
-        wasm: '/scram/scramjet.wasm.wasm',
-        all: '/scram/scramjet.all.js',
-        sync: '/scram/scramjet.sync.js'
+    scram=new ScramjetController({
+      files:{
+        wasm:'/scram/scramjet.wasm.wasm',
+        all:'/scram/scramjet.all.js',
+        sync:'/scram/scramjet.sync.js'
       }
     });
     scram.init();
 
-    // Register the service worker after the controller is initialized, matching the old working build.
-    let registration = await navigator.serviceWorker.getRegistration('/');
-    if(!registration) registration = await navigator.serviceWorker.register('/sw.js', {scope:'/'});
+    // Do not register this until a proxied page is actually requested.
+    // This keeps Scramjet from interfering with the normal Korona homepage.
+    await navigator.serviceWorker.register('/sw.js');
     await navigator.serviceWorker.ready;
 
-    mux = new BareMux.BareMuxConnection('/baremux/worker.js');
+    mux=new BareMux.BareMuxConnection('/baremux/worker.js');
 
-    // The old working build used the same-origin Wisp endpoint.
-    // Always reset the transport so an old/stale BareMux configuration cannot keep a broken Wisp URL.
-    const websocket = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/wisp/';
-    await mux.setTransport('/libcurl/index.mjs', [{websocket}]);
+    // This is the original same-origin transport used by the working build.
+    // Do not read a cached/localStorage Wisp URL.
+    const websocket=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/wisp/';
+    await mux.setTransport('/libcurl/index.mjs',[{websocket}]);
 
-    scramReady = true;
+    scramReady=true;
   }
 
   async function navigate(tab,value,fromHistory=false){
@@ -354,7 +352,7 @@ body.switch-mode #character{opacity:.34;filter:drop-shadow(0 10px 30px rgba(0,0,
     }catch(err){
       console.error('Korona proxy error:',err);
       scramReady=false;
-      alert('Korona could not start Scramjet. The Wisp WebSocket connection to /wisp/ failed.');
+      alert('Korona could not start Scramjet. Check the /wisp/ transport and Scramjet assets.');
     }
   }
   function updateAddress(){const t=tabs.find(x=>x.id===activeTab);$('#address').value=t?.url||''}
