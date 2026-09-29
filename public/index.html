@@ -3849,6 +3849,203 @@ body[data-theme="light"] #koronaThemeCharacter{filter:hue-rotate(20deg) saturate
 }
 @media(max-width:650px){#koronaThemeCharacter{width:150px!important;right:-8px!important;opacity:.25!important}.section-header,.settings-panel,.apps-grid,.bookmarks-panel,.about-grid,.quick-launch-panel{width:calc(100% - 24px)!important}.browser-topline{padding:12px!important}}
 </style>
+
+<style id="korona-theme-system-final-v3">
+/* One theme system: no legacy pink/purple browser chrome survives. */
+html, body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+body {
+  --ui-accent: var(--green);
+  --ui-accent-dark: var(--green-dark);
+  --ui-accent-soft: var(--green-soft);
+  --ui-border: var(--border);
+  --ui-border-bright: var(--border-bright);
+  --ui-panel: var(--panel);
+  --ui-panel-hover: var(--panel-hover);
+}
+
+/* Sidebar / pages */
+.korona-sidebar,
+.sidebar-brand,
+.sidebar-bottom,
+.browser-topline,
+.browser-tabs,
+.browser-toolbar,
+.browser-window,
+.browser-frames,
+#proxyPage .browser-window {
+  background: var(--bg-light) !important;
+  border-color: var(--ui-border) !important;
+  color: var(--text) !important;
+}
+.korona-sidebar { border-right-color: var(--ui-border) !important; }
+.korona-sidebar .nav-button {
+  color: var(--muted) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+.korona-sidebar .nav-button:hover,
+.korona-sidebar .nav-button.active {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--green) 10%, var(--bg-light)) !important;
+  border-color: var(--ui-border-bright) !important;
+  box-shadow: inset 3px 0 var(--green) !important;
+}
+.sidebar-icon,
+.brand-icon,
+.online-dot { color: var(--green) !important; }
+.sidebar-status span,
+.online-dot { background: var(--green) !important; box-shadow: 0 0 10px var(--green) !important; }
+
+/* Browser chrome — completely seamless iframe area. */
+.browser-tab,
+.new-tab-button,
+.browser-nav-button,
+.browser-address button,
+.iframe-toolbar button {
+  color: var(--green-soft) !important;
+  background: color-mix(in srgb, var(--panel) 92%, var(--bg)) !important;
+  border-color: var(--ui-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.browser-tab:hover,
+.browser-tab.active,
+.new-tab-button:hover,
+.browser-nav-button:hover,
+.browser-address button:hover,
+.iframe-toolbar button:hover {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--green) 12%, var(--panel)) !important;
+  border-color: var(--ui-border-bright) !important;
+}
+.browser-address,
+#urlInput {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--bg) 92%, var(--panel)) !important;
+  border-color: var(--ui-border) !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.browser-status span,
+.korona-icon,
+.korona-logo h1 span,
+.korona-primary,
+.brand-icon,
+.sidebar-mark {
+  color: var(--green) !important;
+}
+.browser-status span, .korona-icon { background: color-mix(in srgb, var(--green) 18%, var(--panel)) !important; border-color: var(--ui-border-bright) !important; }
+.korona-primary { background: color-mix(in srgb, var(--green) 13%, var(--panel)) !important; border-color: var(--ui-border-bright) !important; }
+.korona-primary:hover { background: color-mix(in srgb, var(--green) 22%, var(--panel)) !important; }
+#settingsPage .theme-card.active, #settingsPage .theme-card:hover {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--green) 10%, var(--panel)) !important;
+  border-color: var(--ui-border-bright) !important;
+}
+.theme-fern { background: linear-gradient(135deg, var(--bg), var(--green)) !important; }
+.theme-cyan { background: linear-gradient(135deg, #02100e, #20ffd4) !important; }
+.theme-rose { background: linear-gradient(135deg, #110307, #ff6688) !important; }
+
+#urlInput:focus,
+.browser-address:focus-within {
+  border-color: var(--ui-border-bright) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 20%, transparent) !important;
+}
+.browser-address input::placeholder { color: var(--muted) !important; }
+.address-lock { color: var(--green) !important; }
+#iframeContainer,
+#iframeContainer.fern-visible,
+.iframe-container,
+.korona-browser-frame,
+.browser-frames {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: var(--bg) !important;
+}
+.korona-browser-frame { display: block; }
+.proxy-opening-overlay {
+  background: color-mix(in srgb, var(--bg) 92%, transparent) !important;
+  border: 0 !important;
+  color: var(--green-soft) !important;
+}
+
+/* Buttons / fields / cards — all consume the active theme variables. */
+button,
+.nav-button,
+.theme-card,
+.settings-toggle,
+.app-tile,
+.quick-site,
+.empty-action,
+.bookmark-row button,
+.korona-primary {
+  color: var(--text) !important;
+  border-color: var(--ui-border) !important;
+}
+button:hover,
+.theme-card:hover,
+.theme-card.active,
+.settings-toggle:hover,
+.app-tile:hover,
+.quick-site:hover,
+.empty-action:hover {
+  border-color: var(--ui-border-bright) !important;
+}
+.theme-card,
+.settings-toggle,
+.app-tile,
+.quick-site,
+.bookmarks-panel,
+.about-grid,
+.settings-section,
+.hero,
+.game-card {
+  background: color-mix(in srgb, var(--panel) 92%, var(--bg)) !important;
+  color: var(--text) !important;
+  border-color: var(--ui-border) !important;
+}
+.theme-card.active,
+.theme-card:hover {
+  background: color-mix(in srgb, var(--green) 10%, var(--panel)) !important;
+  border-color: var(--ui-border-bright) !important;
+}
+.theme-preview { border-color: var(--ui-border) !important; }
+input, select, textarea {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--bg) 90%, var(--panel)) !important;
+  border-color: var(--ui-border) !important;
+  border-radius: 0 !important;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--ui-border-bright) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 18%, transparent) !important;
+}
+.hero h2 span, .eyebrow, .heading-spark, .brand-icon { color: var(--green) !important; }
+.hero h2, .hero p, .section-header h2, .section-header p,
+.settings-section h3, .settings-section p { color: var(--text) !important; }
+.settings-section p, .section-header p { color: var(--muted) !important; }
+
+/* Character layer */
+#koronaThemeCharacter {
+  z-index: 3 !important;
+  opacity: .44 !important;
+  filter: drop-shadow(0 8px 22px rgba(0,0,0,.32)) !important;
+  transition: opacity .2s ease, filter .2s ease !important;
+}
+body.no-animations #koronaThemeCharacter { transition: none !important; }
+
+/* Theme-specific character color accents. Actual Miku/Teto/Neru assets are selected by JS. */
+body[data-theme="cyan"] #koronaThemeCharacter { filter: drop-shadow(0 8px 22px rgba(0,0,0,.32)) !important; }
+body[data-theme="rose"] #koronaThemeCharacter { filter: drop-shadow(0 8px 22px rgba(0,0,0,.32)) !important; }
+@media (max-width: 900px) {
+  #koronaThemeCharacter { opacity: .32 !important; }
+}
+</style>
 </head>
 
 
@@ -5536,8 +5733,8 @@ const FERN_BUTTON_STYLE_KEY = "fern_button_style";
 const FERN_THEMES = {
     fern: {
         bg: "#12020b", bgLight: "#210414", panel: "rgba(33, 4, 20, 0.88)", panelHover: "#2b071a",
-        accent: "#e63994", accentDark: "#b52b75", accentSoft: "#ff9bc9",
-        text: "#fff1f7", muted: "#a87591", border: "rgba(181,43,117,.22)", borderBright: "rgba(230,57,148,.55)", mist1:"rgba(230,57,148,.13)", mist2:"rgba(120,35,100,.12)", mist3:"rgba(70,15,45,.10)"
+        accent: "#d8b64e", accentDark: "#a98a2f", accentSoft: "#ffe28a",
+        text: "#f4e8c6", muted: "#9b8b59", border: "rgba(216,182,78,.20)", borderBright: "rgba(216,182,78,.55)", mist1:"rgba(216,182,78,.10)", mist2:"rgba(160,125,45,.08)", mist3:"rgba(90,70,20,.06)"
     },
     midnight: {
         bg: "#050612", bgLight: "#0a0d1d", panel: "rgba(11, 14, 32, 0.85)", panelHover: "#11152c",
@@ -5846,6 +6043,70 @@ randomJoke();
   addEventListener('resize',resize,{passive:true});
   resize(); applyMotion(); loop();
   new MutationObserver(applyMotion).observe(document.body,{attributes:true,attributeFilter:['class']});
+})();
+</script>
+
+<script id="korona-theme-character-switcher-v3">
+(() => {
+  const character = document.getElementById("koronaThemeCharacter");
+  if (!character) return;
+
+  // Default = Neru. Miku and Teto get distinct transparent vector characters.
+  const NERU_SRC = character.getAttribute("src");
+
+  const MIKU_SRC = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 700">
+    <defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#69f4ff"/><stop offset="1" stop-color="#16a8c7"/></linearGradient></defs>
+    <g stroke="#17232b" stroke-width="5" stroke-linejoin="round">
+      <path fill="url(#m)" d="M103 130C55 88 30 32 52 15c25-18 54 28 70 67 7-47 27-72 49-67 25 7 13 59-1 101z"/>
+      <path fill="url(#m)" d="M217 130c48-42 73-98 51-115-25-18-54 28-70 67-7-47-27-72-49-67-25 7-13 59 1 101z"/>
+      <path fill="#f7c9ad" d="M99 107c0-42 28-71 61-71s61 29 61 71v76c0 42-27 70-61 70s-61-28-61-70z"/>
+      <path fill="#202a32" d="M99 120c2-63 30-91 61-91 36 0 62 31 61 91-21-21-45-31-72-29-20 2-35 11-50 29z"/>
+      <circle fill="#2bd6e7" cx="135" cy="151" r="7"/><circle fill="#2bd6e7" cx="185" cy="151" r="7"/>
+      <path fill="none" stroke="#7d3944" d="M142 192q18 12 36 0"/>
+      <path fill="#242b33" d="M104 246h112l-9 155-47 18-47-18z"/>
+      <path fill="#e8fbff" d="M116 259h88l-12 54h-64z"/>
+      <path fill="#2bd6e7" d="M128 313h64l8 89-40 17-40-17z"/>
+      <path fill="#f7c9ad" d="M109 394l-25 142 33 6 32-123zM211 394l25 142-33 6-32-123z"/>
+      <path fill="#252b32" d="M87 525h35l-5 123-43 0zM198 525h35l13 123-43 0z"/>
+      <path fill="#111820" d="M65 643h55v30H54q-9-13 11-30zM203 643h55q20 17 11 30h-66z"/>
+      <path fill="none" stroke="#69f4ff" d="M97 286h126"/>
+    </g>
+  </svg>`);
+
+  const TETO_SRC = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 700">
+    <defs><linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff5a72"/><stop offset="1" stop-color="#c51f48"/></linearGradient></defs>
+    <g stroke="#28151c" stroke-width="5" stroke-linejoin="round">
+      <path fill="url(#t)" d="M105 126C61 108 31 65 45 31c10-24 42-16 60 15-8-30 3-49 23-44 27 7 19 51 5 79z"/>
+      <path fill="url(#t)" d="M215 126c44-18 74-61 60-95-10-24-42-16-60 15 8-30-3-49-23-44-27 7-19 51-5 79z"/>
+      <path fill="#f6c7ad" d="M99 109c0-42 28-72 61-72s61 30 61 72v76c0 42-27 70-61 70s-61-28-61-70z"/>
+      <path fill="#df3657" d="M99 119c-1-56 26-91 61-91 35 0 62 35 61 91-22-19-44-28-65-28-23 0-40 9-57 28z"/>
+      <circle fill="#ef4964" cx="135" cy="151" r="7"/><circle fill="#ef4964" cx="185" cy="151" r="7"/>
+      <path fill="none" stroke="#7c2638" d="M142 194q18 11 36 0"/>
+      <path fill="#d8dde3" d="M104 246h112l-8 158-48 17-48-17z"/>
+      <path fill="#b92b49" d="M117 258h86l-8 61h-70z"/>
+      <path fill="#292c35" d="M127 319h66l9 85-42 17-42-17z"/>
+      <path fill="#f6c7ad" d="M109 397l-25 139 33 6 32-121zM211 397l25 139-33 6-32-121z"/>
+      <path fill="#3a3036" d="M87 526h35l-5 122-43 0zM198 526h35l13 122-43 0z"/>
+      <path fill="#15141a" d="M65 644h55v29H54q-9-13 11-29zM203 644h55q20 16 11 29h-66z"/>
+      <path fill="none" stroke="#ff6178" d="M112 281h96"/>
+    </g>
+  </svg>`);
+
+  function wanted(theme) {
+    if (theme === "cyan") return MIKU_SRC;
+    if (theme === "rose") return TETO_SRC;
+    return NERU_SRC;
+  }
+  function sync() {
+    const theme = document.body.dataset.theme || "fern";
+    const src = wanted(theme);
+    if (character.getAttribute("src") !== src) character.src = src;
+    character.alt = theme === "cyan" ? "Hatsune Miku theme character" : theme === "rose" ? "Kasane Teto theme character" : "Akita Neru theme character";
+  }
+  sync();
+  new MutationObserver(sync).observe(document.body, {attributes:true, attributeFilter:["data-theme"]});
 })();
 </script>
 </body>
