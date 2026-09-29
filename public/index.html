@@ -6,13 +6,10 @@
 
 <title>Korona</title>
 
-<meta name="theme-color" content="#242424">
+<meta name="theme-color" content="#07110b">
 
-<!-- Scramjet -->
 <script src="/scram/scramjet.all.js"></script>
 <script src="/baremux/index.js"></script>
-
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -22,6 +19,8 @@
 
 :root {
     --bg: #07110b;
+    --bg2: #0a170e;
+
     --panel: #0d1b12;
     --panel2: #122319;
     --panel3: #172d20;
@@ -35,36 +34,44 @@
     --border: #21452d;
     --danger: #ff5d68;
 
-    --shadow: 0 18px 60px rgba(0,0,0,.45);
+    --radius: 10px;
+
+    --shadow:
+        0 20px 70px rgba(0,0,0,.45);
 }
 
 
 /* =========================================================
-   SWITCH THEME
+   SWITCH THEME VARIABLES
    ========================================================= */
 
 body.switch-theme {
+
     --bg: #242424;
+    --bg2: #2a2a2a;
 
     --panel: #303030;
-    --panel2: #383838;
-    --panel3: #414141;
+    --panel2: #393939;
+    --panel3: #444444;
 
-    --text: #f4f4f4;
-    --muted: #b9b9b9;
+    --text: #f5f5f5;
+    --muted: #b8b8b8;
 
     --accent: #42c8ff;
-    --accent2: #42c8ff;
+    --accent2: #32b9f2;
 
     --border: #505050;
     --danger: #ff5a5f;
 
-    --shadow: 0 20px 70px rgba(0,0,0,.45);
+    --radius: 0;
+
+    --shadow:
+        0 20px 70px rgba(0,0,0,.45);
 }
 
 
 /* =========================================================
-   GLOBAL
+   RESET
    ========================================================= */
 
 * {
@@ -75,7 +82,9 @@ html,
 body {
     width: 100%;
     height: 100%;
+
     margin: 0;
+
     overflow: hidden;
 
     font-family:
@@ -87,6 +96,7 @@ body {
         sans-serif;
 
     background: var(--bg);
+
     color: var(--text);
 }
 
@@ -100,10 +110,9 @@ button {
     cursor: pointer;
 }
 
-button:focus,
-input:focus,
-select:focus {
-    outline: none;
+button:disabled {
+    cursor: wait;
+    opacity: .55;
 }
 
 
@@ -112,112 +121,471 @@ select:focus {
    ========================================================= */
 
 #authGate {
-    position: fixed;
-    inset: 0;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed;
+
+    inset: 0;
 
     z-index: 10000;
 
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
     background:
         radial-gradient(
-            circle at 50% 25%,
-            #1c4429 0%,
-            #07110b 55%,
-            #020402 100%
+            circle at 50% 0%,
+            rgba(56,230,123,.14),
+            transparent 45%
+        ),
+        var(--bg);
+
+    transition:
+        background .3s;
+}
+
+
+/* =========================================================
+   AUTH BACKGROUND
+   ========================================================= */
+
+.auth-background {
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    overflow: hidden;
+}
+
+.auth-background::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 600px;
+    height: 600px;
+
+    top: -300px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(56,230,123,.18),
+            transparent 65%
+        );
+
+    filter: blur(30px);
+}
+
+body.switch-theme .auth-background::before {
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(66,200,255,.20),
+            transparent 65%
         );
 }
 
-body.switch-theme #authGate {
-    background: #242424;
+
+/* =========================================================
+   AUTH WRAPPER
+   ========================================================= */
+
+.auth-shell {
+
+    position: relative;
+
+    z-index: 2;
+
+    width:
+        min(
+            470px,
+            calc(100vw - 32px)
+        );
+
+    max-height:
+        calc(100vh - 32px);
+
+    overflow-y: auto;
 }
+
+
+/* =========================================================
+   AUTH CARD
+   ========================================================= */
 
 .auth-card {
-    width: min(440px, 92vw);
-    padding: 38px;
 
-    background: rgba(11,23,16,.96);
+    width: 100%;
 
-    border: 1px solid var(--border);
+    padding: 30px;
 
-    box-shadow: var(--shadow);
+    background:
+        linear-gradient(
+            145deg,
+            var(--panel2),
+            var(--panel)
+        );
 
-    text-align: center;
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius);
+
+    box-shadow:
+        var(--shadow);
 }
 
+
+/* =========================================================
+   SWITCH AUTH
+   ========================================================= */
+
 body.switch-theme .auth-card {
+
     background: #303030;
+
     border: 0;
-    box-shadow: none;
+
+    border-radius: 0;
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.45);
+
+    padding: 34px;
+}
+
+body.switch-theme #authGate {
+
+    background:
+        linear-gradient(
+            180deg,
+            #242424 0%,
+            #2c2c2c 70%,
+            #242424 100%
+        );
+}
+
+
+/* =========================================================
+   AUTH HEADER
+   ========================================================= */
+
+.auth-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 26px;
 }
 
 .auth-logo {
-    font-size: 46px;
+
+    width: 52px;
+    height: 52px;
+
+    display: grid;
+
+    place-items: center;
+
+    flex-shrink: 0;
+
+    background:
+        var(--accent);
+
+    color:
+        #031007;
+
+    font-weight: 950;
+
+    font-size: 23px;
+
+    border-radius:
+        var(--radius);
+}
+
+body.switch-theme .auth-logo {
+
+    border-radius: 50%;
+
+    background:
+        #42c8ff;
+
+    color: #242424;
+}
+
+.auth-title {
+
+    font-size: 25px;
+
     font-weight: 900;
-    letter-spacing: -3px;
+
+    letter-spacing: -.8px;
 }
 
-.auth-sub {
+.auth-subtitle {
+
+    margin-top: 3px;
+
     color: var(--muted);
-    margin: 8px 0 28px;
+
+    font-size: 13px;
 }
 
-.auth-input {
-    width: 100%;
 
-    padding: 14px 16px;
-    margin-bottom: 12px;
+/* =========================================================
+   AUTH STATUS
+   ========================================================= */
 
-    background: #07100a;
+.auth-status {
 
-    border: 1px solid var(--border);
+    display: flex;
 
-    color: var(--text);
-}
+    align-items: center;
 
-body.switch-theme .auth-input {
-    background: #242424;
-    border-color: #555;
-}
+    gap: 10px;
 
-.auth-button {
-    width: 100%;
+    padding: 12px 14px;
 
-    padding: 14px;
+    margin-bottom: 18px;
 
-    border: 0;
+    background:
+        var(--panel);
 
-    background: var(--accent);
-    color: #031007;
-
-    font-weight: 800;
-
-    margin-top: 8px;
-}
-
-.auth-secondary {
-    width: 100%;
-
-    padding: 13px;
-
-    border: 1px solid var(--border);
-
-    background: transparent;
-    color: var(--text);
-
-    margin-top: 10px;
-}
-
-.auth-message {
-    min-height: 22px;
+    border:
+        1px solid
+        var(--border);
 
     color: var(--muted);
 
     font-size: 13px;
 
-    margin: 12px 0;
+    border-radius:
+        var(--radius);
+}
+
+body.switch-theme .auth-status {
+
+    border-radius: 0;
+
+    background: #292929;
+
+    border-color: #484848;
+}
+
+.auth-status-dot {
+
+    width: 8px;
+    height: 8px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background:
+        var(--accent);
+
+    box-shadow:
+        0 0 10px
+        var(--accent);
+}
+
+
+/* =========================================================
+   AUTH FORMS
+   ========================================================= */
+
+.auth-form {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.auth-label {
+
+    color: var(--muted);
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    margin-top: 4px;
+}
+
+.auth-input {
+
+    width: 100%;
+
+    padding: 13px 14px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius);
+
+    background:
+        var(--bg);
+
+    color:
+        var(--text);
+
+    transition:
+        border-color .15s,
+        background .15s;
+}
+
+.auth-input:focus {
+
+    border-color:
+        var(--accent);
+
+    background:
+        var(--panel);
+}
+
+body.switch-theme .auth-input {
+
+    border-radius: 0;
+
+    background: #242424;
+
+    border-color: #505050;
+}
+
+
+/* =========================================================
+   AUTH BUTTONS
+   ========================================================= */
+
+.auth-button {
+
+    width: 100%;
+
+    padding: 13px 16px;
+
+    margin-top: 7px;
+
+    border: 0;
+
+    border-radius:
+        var(--radius);
+
+    background:
+        var(--accent);
+
+    color:
+        #031007;
+
+    font-weight: 850;
+
+    transition:
+        filter .15s,
+        transform .15s;
+}
+
+.auth-button:hover {
+
+    filter: brightness(1.08);
+
+    transform:
+        translateY(-1px);
+}
+
+body.switch-theme .auth-button {
+
+    border-radius: 0;
+
+    background:
+        #42c8ff;
+
+    color:
+        #202020;
+}
+
+.auth-secondary {
+
+    width: 100%;
+
+    padding: 12px 16px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius);
+
+    background:
+        transparent;
+
+    color:
+        var(--text);
+
+    transition:
+        background .15s,
+        border-color .15s;
+}
+
+.auth-secondary:hover {
+
+    background:
+        var(--panel2);
+
+    border-color:
+        var(--accent);
+}
+
+body.switch-theme .auth-secondary {
+
+    border-radius: 0;
+
+    background: #383838;
+
+    border-color: #555;
+}
+
+
+/* =========================================================
+   AUTH FOOTER
+   ========================================================= */
+
+.auth-footer {
+
+    margin-top: 20px;
+
+    padding-top: 15px;
+
+    border-top:
+        1px solid
+        var(--border);
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+    text-align: center;
 }
 
 
@@ -226,6 +594,7 @@ body.switch-theme .auth-input {
    ========================================================= */
 
 #app {
+
     display: none;
 
     width: 100%;
@@ -233,12 +602,15 @@ body.switch-theme .auth-input {
 }
 
 #appShell {
+
     width: 100%;
     height: 100%;
 
     display: grid;
 
-    grid-template-columns: 210px 1fr;
+    grid-template-columns:
+        210px
+        1fr;
 }
 
 
@@ -247,52 +619,60 @@ body.switch-theme .auth-input {
    ========================================================= */
 
 .sidebar {
+
     display: flex;
+
     flex-direction: column;
 
     gap: 8px;
 
-    padding: 16px 12px;
+    padding: 15px 11px;
 
-    background: #08130b;
+    background:
+        var(--bg2);
 
-    border-right: 1px solid var(--border);
-}
-
-body.switch-theme .sidebar {
-    background: #303030;
-    border-right: 0;
+    border-right:
+        1px solid
+        var(--border);
 }
 
 .brand {
-    padding: 10px 12px 18px;
 
-    font-size: 25px;
+    padding:
+        10px 12px 18px;
 
-    font-weight: 900;
+    font-size: 24px;
+
+    font-weight: 950;
 
     letter-spacing: -1px;
 }
 
 .nav {
+
     display: flex;
+
     flex-direction: column;
 
-    gap: 5px;
+    gap: 4px;
 }
 
 .nav button {
+
     width: 100%;
 
     border: 0;
 
-    background: transparent;
+    border-radius:
+        var(--radius);
 
-    color: var(--muted);
+    background:
+        transparent;
+
+    color:
+        var(--muted);
 
     padding: 12px;
-
-    border-radius: 10px;
 
     text-align: left;
 
@@ -302,16 +682,30 @@ body.switch-theme .sidebar {
 }
 
 .nav button:hover {
-    background: var(--panel2);
-    color: var(--text);
+
+    background:
+        var(--panel2);
+
+    color:
+        var(--text);
 }
 
 .nav button.active {
-    background: var(--panel2);
-    color: var(--text);
+
+    background:
+        var(--panel2);
+
+    color:
+        var(--text);
+}
+
+.nav button span {
+
+    margin-left: 7px;
 }
 
 .sidebar-bottom {
+
     margin-top: auto;
 }
 
@@ -321,17 +715,23 @@ body.switch-theme .sidebar {
    ========================================================= */
 
 body.switch-theme .sidebar {
-    border-radius: 0;
+
+    background:
+        #303030;
+
+    border-right:
+        0;
 }
 
 body.switch-theme .nav button {
-    border-radius: 0;
 
-    padding: 13px 14px;
+    border-radius: 0;
 }
 
 body.switch-theme .nav button.active {
-    background: #414141;
+
+    background:
+        #414141;
 
     border-left:
         4px solid
@@ -344,11 +744,13 @@ body.switch-theme .nav button.active {
    ========================================================= */
 
 .main {
+
     min-width: 0;
 
     height: 100%;
 
     display: flex;
+
     flex-direction: column;
 }
 
@@ -358,15 +760,20 @@ body.switch-theme .nav button.active {
    ========================================================= */
 
 .tabstrip {
+
     display: flex;
 
     gap: 5px;
 
-    padding: 7px 10px;
+    padding:
+        7px 10px;
 
-    background: #060d08;
+    background:
+        var(--bg);
 
-    border-bottom: 1px solid var(--border);
+    border-bottom:
+        1px solid
+        var(--border);
 
     overflow-x: auto;
 
@@ -377,60 +784,67 @@ body.switch-theme .nav button.active {
     display: none;
 }
 
-body.switch-theme .tabstrip {
-    background: #2a2a2a;
-
-    border-bottom:
-        1px solid
-        #454545;
-}
-
 .tab {
+
     display: flex;
 
     align-items: center;
 
     gap: 7px;
 
-    white-space: nowrap;
-
     min-width: 130px;
 
-    padding: 8px 11px;
+    padding:
+        8px 11px;
 
-    background: var(--panel);
+    background:
+        var(--panel);
 
-    color: var(--muted);
+    color:
+        var(--muted);
 
     border:
         1px solid
         transparent;
+
+    white-space: nowrap;
 }
 
 .tab.active {
-    background: var(--panel2);
 
-    color: var(--text);
+    background:
+        var(--panel2);
 
-    border-color: var(--border);
+    color:
+        var(--text);
+
+    border-color:
+        var(--border);
 }
 
 .tab .close {
-    opacity: .7;
 
     margin-left: auto;
+
+    opacity: .7;
+
+    cursor: pointer;
 }
 
 .tabadd {
+
     border: 0;
 
-    background: transparent;
+    background:
+        transparent;
 
-    color: var(--text);
+    color:
+        var(--text);
 
     font-size: 20px;
 
-    padding: 4px 10px;
+    padding:
+        4px 10px;
 }
 
 
@@ -439,70 +853,75 @@ body.switch-theme .tabstrip {
    ========================================================= */
 
 .topbar {
-    height: 58px;
+
+    min-height: 58px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 8px;
 
-    padding: 8px 14px;
+    padding:
+        8px 12px;
 
-    background: #08130b;
+    background:
+        var(--bg2);
 
     border-bottom:
         1px solid
         var(--border);
 }
 
-body.switch-theme .topbar {
-    background: #242424;
-
-    border-bottom:
-        1px solid
-        #484848;
-}
-
 .topbar button {
+
     border: 0;
 
-    background: var(--panel2);
+    border-radius:
+        var(--radius);
 
-    color: var(--text);
+    background:
+        var(--panel2);
 
-    padding: 9px 12px;
+    color:
+        var(--text);
+
+    padding:
+        9px 12px;
 }
 
 .address {
+
     flex: 1;
 
     min-width: 0;
 
     display: flex;
 
-    gap: 8px;
+    gap: 7px;
 }
 
 .address input {
+
     flex: 1;
 
     min-width: 0;
 
-    padding: 10px 14px;
+    padding:
+        10px 13px;
 
-    background: var(--panel);
+    background:
+        var(--panel);
+
+    color:
+        var(--text);
 
     border:
         1px solid
         var(--border);
 
-    color: var(--text);
-}
-
-body.switch-theme .address input {
-    background: #303030;
-    border-color: #505050;
+    border-radius:
+        var(--radius);
 }
 
 
@@ -511,6 +930,7 @@ body.switch-theme .address input {
    ========================================================= */
 
 .workspace {
+
     position: relative;
 
     flex: 1;
@@ -521,6 +941,7 @@ body.switch-theme .address input {
 }
 
 .view {
+
     display: none;
 
     min-height: 100%;
@@ -533,13 +954,17 @@ body.switch-theme .address input {
 }
 
 h1 {
-    margin: 0 0 8px;
+
+    margin:
+        0 0 8px;
 
     font-size: 34px;
 }
 
 .muted {
-    color: var(--muted);
+
+    color:
+        var(--muted);
 }
 
 
@@ -548,6 +973,7 @@ h1 {
    ========================================================= */
 
 .cards {
+
     display: grid;
 
     grid-template-columns:
@@ -562,7 +988,9 @@ h1 {
 }
 
 .card {
-    background: var(--panel);
+
+    background:
+        var(--panel);
 
     border:
         1px solid
@@ -572,38 +1000,54 @@ h1 {
 
     cursor: pointer;
 
+    border-radius:
+        var(--radius);
+
     transition:
         transform .15s,
         border-color .15s;
 }
 
 .card:hover {
-    transform: translateY(-2px);
+
+    transform:
+        translateY(-2px);
 
     border-color:
         var(--accent);
 }
 
 .card img {
+
     width: 100%;
 
     aspect-ratio: 16 / 9;
 
     object-fit: cover;
 
-    background: #000;
+    background:
+        #000;
 
     margin-bottom: 12px;
+
+    border-radius:
+        calc(
+            var(--radius) / 2
+        );
 }
 
 .card h3 {
-    margin: 0 0 5px;
+
+    margin:
+        0 0 5px;
 }
 
 .card p {
+
     margin: 0;
 
-    color: var(--muted);
+    color:
+        var(--muted);
 
     font-size: 13px;
 }
@@ -614,24 +1058,29 @@ h1 {
    ========================================================= */
 
 .browser {
+
     width: 100%;
     height: 100%;
 
     display: flex;
+
     flex-direction: column;
 }
 
 .browser-frame {
+
     flex: 1;
 
     min-height: 0;
 
-    background: white;
+    background:
+        white;
 
     position: relative;
 }
 
 .browser-frame iframe {
+
     display: block;
 
     width: 100%;
@@ -639,7 +1088,8 @@ h1 {
 
     border: 0;
 
-    background: white;
+    background:
+        white;
 }
 
 
@@ -648,12 +1098,13 @@ h1 {
    ========================================================= */
 
 .settings-grid {
+
     display: grid;
 
     grid-template-columns:
         repeat(
             auto-fit,
-            minmax(180px, 1fr)
+            minmax(190px, 1fr)
         );
 
     gap: 14px;
@@ -662,60 +1113,43 @@ h1 {
 }
 
 .setting-card {
-    background: var(--panel);
+
+    background:
+        var(--panel);
 
     border:
         1px solid
         var(--border);
 
     padding: 18px;
+
+    border-radius:
+        var(--radius);
 }
 
 .setting-card h3 {
+
     margin-top: 0;
 }
 
 select {
+
     width: 100%;
 
     padding: 12px;
 
-    background: var(--panel);
+    background:
+        var(--panel);
 
-    color: var(--text);
-
-    border:
-        1px solid
-        var(--border);
-}
-
-.theme-preview {
-    height: 75px;
-
-    margin-bottom: 12px;
+    color:
+        var(--text);
 
     border:
         1px solid
         var(--border);
 
-    background:
-        linear-gradient(
-            135deg,
-            #0b1710,
-            #38e67b
-        );
-}
-
-.theme-preview.switch {
-    background:
-        linear-gradient(
-            135deg,
-            #242424 0%,
-            #242424 48%,
-            #42c8ff 48%,
-            #42c8ff 52%,
-            #242424 52%
-        );
+    border-radius:
+        var(--radius);
 }
 
 
@@ -724,39 +1158,53 @@ select {
    ========================================================= */
 
 .account {
+
     max-width: 600px;
 
-    background: var(--panel);
+    background:
+        var(--panel);
 
     border:
         1px solid
         var(--border);
 
     padding: 24px;
+
+    border-radius:
+        var(--radius);
 }
 
 .account-row {
+
     display: flex;
 
     justify-content: space-between;
 
     gap: 20px;
 
+    padding:
+        13px 0;
+
     border-bottom:
         1px solid
         var(--border);
-
-    padding: 13px 0;
 }
 
 .danger {
-    background: var(--danger);
 
-    color: white;
+    background:
+        var(--danger);
+
+    color:
+        white;
 
     border: 0;
 
-    padding: 12px 16px;
+    border-radius:
+        var(--radius);
+
+    padding:
+        12px 16px;
 
     margin-top: 18px;
 }
@@ -767,23 +1215,25 @@ select {
    ========================================================= */
 
 .switch-home {
+
     min-height: 100%;
 
     padding:
-        28px
-        34px
-        22px;
+        28px 34px 22px;
 
     display: flex;
 
     flex-direction: column;
 
-    background: #242424;
+    background:
+        #242424;
 
-    color: #f4f4f4;
+    color:
+        #f4f4f4;
 }
 
 .switch-status {
+
     display: flex;
 
     justify-content: space-between;
@@ -796,6 +1246,7 @@ select {
 }
 
 .switch-profile {
+
     display: flex;
 
     align-items: center;
@@ -804,12 +1255,14 @@ select {
 }
 
 .switch-avatar {
+
     width: 38px;
     height: 38px;
 
     border-radius: 50%;
 
-    background: #555;
+    background:
+        #555;
 
     display: grid;
 
@@ -819,6 +1272,7 @@ select {
 }
 
 .switch-time {
+
     display: flex;
 
     align-items: center;
@@ -828,10 +1282,11 @@ select {
 
 
 /* =========================================================
-   SWITCH SOFTWARE ROW
+   SWITCH GAMES
    ========================================================= */
 
 .switch-games {
+
     display: flex;
 
     gap: 14px;
@@ -839,9 +1294,7 @@ select {
     overflow-x: auto;
 
     padding:
-        8px
-        2px
-        22px;
+        8px 2px 22px;
 
     scrollbar-width: none;
 }
@@ -851,9 +1304,9 @@ select {
 }
 
 .switch-game {
+
     flex:
-        0 0
-        190px;
+        0 0 190px;
 
     aspect-ratio: 1;
 
@@ -863,15 +1316,19 @@ select {
 
     overflow: hidden;
 
-    background: #111;
+    background:
+        #111;
 
     border: 0;
 
     box-shadow:
         0 0 0 1px #444;
+
+    cursor: pointer;
 }
 
 .switch-game img {
+
     width: 100%;
     height: 100%;
 
@@ -879,6 +1336,7 @@ select {
 }
 
 .switch-game span {
+
     position: absolute;
 
     left: 0;
@@ -886,8 +1344,7 @@ select {
     bottom: 0;
 
     padding:
-        10px
-        9px;
+        10px 9px;
 
     text-align: left;
 
@@ -896,36 +1353,23 @@ select {
     background:
         linear-gradient(
             transparent,
-            rgba(0,0,0,.85)
+            rgba(0,0,0,.9)
         );
 }
 
 .switch-game:hover {
+
     box-shadow:
         0 0 0 3px #777;
 }
 
-.switch-game.selected {
-    box-shadow:
-        0 0 0 4px #f4f4f4;
-}
-
-.switch-more {
-    margin-top: 8px;
-
-    text-align: right;
-
-    color: #aaa;
-
-    font-size: 13px;
-}
-
 
 /* =========================================================
-   SWITCH BOTTOM MENU
+   SWITCH BOTTOM
    ========================================================= */
 
 .switch-bottom {
+
     margin-top: auto;
 
     border-top:
@@ -946,6 +1390,7 @@ select {
 }
 
 .switch-icon {
+
     width: 58px;
     height: 58px;
 
@@ -953,9 +1398,11 @@ select {
 
     border: 0;
 
-    background: #444;
+    background:
+        #444;
 
-    color: white;
+    color:
+        white;
 
     display: grid;
 
@@ -963,18 +1410,18 @@ select {
 
     font-size: 23px;
 
-    box-shadow:
-        inset 0 1px #666;
-
     transition:
         transform .15s,
         background .15s;
 }
 
 .switch-icon:hover {
-    background: #fff;
 
-    color: #222;
+    background:
+        #fff;
+
+    color:
+        #222;
 
     transform:
         translateY(-2px);
@@ -986,78 +1433,62 @@ select {
    ========================================================= */
 
 .switch-page {
+
     min-height: 100%;
 
     padding:
-        28px
-        34px;
+        28px 34px;
 
-    background: #242424;
+    background:
+        #242424;
 
-    color: #f4f4f4;
-}
-
-.switch-page h1 {
-    font-weight: 500;
+    color:
+        #f4f4f4;
 }
 
 .switch-page .card {
-    background: #303030;
 
-    border-color: #4c4c4c;
+    background:
+        #303030;
 
-    border-radius: 0;
+    border-color:
+        #4c4c4c;
+
+    border-radius:
+        0;
 }
 
 .switch-page .card:hover {
-    transform: none;
 
-    border-color: white;
+    transform:
+        none;
+
+    border-color:
+        white;
 }
 
 .switch-page .setting-card {
-    background: #303030;
 
-    border-color: #4c4c4c;
+    background:
+        #303030;
+
+    border-color:
+        #4c4c4c;
+
+    border-radius:
+        0;
 }
 
 .switch-page .account {
-    background: #303030;
 
-    border-color: #4c4c4c;
-}
+    background:
+        #303030;
 
+    border-color:
+        #4c4c4c;
 
-/* =========================================================
-   LOADING
-   ========================================================= */
-
-#browserOverlay {
-    position: absolute;
-
-    inset: 0;
-
-    display: none;
-
-    place-items: center;
-
-    background: rgba(0,0,0,.55);
-
-    color: white;
-
-    z-index: 50;
-}
-
-.loader {
-    padding:
-        18px
-        24px;
-
-    background: #222;
-
-    border:
-        1px solid
-        #555;
+    border-radius:
+        0;
 }
 
 
@@ -1068,57 +1499,80 @@ select {
 @media(max-width: 800px) {
 
     #appShell {
+
         grid-template-columns:
-            72px
-            1fr;
+            72px 1fr;
     }
 
     .sidebar {
+
         padding:
-            10px
-            6px;
+            10px 6px;
     }
 
     .brand {
+
         font-size: 0;
 
         text-align: center;
     }
 
     .brand::after {
-        content: "K";
 
-        font-size: 25px;
+        content:
+            "K";
+
+        font-size:
+            25px;
     }
 
     .nav button {
-        font-size: 0;
 
-        text-align: center;
+        font-size:
+            0;
+
+        text-align:
+            center;
     }
 
-    .nav button::first-letter {
-        font-size: 20px;
+    .nav button span {
+
+        display:
+            none;
     }
 
     .view {
-        padding: 20px;
+
+        padding:
+            20px;
     }
 
     .topbar {
-        flex-wrap: wrap;
 
-        height: auto;
+        flex-wrap:
+            wrap;
+
+        height:
+            auto;
     }
 
     .switch-home,
     .switch-page {
+
         padding:
             20px;
     }
 
     .switch-game {
-        flex-basis: 150px;
+
+        flex-basis:
+            150px;
+    }
+
+    .auth-card {
+
+        padding:
+            23px;
     }
 }
 </style>
@@ -1127,83 +1581,150 @@ select {
 <body>
 
 <!-- =========================================================
-     AUTH GATE
+     AUTH PAGE
      ========================================================= -->
 
 <div id="authGate">
 
-    <div class="auth-card">
+    <div class="auth-background"></div>
 
-        <div class="auth-logo">
-            KORONA
-        </div>
+    <div class="auth-shell">
 
-        <div class="auth-sub">
-            This browser is registered to a Korona workspace.
-        </div>
+        <div class="auth-card">
 
-        <div id="loginScreen">
+            <div class="auth-header">
 
-            <div
-                class="auth-message"
-                id="authMessage"
-            >
-                Checking this browser…
+                <div class="auth-logo">
+                    K
+                </div>
+
+                <div>
+
+                    <div class="auth-title">
+                        Korona
+                    </div>
+
+                    <div class="auth-subtitle">
+                        Your personal web workspace
+                    </div>
+
+                </div>
+
             </div>
 
-            <button
-                class="auth-button"
-                id="loginButton"
-            >
-                CHECK KORONA ACCESS
-            </button>
 
-            <button
-                class="auth-secondary"
-                id="showCreateButton"
-            >
-                CREATE ACCOUNT
-            </button>
+            <!-- LOGIN -->
 
-        </div>
+            <div id="loginScreen">
 
-        <div
-            id="createScreen"
-            style="display:none"
-        >
+                <div class="auth-status">
 
-            <input
-                class="auth-input"
-                id="firstName"
-                placeholder="First name"
-                autocomplete="given-name"
-            >
+                    <div class="auth-status-dot"></div>
 
-            <input
-                class="auth-input"
-                id="lastName"
-                placeholder="Last name"
-                autocomplete="family-name"
-            >
+                    <div id="authMessage">
+                        Checking Korona access...
+                    </div>
+
+                </div>
+
+                <div class="auth-form">
+
+                    <button
+                        class="auth-button"
+                        id="loginButton"
+                        type="button"
+                    >
+                        CHECK KORONA ACCESS
+                    </button>
+
+                    <button
+                        class="auth-secondary"
+                        id="showCreateButton"
+                        type="button"
+                    >
+                        CREATE ACCOUNT
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- CREATE -->
 
             <div
-                class="auth-message"
-                id="createMessage"
-            ></div>
-
-            <button
-                class="auth-button"
-                id="createButton"
+                id="createScreen"
+                style="display:none;"
             >
-                CREATE KORONA ACCOUNT
-            </button>
 
-            <button
-                class="auth-secondary"
-                id="backLoginButton"
-            >
-                BACK
-            </button>
+                <div class="auth-status">
+
+                    <div class="auth-status-dot"></div>
+
+                    <div>
+                        Submit your name for Korona approval.
+                    </div>
+
+                </div>
+
+                <div class="auth-form">
+
+                    <label class="auth-label">
+                        FIRST NAME
+                    </label>
+
+                    <input
+                        class="auth-input"
+                        id="firstName"
+                        type="text"
+                        placeholder="First name"
+                        autocomplete="given-name"
+                    >
+
+                    <label class="auth-label">
+                        LAST NAME
+                    </label>
+
+                    <input
+                        class="auth-input"
+                        id="lastName"
+                        type="text"
+                        placeholder="Last name"
+                        autocomplete="family-name"
+                    >
+
+                    <div
+                        class="auth-message"
+                        id="createMessage"
+                    ></div>
+
+                    <button
+                        class="auth-button"
+                        id="createButton"
+                        type="button"
+                    >
+                        SUBMIT ACCOUNT
+                    </button>
+
+                    <button
+                        class="auth-secondary"
+                        id="backLoginButton"
+                        type="button"
+                    >
+                        BACK
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="auth-footer">
+
+                Korona access is controlled by your
+                registered account.
+
+            </div>
 
         </div>
 
@@ -1213,12 +1734,15 @@ select {
 
 
 <!-- =========================================================
-     APPLICATION
+     APP
      ========================================================= -->
 
 <div id="app">
 
     <div id="appShell">
+
+
+        <!-- SIDEBAR -->
 
         <aside class="sidebar">
 
@@ -1231,52 +1755,63 @@ select {
                 <button
                     data-view="home"
                     class="active"
+                    type="button"
                 >
                     ⌂
                     <span>Home</span>
                 </button>
 
-                <button data-view="games">
+                <button
+                    data-view="games"
+                    type="button"
+                >
                     🎮
                     <span>Games</span>
                 </button>
 
-                <button data-view="apps">
+                <button
+                    data-view="apps"
+                    type="button"
+                >
                     ▦
                     <span>Apps</span>
                 </button>
 
-                <button data-view="browser">
+                <button
+                    data-view="browser"
+                    type="button"
+                >
                     ◉
                     <span>Browser</span>
                 </button>
 
-                <button data-view="settings">
+                <button
+                    data-view="settings"
+                    type="button"
+                >
                     ⚙
                     <span>Settings</span>
                 </button>
 
-                <button data-view="account">
+                <button
+                    data-view="account"
+                    type="button"
+                >
                     ●
                     <span>Account</span>
                 </button>
 
             </div>
 
+
             <div class="sidebar-bottom">
 
                 <button
-                    class="nav"
                     id="logoutButton"
-                    style="
-                        width:100%;
-                        border:0;
-                        background:transparent;
-                        color:var(--muted);
-                        padding:12px;
-                    "
+                    type="button"
                 >
-                    ↪ Logout
+                    ↪
+                    <span>Lock</span>
                 </button>
 
             </div>
@@ -1284,32 +1819,40 @@ select {
         </aside>
 
 
+        <!-- MAIN -->
+
         <main class="main">
+
+
+            <!-- TABS -->
 
             <div
                 class="tabstrip"
                 id="tabStrip"
             ></div>
 
+
+            <!-- BROWSER BAR -->
+
             <div class="topbar">
 
                 <button
                     id="backButton"
-                    title="Back"
+                    type="button"
                 >
                     ←
                 </button>
 
                 <button
                     id="forwardButton"
-                    title="Forward"
+                    type="button"
                 >
                     →
                 </button>
 
                 <button
                     id="refreshButton"
-                    title="Refresh"
+                    type="button"
                 >
                     ↻
                 </button>
@@ -1318,10 +1861,14 @@ select {
 
                     <input
                         id="addressInput"
+                        type="text"
                         placeholder="Search or enter address"
                     >
 
-                    <button id="goButton">
+                    <button
+                        id="goButton"
+                        type="button"
+                    >
                         Go
                     </button>
 
@@ -1329,13 +1876,15 @@ select {
 
                 <button
                     id="fullscreenButton"
-                    title="Fullscreen"
+                    type="button"
                 >
                     ⛶
                 </button>
 
             </div>
 
+
+            <!-- VIEWS -->
 
             <section class="workspace">
 
@@ -1369,14 +1918,6 @@ select {
                     class="view"
                 ></div>
 
-                <div id="browserOverlay">
-
-                    <div class="loader">
-                        Loading…
-                    </div>
-
-                </div>
-
             </section>
 
         </main>
@@ -1387,7 +1928,6 @@ select {
 
 
 <script>
-
 /* =========================================================
    SUPABASE
    ========================================================= */
@@ -1398,19 +1938,44 @@ const SUPABASE_URL =
 const SUPABASE_ANON_KEY =
     "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
 
-const supabase =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
+let supabaseClient = null;
 
 
 /* =========================================================
-   LOCAL USER
+   STORAGE
    ========================================================= */
 
 const USER_KEY =
     "korona.user.v3";
+
+let currentUser =
+    null;
+
+let accessCheckRunning =
+    false;
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let currentView =
+    "home";
+
+let currentTheme =
+    localStorage.getItem(
+        "korona.theme"
+    ) || "default";
+
+let currentCharacter =
+    localStorage.getItem(
+        "korona.character"
+    ) || "none";
+
+let tabs = [];
+
+let activeTabId =
+    null;
 
 
 /* =========================================================
@@ -1427,7 +1992,7 @@ const games = [
             "https://ninja-muffin24.itch.io/funkin",
 
         img:
-            "https://placehold.co/600x338/111/fff?text=Friday+Night+Funkin%27"
+            "https://placehold.co/600x338/111/fff?text=Friday+Night+Funkin"
     },
 
     {
@@ -1449,7 +2014,7 @@ const games = [
             "https://skempisty.github.io/rocket_league_2d/",
 
         img:
-            "https://placehold.co/600x338/111/fff?text=Rocket+League+2D"
+            "https://placehold.co/600x338/111/fff?text=Rocket+League"
     },
 
     {
@@ -1517,39 +2082,69 @@ const games = [
 const apps = [
 
     {
-        name: "Google",
-        url: "https://google.com",
-        icon: "G"
+        name:
+            "Google",
+
+        url:
+            "https://google.com",
+
+        icon:
+            "G"
     },
 
     {
-        name: "YouTube",
-        url: "https://youtube.com",
-        icon: "▶"
+        name:
+            "YouTube",
+
+        url:
+            "https://youtube.com",
+
+        icon:
+            "▶"
     },
 
     {
-        name: "ChatGPT",
-        url: "https://chatgpt.com",
-        icon: "◎"
+        name:
+            "ChatGPT",
+
+        url:
+            "https://chatgpt.com",
+
+        icon:
+            "◎"
     },
 
     {
-        name: "GitHub",
-        url: "https://github.com",
-        icon: "●"
+        name:
+            "GitHub",
+
+        url:
+            "https://github.com",
+
+        icon:
+            "●"
     },
 
     {
-        name: "Piapro",
-        url: "https://piapro.jp",
-        icon: "P"
+        name:
+            "Piapro",
+
+        url:
+            "https://piapro.jp",
+
+        icon:
+            "P"
     },
 
     {
-        name: "Kasane Teto",
-        url: "https://kasaneteto.jp",
-        icon: "T"
+        name:
+            "Kasane Teto",
+
+        url:
+            "https://kasaneteto.jp",
+
+        icon:
+            "T"
     }
 
 ];
@@ -1562,189 +2157,712 @@ const apps = [
 const themes = [
 
     {
-        id: "default",
-        name: "Korona Default",
-        character: "none"
+        id:
+            "default",
+
+        name:
+            "Korona Default"
     },
 
     {
-        id: "miku",
-        name: "Hatsune Miku",
-        character: "miku"
+        id:
+            "miku",
+
+        name:
+            "Hatsune Miku"
     },
 
     {
-        id: "teto",
-        name: "Kasane Teto",
-        character: "teto"
+        id:
+            "teto",
+
+        name:
+            "Kasane Teto"
     },
 
     {
-        id: "neru",
-        name: "Neru",
-        character: "neru"
+        id:
+            "neru",
+
+        name:
+            "Neru"
     },
 
     {
-        id: "magma",
-        name: "Magma",
-        character: "none"
+        id:
+            "magma",
+
+        name:
+            "Magma"
     },
 
     {
-        id: "awp",
-        name: "AWP",
-        character: "none"
+        id:
+            "awp",
+
+        name:
+            "AWP"
     },
 
     {
-        id: "minty",
-        name: "Minty",
-        character: "none"
+        id:
+            "minty",
+
+        name:
+            "Minty"
     },
 
     {
-        id: "frogies",
-        name: "frogie's arcade",
-        character: "none"
+        id:
+            "frogies",
+
+        name:
+            "frogie's arcade"
     },
 
     {
-        id: "konata",
-        name: "Konata Izumi",
-        character: "none"
+        id:
+            "konata",
+
+        name:
+            "Konata"
     },
 
     {
-        id: "truffled",
-        name: "Truffled",
-        character: "none"
+        id:
+            "truffled",
+
+        name:
+            "Truffled"
     },
 
     {
-        id: "oneshot",
-        name: "OneShot: World Machine",
-        character: "none"
+        id:
+            "oneshot",
+
+        name:
+            "OneShot"
     },
 
     {
-        id: "luminal",
-        name: "Luminal",
-        character: "none"
+        id:
+            "luminal",
+
+        name:
+            "Luminal"
     },
 
     {
-        id: "switch",
-        name: "Nintendo Switch",
-        character: "none"
+        id:
+            "switch",
+
+        name:
+            "Nintendo Switch"
     }
 
 ];
 
 
 /* =========================================================
-   CHARACTER SOURCES
+   HELPERS
    ========================================================= */
 
-const characters = {
+function $(id) {
 
-    miku:
-        "https://static.wikia.nocookie.net/vocaloid/images/f/f9/Miku_Chinese.png/revision/latest?cb=20220327221551",
+    return document.getElementById(id);
 
-    teto:
-        "https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834",
+}
 
-    neru:
-        "",
-
-    luka:
-        "https://upload.wikimedia.org/wikipedia/commons/7/73/Megurine_Luka.png",
-
-    rin:
-        "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kagamine_Rin_and_Len.png",
-
-    len:
-        "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kagamine_Rin_and_Len.png",
-
-    kaito:
-        "https://upload.wikimedia.org/wikipedia/commons/0/0d/Kaito_V3.png",
-
-    meiko:
-        "https://upload.wikimedia.org/wikipedia/commons/4/4e/Meiko_V3.png"
-
-};
-
-
-/* =========================================================
-   STATE
-   ========================================================= */
-
-let currentView =
-    "home";
-
-let currentTheme =
-    localStorage.getItem("korona.theme")
-    ||
-    "default";
-
-let currentCharacter =
-    localStorage.getItem("korona.character")
-    ||
-    "none";
-
-let tabs = [];
-
-let activeTabId =
-    null;
-
-
-/* =========================================================
-   HTML ESCAPING
-   ========================================================= */
 
 function escapeHTML(value) {
 
     return String(value)
         .replace(
             /[&<>"']/g,
-            char => {
+            char => ({
 
-                return {
+                "&":
+                    "&amp;",
 
-                    "&":
-                        "&amp;",
+                "<":
+                    "&lt;",
 
-                    "<":
-                        "&lt;",
+                ">":
+                    "&gt;",
 
-                    ">":
-                        "&gt;",
+                '"':
+                    "&quot;",
 
-                    '"':
-                        "&quot;",
+                "'":
+                    "&#039;"
 
-                    "'":
-                        "&#039;"
-
-                }[char];
-
-            }
+            })[char]
         );
+
 }
 
 
 /* =========================================================
-   SWITCH CHECK
+   SUPABASE INIT
+   ========================================================= */
+
+function initializeSupabase() {
+
+    if (supabaseClient) {
+        return true;
+    }
+
+    if (
+        !window.supabase ||
+        typeof window.supabase.createClient !==
+            "function"
+    ) {
+
+        console.error(
+            "Supabase library is not loaded."
+        );
+
+        return false;
+    }
+
+    try {
+
+        supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Supabase initialization failed:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+/* =========================================================
+   AUTH UI
+   ========================================================= */
+
+function showAuth() {
+
+    $("authGate").style.display =
+        "flex";
+
+    $("app").style.display =
+        "none";
+}
+
+
+function showApp() {
+
+    $("authGate").style.display =
+        "none";
+
+    $("app").style.display =
+        "block";
+}
+
+
+function setAuthMessage(message) {
+
+    $("authMessage").textContent =
+        message;
+}
+
+
+function setCreateMessage(message) {
+
+    $("createMessage").textContent =
+        message;
+}
+
+
+function showLoginScreen() {
+
+    $("loginScreen").style.display =
+        "block";
+
+    $("createScreen").style.display =
+        "none";
+}
+
+
+function showCreateScreen() {
+
+    $("loginScreen").style.display =
+        "none";
+
+    $("createScreen").style.display =
+        "block";
+}
+
+
+/* =========================================================
+   USER STORAGE
+   ========================================================= */
+
+function getSavedUserId() {
+
+    return localStorage.getItem(
+        USER_KEY
+    );
+
+}
+
+
+function clearSavedUser() {
+
+    localStorage.removeItem(
+        USER_KEY
+    );
+
+    localStorage.removeItem(
+        "korona.user.id"
+    );
+
+    localStorage.removeItem(
+        "korona.user.name"
+    );
+
+    currentUser =
+        null;
+}
+
+
+/* =========================================================
+   CHECK ACCESS
+   ========================================================= */
+
+async function checkSavedUser(
+    options = {}
+) {
+
+    const silent =
+        options.silent === true;
+
+    const savedId =
+        getSavedUserId();
+
+
+    if (!savedId) {
+
+        if (!silent) {
+
+            showAuth();
+
+            setAuthMessage(
+                "No Korona account is registered on this browser."
+            );
+
+        }
+
+        return false;
+    }
+
+
+    if (!initializeSupabase()) {
+
+        if (!silent) {
+
+            showAuth();
+
+            setAuthMessage(
+                "Supabase could not be loaded."
+            );
+
+        }
+
+        return false;
+    }
+
+
+    try {
+
+        const result =
+            await supabaseClient
+
+                .from(
+                    "korona_users"
+                )
+
+                .select(
+                    "id,name,active"
+                )
+
+                .eq(
+                    "id",
+                    savedId
+                )
+
+                .maybeSingle();
+
+
+        if (result.error) {
+
+            console.error(
+                "Supabase access error:",
+                result.error
+            );
+
+            /*
+             * Don't kick someone out because of
+             * a temporary network/database error.
+             */
+
+            if (!silent) {
+
+                showAuth();
+
+                setAuthMessage(
+                    "Korona could not contact Supabase."
+                );
+
+            }
+
+            return false;
+        }
+
+
+        if (!result.data) {
+
+            clearSavedUser();
+
+            showAuth();
+
+            setAuthMessage(
+                "This Korona account no longer exists."
+            );
+
+            return false;
+        }
+
+
+        /*
+         * THIS IS THE APPROVAL CHECK.
+         */
+
+        if (
+            result.data.active !== true
+        ) {
+
+            currentUser =
+                null;
+
+            showAuth();
+
+            setAuthMessage(
+                "Your account is waiting for approval."
+            );
+
+            return false;
+        }
+
+
+        /*
+         * APPROVED
+         */
+
+        currentUser =
+            result.data;
+
+
+        localStorage.setItem(
+            USER_KEY,
+            result.data.id
+        );
+
+        localStorage.setItem(
+            "korona.user.id",
+            result.data.id
+        );
+
+        localStorage.setItem(
+            "korona.user.name",
+            result.data.name || ""
+        );
+
+
+        showApp();
+
+
+        if (
+            typeof renderAll ===
+            "function"
+        ) {
+
+            renderAll();
+
+        }
+
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Access check failed:",
+            error
+        );
+
+        if (!silent) {
+
+            showAuth();
+
+            setAuthMessage(
+                "Korona encountered an error."
+            );
+
+        }
+
+        return false;
+    }
+}
+
+
+/* =========================================================
+   CREATE ACCOUNT
+   ========================================================= */
+
+async function createKoronaAccount() {
+
+    const first =
+        $("firstName")
+            .value
+            .trim();
+
+    const last =
+        $("lastName")
+            .value
+            .trim();
+
+
+    if (!first || !last) {
+
+        setCreateMessage(
+            "Enter your first and last name."
+        );
+
+        return;
+    }
+
+
+    if (!initializeSupabase()) {
+
+        setCreateMessage(
+            "Supabase has not loaded yet."
+        );
+
+        return;
+    }
+
+
+    const id =
+        (
+            first +
+            "." +
+            last
+        )
+            .toLowerCase()
+            .replace(
+                /[^a-z0-9.]/g,
+                ""
+            );
+
+
+    if (!id) {
+
+        setCreateMessage(
+            "That name could not create a valid ID."
+        );
+
+        return;
+    }
+
+
+    setCreateMessage(
+        "Submitting account..."
+    );
+
+
+    try {
+
+        const existing =
+            await supabaseClient
+
+                .from(
+                    "korona_users"
+                )
+
+                .select(
+                    "id"
+                )
+
+                .eq(
+                    "id",
+                    id
+                )
+
+                .maybeSingle();
+
+
+        if (existing.error) {
+
+            console.error(
+                existing.error
+            );
+
+            setCreateMessage(
+                "Could not check that Korona ID."
+            );
+
+            return;
+        }
+
+
+        if (existing.data) {
+
+            setCreateMessage(
+                `"${id}" is already registered.`
+            );
+
+            return;
+        }
+
+
+        /*
+         * NEW USERS ARE NOT ACTIVE.
+         *
+         * YOU approve them by changing active
+         * to TRUE in Supabase.
+         */
+
+        const inserted =
+            await supabaseClient
+
+                .from(
+                    "korona_users"
+                )
+
+                .insert({
+
+                    id:
+                        id,
+
+                    name:
+                        `${first} ${last}`,
+
+                    active:
+                        false
+
+                });
+
+
+        if (inserted.error) {
+
+            console.error(
+                inserted.error
+            );
+
+            setCreateMessage(
+                inserted.error.message ||
+                "Account creation failed."
+            );
+
+            return;
+        }
+
+
+        localStorage.setItem(
+            USER_KEY,
+            id
+        );
+
+        localStorage.setItem(
+            "korona.user.id",
+            id
+        );
+
+        localStorage.setItem(
+            "korona.user.name",
+            `${first} ${last}`
+        );
+
+
+        showLoginScreen();
+
+        showAuth();
+
+        setAuthMessage(
+            "Account submitted. Waiting for approval."
+        );
+
+
+        /*
+         * Check immediately.
+         *
+         * It should be false until you approve it.
+         */
+
+        await checkSavedUser({
+            silent: true
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Account creation error:",
+            error
+        );
+
+        setCreateMessage(
+            "Something went wrong creating the account."
+        );
+    }
+}
+
+
+/* =========================================================
+   LOGOUT / LOCK
+   ========================================================= */
+
+function koronaLogout() {
+
+    /*
+     * DO NOT delete USER_KEY.
+     *
+     * The browser stays registered to that name.
+     */
+
+    currentUser =
+        null;
+
+    showAuth();
+
+    setAuthMessage(
+        "Korona locked. Check access to continue."
+    );
+}
+
+
+/* =========================================================
+   THEME
    ========================================================= */
 
 function isSwitch() {
-    return currentTheme === "switch";
+
+    return currentTheme ===
+        "switch";
 }
 
-
-/* =========================================================
-   APPLY THEME
-   ========================================================= */
 
 function applyTheme() {
 
@@ -1768,41 +2886,7 @@ function applyTheme() {
 
 
 /* =========================================================
-   NAV LABELS
-   ========================================================= */
-
-function switchNavLabel(view) {
-
-    if (!isSwitch()) {
-
-        return {
-
-            home: "Home",
-            games: "Games",
-            apps: "Apps",
-            browser: "Browser",
-            settings: "Settings",
-            account: "Account"
-
-        }[view];
-
-    }
-
-    return {
-
-        home: "Home",
-        games: "More Games",
-        apps: "Apps",
-        browser: "Internet",
-        settings: "System Settings",
-        account: "User Page"
-
-    }[view];
-}
-
-
-/* =========================================================
-   VIEW SWITCHING
+   NAV
    ========================================================= */
 
 function showView(view) {
@@ -1820,12 +2904,13 @@ function showView(view) {
         );
 
     const element =
-        document.getElementById(
-            "view-" + view
-        );
+        $("view-" + view);
 
     if (element) {
-        element.classList.add("active");
+
+        element.classList.add(
+            "active"
+        );
     }
 
     document
@@ -1852,11 +2937,22 @@ function showView(view) {
 function createTab(url = "") {
 
     const id =
-        crypto.randomUUID();
+        (
+            crypto.randomUUID
+                ? crypto.randomUUID()
+                :
+                "tab-" +
+                Date.now() +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .slice(2)
+        );
 
     const tab = {
 
-        id,
+        id:
+            id,
 
         title:
             "New Tab",
@@ -1869,7 +2965,6 @@ function createTab(url = "") {
 
         index:
             -1
-
     };
 
     tabs.push(tab);
@@ -1880,148 +2975,145 @@ function createTab(url = "") {
     renderTabs();
 
     if (url) {
+
         navigate(url);
+
     } else {
-        showView("browser");
+
+        showView(
+            "browser"
+        );
+
     }
 }
 
-
-/* =========================================================
-   ACTIVE TAB
-   ========================================================= */
 
 function activeTab() {
 
     return tabs.find(
         tab =>
-            tab.id === activeTabId
+            tab.id ===
+            activeTabId
     ) || null;
 }
 
 
-/* =========================================================
-   RENDER TABS
-   ========================================================= */
-
 function renderTabs() {
 
     const strip =
-        document.getElementById(
-            "tabStrip"
-        );
+        $("tabStrip");
+
+    if (!strip) {
+        return;
+    }
 
     strip.innerHTML =
 
-        tabs.map(tab => `
+        tabs.map(
+            tab => `
 
-            <div
-                class="tab ${
-                    tab.id === activeTabId
-                        ? "active"
-                        : ""
-                }"
-                data-id="${tab.id}"
-            >
-
-                <span>
-                    ${
-                        escapeHTML(
-                            tab.title
-                        )
-                    }
-                </span>
-
-                <span
-                    class="close"
-                    data-close="${tab.id}"
+                <div
+                    class="
+                        tab
+                        ${
+                            tab.id ===
+                            activeTabId
+                                ? "active"
+                                : ""
+                        }
+                    "
+                    data-id="${tab.id}"
                 >
-                    ×
-                </span>
 
-            </div>
+                    <span>
+                        ${
+                            escapeHTML(
+                                tab.title
+                            )
+                        }
+                    </span>
 
-        `).join("") +
+                    <span
+                        class="close"
+                        data-close="${tab.id}"
+                    >
+                        ×
+                    </span>
+
+                </div>
+
+            `
+        ).join("") +
 
         `
 
             <button
                 class="tabadd"
                 id="newTabButton"
+                type="button"
             >
                 +
             </button>
 
         `;
 
+
     strip
         .querySelectorAll(".tab")
-        .forEach(element => {
+        .forEach(
+            element => {
 
-            element.onclick =
-                event => {
+                element.onclick =
+                    event => {
 
-                    if (
-                        event.target.dataset.close
-                    ) {
-                        return;
-                    }
+                        if (
+                            event.target
+                                .dataset
+                                .close
+                        ) {
 
-                    activeTabId =
-                        element.dataset.id;
+                            return;
+                        }
 
-                    const tab =
-                        activeTab();
+                        activeTabId =
+                            element.dataset.id;
 
-                    if (tab) {
+                        showView(
+                            "browser"
+                        );
 
-                        document
-                            .getElementById(
-                                "addressInput"
-                            )
-                            .value =
-                            tab.url || "";
+                        renderTabs();
+                    };
 
-                    }
+            }
+        );
 
-                    showView("browser");
-
-                    renderTabs();
-                };
-
-        });
 
     strip
         .querySelectorAll(
             "[data-close]"
         )
-        .forEach(close => {
+        .forEach(
+            close => {
 
-            close.onclick =
-                event => {
+                close.onclick =
+                    event => {
 
-                    event.stopPropagation();
+                        event.stopPropagation();
 
-                    closeTab(
-                        close.dataset.close
-                    );
+                        closeTab(
+                            close.dataset.close
+                        );
+                    };
 
-                };
+            }
+        );
 
-        });
 
-    document
-        .getElementById(
-            "newTabButton"
-        )
-        .onclick =
+    $("newTabButton").onclick =
         () => createTab();
 }
 
-
-/* =========================================================
-   CLOSE TAB
-   ========================================================= */
 
 function closeTab(id) {
 
@@ -2040,6 +3132,7 @@ function closeTab(id) {
         1
     );
 
+
     if (
         activeTabId === id
     ) {
@@ -2051,8 +3144,8 @@ function closeTab(id) {
                     index - 1
                 )
             ]?.id || null;
-
     }
+
 
     if (!tabs.length) {
 
@@ -2061,6 +3154,7 @@ function closeTab(id) {
         return;
     }
 
+
     renderTabs();
 
     renderBrowser();
@@ -2068,7 +3162,7 @@ function closeTab(id) {
 
 
 /* =========================================================
-   URL NORMALIZER
+   URL
    ========================================================= */
 
 function normalizeURL(value) {
@@ -2085,6 +3179,7 @@ function normalizeURL(value) {
             value
         )
     ) {
+
         return value;
     }
 
@@ -2092,20 +3187,19 @@ function normalizeURL(value) {
         value.includes(".") &&
         !value.includes(" ")
     ) {
-        return "https://" + value;
+
+        return (
+            "https://" +
+            value
+        );
     }
 
     return (
-        "https://www.google.com/search?q="
-        +
+        "https://www.google.com/search?q=" +
         encodeURIComponent(value)
     );
 }
 
-
-/* =========================================================
-   NAVIGATE
-   ========================================================= */
 
 function navigate(raw) {
 
@@ -2127,6 +3221,7 @@ function navigate(raw) {
             activeTab();
     }
 
+
     if (
         tab.index <
         tab.history.length - 1
@@ -2139,6 +3234,7 @@ function navigate(raw) {
             );
     }
 
+
     tab.history.push(
         url
     );
@@ -2147,6 +3243,7 @@ function navigate(raw) {
 
     tab.url =
         url;
+
 
     try {
 
@@ -2161,11 +3258,8 @@ function navigate(raw) {
             "Korona Browser";
     }
 
-    document
-        .getElementById(
-            "addressInput"
-        )
-        .value =
+
+    $("addressInput").value =
         url;
 
     renderTabs();
@@ -2174,14 +3268,12 @@ function navigate(raw) {
 }
 
 
-/* =========================================================
-   OPEN URL
-   ========================================================= */
-
 function openURL(url) {
 
     if (!activeTab()) {
+
         createTab();
+
     }
 
     navigate(url);
@@ -2193,18 +3285,17 @@ function openURL(url) {
 
 
 /* =========================================================
-   BROWSER VIEW
+   BROWSER
    ========================================================= */
 
 function renderBrowser() {
 
     const view =
-        document.getElementById(
-            "view-browser"
-        );
+        $("view-browser");
 
     const tab =
         activeTab();
+
 
     if (!tab) {
 
@@ -2215,13 +3306,14 @@ function renderBrowser() {
             </h1>
 
             <p class="muted">
-                Create a tab to start browsing.
+                Open a new tab to begin.
             </p>
 
         `;
 
         return;
     }
+
 
     view.innerHTML = `
 
@@ -2232,9 +3324,8 @@ function renderBrowser() {
                 <iframe
                     id="browserFrame"
                     src="${
-                        tab.url
-                            ? escapeHTML(tab.url)
-                            : "about:blank"
+                        tab.url ||
+                        "about:blank"
                     }"
                     referrerpolicy="no-referrer"
                 ></iframe>
@@ -2245,11 +3336,8 @@ function renderBrowser() {
 
     `;
 
-    document
-        .getElementById(
-            "addressInput"
-        )
-        .value =
+
+    $("addressInput").value =
         tab.url || "";
 }
 
@@ -2264,10 +3352,7 @@ function gameCard(game) {
 
         <article
             class="card"
-            onclick="openURL('${game.url.replace(
-                /'/g,
-                "\\'"
-            )}')"
+            onclick="openURL(${JSON.stringify(game.url)})"
         >
 
             <img
@@ -2276,15 +3361,11 @@ function gameCard(game) {
             >
 
             <h3>
-                ${
-                    escapeHTML(
-                        game.name
-                    )
-                }
+                ${escapeHTML(game.name)}
             </h3>
 
             <p>
-                Open in Korona Browser
+                Open in Korona
             </p>
 
         </article>
@@ -2300,9 +3381,8 @@ function gameCard(game) {
 function renderHome() {
 
     const element =
-        document.getElementById(
-            "view-home"
-        );
+        $("view-home");
+
 
     if (isSwitch()) {
 
@@ -2311,6 +3391,14 @@ function renderHome() {
                 0,
                 7
             );
+
+
+        const name =
+            localStorage.getItem(
+                "korona.user.name"
+            ) ||
+            "Korona User";
+
 
         element.innerHTML = `
 
@@ -2324,43 +3412,32 @@ function renderHome() {
 
                             ${
                                 escapeHTML(
-                                    (
-                                        localStorage
-                                            .getItem(
-                                                "korona.user.name"
-                                            )
-                                        ||
-                                        "K"
-                                    )
-                                    .charAt(0)
-                                    .toUpperCase()
+                                    name
+                                        .charAt(0)
+                                        .toUpperCase()
                                 )
                             }
 
                         </div>
 
                         <div>
-
                             ${
                                 escapeHTML(
-                                    localStorage
-                                        .getItem(
-                                            "korona.user.name"
-                                        )
-                                    ||
-                                    "Korona User"
+                                    name
                                 )
                             }
-
                         </div>
 
                     </div>
 
                     <div class="switch-time">
 
-                        <span
-                            id="switchClock"
-                        ></span>
+                        <span id="switchClock">
+                            ${new Date().toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit"
+                            })}
+                        </span>
 
                         <span>
                             ⌁
@@ -2374,28 +3451,17 @@ function renderHome() {
 
                 </div>
 
+
                 <div class="switch-games">
 
                     ${
                         featured.map(
-                            (
-                                game,
-                                index
-                            ) => `
+                            game => `
 
                                 <button
-                                    class="
-                                        switch-game
-                                        ${
-                                            index === 0
-                                                ? "selected"
-                                                : ""
-                                        }
-                                    "
-                                    onclick="openURL('${game.url.replace(
-                                        /'/g,
-                                        "\\'"
-                                    )}')"
+                                    class="switch-game"
+                                    type="button"
+                                    onclick="openURL(${JSON.stringify(game.url)})"
                                 >
 
                                     <img
@@ -2419,48 +3485,54 @@ function renderHome() {
 
                 </div>
 
-                <div class="switch-more">
+
+                <div
+                    class="switch-more"
+                    onclick="showView('games')"
+                    style="cursor:pointer;"
+                >
                     View more software →
                 </div>
+
 
                 <div class="switch-bottom">
 
                     <button
                         class="switch-icon"
+                        type="button"
                         onclick="showView('apps')"
-                        title="Apps"
                     >
                         ▦
                     </button>
 
                     <button
                         class="switch-icon"
+                        type="button"
                         onclick="showView('games')"
-                        title="More Games"
                     >
                         🎮
                     </button>
 
                     <button
                         class="switch-icon"
+                        type="button"
                         onclick="showView('browser')"
-                        title="Internet"
                     >
                         ◎
                     </button>
 
                     <button
                         class="switch-icon"
+                        type="button"
                         onclick="showView('settings')"
-                        title="System Settings"
                     >
                         ⚙
                     </button>
 
                     <button
                         class="switch-icon"
+                        type="button"
                         onclick="showView('account')"
-                        title="User Page"
                     >
                         ●
                     </button>
@@ -2471,10 +3543,9 @@ function renderHome() {
 
         `;
 
-        updateSwitchClock();
-
         return;
     }
+
 
     element.innerHTML = `
 
@@ -2508,9 +3579,8 @@ function renderHome() {
 function renderGames() {
 
     const element =
-        document.getElementById(
-            "view-games"
-        );
+        $("view-games");
+
 
     if (isSwitch()) {
 
@@ -2543,6 +3613,7 @@ function renderGames() {
         return;
     }
 
+
     element.innerHTML = `
 
         <h1>
@@ -2550,7 +3621,7 @@ function renderGames() {
         </h1>
 
         <p class="muted">
-            Launch a game in a Korona tab.
+            Launch games through Korona.
         </p>
 
         <div class="cards">
@@ -2574,9 +3645,8 @@ function renderGames() {
 function renderApps() {
 
     const element =
-        document.getElementById(
-            "view-apps"
-        );
+        $("view-apps");
+
 
     const cards =
         apps.map(
@@ -2584,10 +3654,7 @@ function renderApps() {
 
                 <article
                     class="card"
-                    onclick="openURL('${app.url.replace(
-                        /'/g,
-                        "\\'"
-                    )}')"
+                    onclick="openURL(${JSON.stringify(app.url)})"
                 >
 
                     <div
@@ -2596,8 +3663,7 @@ function renderApps() {
                             display:grid;
                             place-items:center;
                             font-size:60px;
-                            background:
-                                var(--panel2);
+                            background:var(--panel2);
                             margin-bottom:12px;
                         "
                     >
@@ -2625,9 +3691,9 @@ function renderApps() {
             `
         ).join("");
 
-    if (isSwitch()) {
 
-        element.innerHTML = `
+    element.innerHTML = isSwitch()
+        ? `
 
             <div class="switch-page">
 
@@ -2636,39 +3702,32 @@ function renderApps() {
                 </h1>
 
                 <p class="muted">
-                    Korona applications.
+                    Your Korona applications.
                 </p>
 
                 <div class="cards">
-
                     ${cards}
-
                 </div>
 
             </div>
 
+        `
+        :
+        `
+
+            <h1>
+                Apps
+            </h1>
+
+            <p class="muted">
+                Your Korona applications.
+            </p>
+
+            <div class="cards">
+                ${cards}
+            </div>
+
         `;
-
-        return;
-    }
-
-    element.innerHTML = `
-
-        <h1>
-            Apps
-        </h1>
-
-        <p class="muted">
-            Open a web app in a Korona tab.
-        </p>
-
-        <div class="cards">
-
-            ${cards}
-
-        </div>
-
-    `;
 }
 
 
@@ -2679,9 +3738,8 @@ function renderApps() {
 function renderSettings() {
 
     const element =
-        document.getElementById(
-            "view-settings"
-        );
+        $("view-settings");
+
 
     const themeOptions =
         themes.map(
@@ -2696,17 +3754,12 @@ function renderSettings() {
                             : ""
                     }
                 >
-
-                    ${
-                        escapeHTML(
-                            theme.name
-                        )
-                    }
-
+                    ${escapeHTML(theme.name)}
                 </option>
 
             `
         ).join("");
+
 
     const characterOptions = `
 
@@ -2744,71 +3797,64 @@ function renderSettings() {
 
     `;
 
+
+    const content = `
+
+        <h1>
+            ${
+                isSwitch()
+                    ? "System Settings"
+                    : "Settings"
+            }
+        </h1>
+
+        <p class="muted">
+            Customize Korona.
+        </p>
+
+        <div class="settings-grid">
+
+            <div class="setting-card">
+
+                <h3>
+                    Theme
+                </h3>
+
+                <select
+                    id="themeSelect"
+                >
+                    ${themeOptions}
+                </select>
+
+            </div>
+
+
+            <div class="setting-card">
+
+                <h3>
+                    Character
+                </h3>
+
+                <select
+                    id="characterSelect"
+                >
+                    ${characterOptions}
+                </select>
+
+            </div>
+
+        </div>
+
+    `;
+
+
     if (isSwitch()) {
 
         element.innerHTML = `
 
             <div class="switch-page">
 
-                <h1>
-                    System Settings
-                </h1>
-
-                <p class="muted">
-                    Korona system preferences.
-                </p>
-
-                <div class="settings-grid">
-
-                    <div class="setting-card">
-
-                        <h3>
-                            Theme
-                        </h3>
-
-                        <select
-                            id="themeSelect"
-                        >
-
-                            ${themeOptions}
-
-                        </select>
-
-                    </div>
-
-                    <div class="setting-card">
-
-                        <h3>
-                            Character
-                        </h3>
-
-                        <select
-                            id="characterSelect"
-                        >
-
-                            ${characterOptions}
-
-                        </select>
-
-                    </div>
-
-                    <div class="setting-card">
-
-                        <h3>
-                            Korona
-                        </h3>
-
-                        <p class="muted">
-
-                            Switch mode changes
-                            the entire Korona
-                            interface.
-
-                        </p>
-
-                    </div>
-
-                </div>
+                ${content}
 
             </div>
 
@@ -2816,88 +3862,53 @@ function renderSettings() {
 
     } else {
 
-        element.innerHTML = `
-
-            <h1>
-                Settings
-            </h1>
-
-            <p class="muted">
-                Customize Korona.
-            </p>
-
-            <div class="settings-grid">
-
-                <div class="setting-card">
-
-                    <div class="theme-preview switch"></div>
-
-                    <h3>
-                        Site Theme
-                    </h3>
-
-                    <select
-                        id="themeSelect"
-                    >
-
-                        ${themeOptions}
-
-                    </select>
-
-                </div>
-
-                <div class="setting-card">
-
-                    <h3>
-                        Character
-                    </h3>
-
-                    <select
-                        id="characterSelect"
-                    >
-
-                        ${characterOptions}
-
-                    </select>
-
-                </div>
-
-            </div>
-
-        `;
+        element.innerHTML =
+            content;
 
     }
 
+
     const themeSelect =
-        document.getElementById(
-            "themeSelect"
-        );
+        $("themeSelect");
 
     const characterSelect =
-        document.getElementById(
-            "characterSelect"
-        );
+        $("characterSelect");
 
-    themeSelect.onchange =
-        event => {
 
-            currentTheme =
-                event.target.value;
+    if (themeSelect) {
 
-            applyTheme();
-        };
+        themeSelect.onchange =
+            event => {
 
-    characterSelect.value =
-        currentCharacter;
+                currentTheme =
+                    event.target.value;
 
-    characterSelect.onchange =
-        event => {
+                applyTheme();
 
-            currentCharacter =
-                event.target.value;
+            };
 
-            applyTheme();
-        };
+    }
+
+
+    if (characterSelect) {
+
+        characterSelect.value =
+            currentCharacter;
+
+        characterSelect.onchange =
+            event => {
+
+                currentCharacter =
+                    event.target.value;
+
+                localStorage.setItem(
+                    "korona.character",
+                    currentCharacter
+                );
+
+            };
+
+    }
 }
 
 
@@ -2908,23 +3919,78 @@ function renderSettings() {
 function renderAccount() {
 
     const element =
-        document.getElementById(
-            "view-account"
-        );
+        $("view-account");
+
 
     const id =
         localStorage.getItem(
             USER_KEY
-        )
-        ||
+        ) ||
         "Not registered";
+
 
     const name =
         localStorage.getItem(
             "korona.user.name"
-        )
-        ||
+        ) ||
         "Unknown";
+
+
+    const content = `
+
+        <div class="account">
+
+            <div class="account-row">
+
+                <span>
+                    Name
+                </span>
+
+                <strong>
+                    ${escapeHTML(name)}
+                </strong>
+
+            </div>
+
+
+            <div class="account-row">
+
+                <span>
+                    Korona ID
+                </span>
+
+                <strong>
+                    ${escapeHTML(id)}
+                </strong>
+
+            </div>
+
+
+            <div class="account-row">
+
+                <span>
+                    Access
+                </span>
+
+                <strong>
+                    Approved
+                </strong>
+
+            </div>
+
+
+            <button
+                class="danger"
+                type="button"
+                onclick="koronaLogout()"
+            >
+                LOCK KORONA
+            </button>
+
+        </div>
+
+    `;
+
 
     if (isSwitch()) {
 
@@ -2936,135 +4002,29 @@ function renderAccount() {
                     User Page
                 </h1>
 
-                <div class="account">
-
-                    <div class="account-row">
-
-                        <span>
-                            Name
-                        </span>
-
-                        <strong>
-                            ${
-                                escapeHTML(
-                                    name
-                                )
-                            }
-                        </strong>
-
-                    </div>
-
-                    <div class="account-row">
-
-                        <span>
-                            Korona ID
-                        </span>
-
-                        <strong>
-                            ${
-                                escapeHTML(
-                                    id
-                                )
-                            }
-                        </strong>
-
-                    </div>
-
-                    <div class="account-row">
-
-                        <span>
-                            Browser registration
-                        </span>
-
-                        <strong>
-                            Saved
-                        </strong>
-
-                    </div>
-
-                    <button
-                        class="danger"
-                        onclick="koronaLogout()"
-                    >
-                        Lock Korona
-                    </button>
-
-                </div>
+                ${content}
 
             </div>
 
         `;
 
-        return;
+    } else {
+
+        element.innerHTML = `
+
+            <h1>
+                Account
+            </h1>
+
+            ${content}
+
+        `;
     }
-
-    element.innerHTML = `
-
-        <h1>
-            Account
-        </h1>
-
-        <div class="account">
-
-            <div class="account-row">
-
-                <span>
-                    Name
-                </span>
-
-                <strong>
-                    ${
-                        escapeHTML(
-                            name
-                        )
-                    }
-                </strong>
-
-            </div>
-
-            <div class="account-row">
-
-                <span>
-                    Korona ID
-                </span>
-
-                <strong>
-                    ${
-                        escapeHTML(
-                            id
-                        )
-                    }
-                </strong>
-
-            </div>
-
-            <div class="account-row">
-
-                <span>
-                    Registered Browser
-                </span>
-
-                <strong>
-                    Saved locally
-                </strong>
-
-            </div>
-
-            <button
-                class="danger"
-                onclick="koronaLogout()"
-            >
-                Logout / Lock
-            </button>
-
-        </div>
-
-    `;
 }
 
 
 /* =========================================================
-   VIEW RENDERER
+   VIEW RENDER
    ========================================================= */
 
 function renderView(view) {
@@ -3090,7 +4050,7 @@ function renderView(view) {
 
 
 /* =========================================================
-   RENDER EVERYTHING
+   RENDER ALL
    ========================================================= */
 
 function renderAll() {
@@ -3099,23 +4059,58 @@ function renderAll() {
         .querySelectorAll(
             ".nav button[data-view]"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            const span =
-                button.querySelector(
-                    "span"
-                );
-
-            if (span) {
-
-                span.textContent =
-                    switchNavLabel(
-                        button.dataset.view
+                const span =
+                    button.querySelector(
+                        "span"
                     );
 
-            }
+                if (!span) {
+                    return;
+                }
 
-        });
+                const labels = {
+
+                    home:
+                        isSwitch()
+                            ? "Home"
+                            : "Home",
+
+                    games:
+                        isSwitch()
+                            ? "More Games"
+                            : "Games",
+
+                    apps:
+                        "Apps",
+
+                    browser:
+                        isSwitch()
+                            ? "Internet"
+                            : "Browser",
+
+                    settings:
+                        isSwitch()
+                            ? "System Settings"
+                            : "Settings",
+
+                    account:
+                        isSwitch()
+                            ? "User Page"
+                            : "Account"
+
+                };
+
+                span.textContent =
+                    labels[
+                        button.dataset.view
+                    ];
+
+            }
+        );
+
 
     renderView(
         currentView
@@ -3126,85 +4121,50 @@ function renderAll() {
 
 
 /* =========================================================
-   SWITCH CLOCK
+   EVENT LISTENERS
    ========================================================= */
 
-function updateSwitchClock() {
+function setupNavigation() {
 
-    const clock =
-        document.getElementById(
-            "switchClock"
+    document
+        .querySelectorAll(
+            ".nav button[data-view]"
+        )
+        .forEach(
+            button => {
+
+                button.onclick =
+                    () => {
+
+                        showView(
+                            button.dataset.view
+                        );
+
+                    };
+
+            }
         );
 
-    if (!clock) {
-        return;
-    }
 
-    clock.textContent =
-        new Date()
-            .toLocaleTimeString(
-                [],
-                {
-                    hour:
-                        "numeric",
+    $("logoutButton").onclick =
+        () => {
 
-                    minute:
-                        "2-digit"
-                }
+            koronaLogout();
+
+        };
+
+
+    $("goButton").onclick =
+        () => {
+
+            navigate(
+                $("addressInput").value
             );
-}
 
-setInterval(
-    updateSwitchClock,
-    1000
-);
+        };
 
 
-/* =========================================================
-   NAVIGATION BUTTONS
-   ========================================================= */
-
-document
-    .querySelectorAll(
-        ".nav button[data-view]"
-    )
-    .forEach(button => {
-
-        button.onclick =
-            () =>
-                showView(
-                    button.dataset.view
-                );
-
-    });
-
-
-/* =========================================================
-   ADDRESS BAR
-   ========================================================= */
-
-document
-    .getElementById(
-        "goButton"
-    )
-    .onclick =
-    () => {
-
-        navigate(
-            document
-                .getElementById(
-                    "addressInput"
-                )
-                .value
-        );
-
-    };
-
-document
-    .getElementById(
-        "addressInput"
-    )
-    .addEventListener(
+    $("addressInput").addEventListener(
         "keydown",
         event => {
 
@@ -3223,411 +4183,268 @@ document
     );
 
 
-/* =========================================================
-   REFRESH
-   ========================================================= */
+    $("refreshButton").onclick =
+        () => {
 
-document
-    .getElementById(
-        "refreshButton"
-    )
-    .onclick =
-    () => {
+            const frame =
+                $("browserFrame");
 
-        const frame =
-            document.getElementById(
-                "browserFrame"
-            );
+            if (frame) {
 
-        if (frame) {
-
-            frame.src =
-                frame.src;
-
-        }
-
-    };
-
-
-/* =========================================================
-   BACK
-   ========================================================= */
-
-document
-    .getElementById(
-        "backButton"
-    )
-    .onclick =
-    () => {
-
-        const tab =
-            activeTab();
-
-        if (
-            !tab ||
-            tab.index <= 0
-        ) {
-
-            return;
-
-        }
-
-        tab.index--;
-
-        tab.url =
-            tab.history[
-                tab.index
-            ];
-
-        renderBrowser();
-
-        renderTabs();
-
-    };
-
-
-/* =========================================================
-   FORWARD
-   ========================================================= */
-
-document
-    .getElementById(
-        "forwardButton"
-    )
-    .onclick =
-    () => {
-
-        const tab =
-            activeTab();
-
-        if (
-            !tab ||
-            tab.index >=
-                tab.history.length - 1
-        ) {
-
-            return;
-
-        }
-
-        tab.index++;
-
-        tab.url =
-            tab.history[
-                tab.index
-            ];
-
-        renderBrowser();
-
-        renderTabs();
-
-    };
-
-
-/* =========================================================
-   FULLSCREEN
-   ========================================================= */
-
-document
-    .getElementById(
-        "fullscreenButton"
-    )
-    .onclick =
-    async () => {
-
-        try {
-
-            if (
-                !document.fullscreenElement
-            ) {
-
-                await document
-                    .documentElement
-                    .requestFullscreen();
-
-            } else {
-
-                await document
-                    .exitFullscreen();
+                frame.src =
+                    frame.src;
 
             }
 
-        } catch (error) {
-
-            console.error(
-                "Fullscreen failed:",
-                error
-            );
-
-        }
-
-    };
+        };
 
 
-/* =========================================================
-   LOGOUT BUTTON
-   ========================================================= */
+    $("backButton").onclick =
+        () => {
 
-document
-    .getElementById(
-        "logoutButton"
-    )
-    .onclick =
-    () => {
+            const tab =
+                activeTab();
 
-        koronaLogout();
+            if (
+                !tab ||
+                tab.index <= 0
+            ) {
 
-    };
+                return;
+
+            }
+
+            tab.index--;
+
+            tab.url =
+                tab.history[
+                    tab.index
+                ];
+
+            renderBrowser();
+
+            renderTabs();
+
+        };
 
 
-/* =========================================================
-   AUTH
-   ========================================================= */
+    $("forwardButton").onclick =
+        () => {
 
-async function checkSavedUser() {
+            const tab =
+                activeTab();
 
-    const savedId =
-        localStorage.getItem(
-            USER_KEY
-        );
+            if (
+                !tab ||
+                tab.index >=
+                    tab.history.length - 1
+            ) {
 
-    if (!savedId) {
+                return;
 
-        document
-            .getElementById(
-                "authGate"
-            )
-            .style.display =
-            "flex";
+            }
 
-        document
-            .getElementById(
-                "app"
-            )
-            .style.display =
-            "none";
+            tab.index++;
 
-        document
-            .getElementById(
-                "authMessage"
-            )
-            .textContent =
-            "This browser has no Korona account.";
+            tab.url =
+                tab.history[
+                    tab.index
+                ];
 
-        return false;
-    }
+            renderBrowser();
 
-    const message =
-        document.getElementById(
-            "authMessage"
-        );
+            renderTabs();
 
-    message.textContent =
-        "Checking Korona access…";
+        };
 
-    try {
 
-        const {
-            data,
-            error
-        } =
-            await supabase
+    $("fullscreenButton").onclick =
+        async () => {
 
-                .from(
-                    "korona_users"
-                )
+            try {
 
-                .select(
-                    "id,name,active"
-                )
+                if (
+                    !document.fullscreenElement
+                ) {
 
-                .eq(
-                    "id",
-                    savedId
-                )
+                    await document
+                        .documentElement
+                        .requestFullscreen();
 
-                .maybeSingle();
+                } else {
 
-        if (error) {
+                    await document
+                        .exitFullscreen();
 
-            console.error(
-                "Korona Supabase error:",
-                error
-            );
+                }
 
-            message.textContent =
-                "Could not connect to Korona.";
+            } catch (error) {
 
-            return false;
-        }
+                console.error(
+                    "Fullscreen error:",
+                    error
+                );
 
-        if (!data) {
+            }
 
-            localStorage.removeItem(
-                USER_KEY
-            );
-
-            message.textContent =
-                "This Korona ID no longer exists.";
-
-            return false;
-        }
-
-        if (
-            data.active !== true
-        ) {
-
-            message.textContent =
-                "This Korona account is not active.";
-
-            document
-                .getElementById(
-                    "authGate"
-                )
-                .style.display =
-                "flex";
-
-            document
-                .getElementById(
-                    "app"
-                )
-                .style.display =
-                "none";
-
-            return false;
-        }
-
-        localStorage.setItem(
-            "korona.user.id",
-            data.id
-        );
-
-        localStorage.setItem(
-            "korona.user.name",
-            data.name || ""
-        );
-
-        document
-            .getElementById(
-                "authGate"
-            )
-            .style.display =
-            "none";
-
-        document
-            .getElementById(
-                "app"
-            )
-            .style.display =
-            "block";
-
-        renderAll();
-
-        console.log(
-            "Korona automatically logged in:",
-            data.id
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Korona login error:",
-            error
-        );
-
-        message.textContent =
-            "Something went wrong connecting to Korona.";
-
-        return false;
-    }
+        };
 }
 
 
 /* =========================================================
-   PERIODIC ACCESS CHECK
+   AUTH BUTTONS
    ========================================================= */
 
-let accessCheckRunning = false;
+function setupAuthButtons() {
+
+    console.log(
+        "Korona: binding authentication buttons..."
+    );
+
+
+    $("showCreateButton").onclick =
+        () => {
+
+            showCreateScreen();
+
+            setCreateMessage("");
+
+        };
+
+
+    $("backLoginButton").onclick =
+        () => {
+
+            showLoginScreen();
+
+            setAuthMessage("");
+
+        };
+
+
+    $("loginButton").onclick =
+        async () => {
+
+            const button =
+                $("loginButton");
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "CHECKING...";
+
+            await checkSavedUser();
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "CHECK KORONA ACCESS";
+
+        };
+
+
+    $("createButton").onclick =
+        async () => {
+
+            const button =
+                $("createButton");
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "SUBMITTING...";
+
+            await createKoronaAccount();
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "SUBMIT ACCOUNT";
+
+        };
+
+
+    /*
+     * Allows Enter to submit the create form.
+     */
+
+    $("firstName").addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key ===
+                "Enter"
+            ) {
+
+                $("lastName").focus();
+
+            }
+
+        }
+    );
+
+
+    $("lastName").addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key ===
+                "Enter"
+            ) {
+
+                createKoronaAccount();
+
+            }
+
+        }
+    );
+
+
+    console.log(
+        "Korona: authentication buttons ready."
+    );
+}
+
+
+/* =========================================================
+   FIVE SECOND ACCESS WATCHER
+   ========================================================= */
 
 setInterval(
     async () => {
 
         const savedId =
-            localStorage.getItem(
-                USER_KEY
-            );
+            getSavedUserId();
+
+        if (!savedId) {
+            return;
+        }
 
         if (
-            !savedId ||
             accessCheckRunning
         ) {
             return;
         }
 
-        accessCheckRunning = true;
+        accessCheckRunning =
+            true;
 
         try {
 
-            const {
-                data,
-                error
-            } =
-                await supabase
-                    .from(
-                        "korona_users"
-                    )
-                    .select(
-                        "id,active"
-                    )
-                    .eq(
-                        "id",
-                        savedId
-                    )
-                    .maybeSingle();
-
-            if (
-                error ||
-                !data ||
-                data.active !== true
-            ) {
-
-                document
-                    .getElementById(
-                        "app"
-                    )
-                    .style.display =
-                    "none";
-
-                document
-                    .getElementById(
-                        "authGate"
-                    )
-                    .style.display =
-                    "flex";
-
-                document
-                    .getElementById(
-                        "authMessage"
-                    )
-                    .textContent =
-                    !data
-                        ? "This Korona account no longer exists."
-                        : "Korona access has been disabled.";
-
-            }
-
-        } catch (error) {
-
-            console.error(
-                "Periodic Korona access check failed:",
-                error
-            );
+            await checkSavedUser({
+                silent: true
+            });
 
         } finally {
 
-            accessCheckRunning = false;
+            accessCheckRunning =
+                false;
 
         }
 
@@ -3637,320 +4454,117 @@ setInterval(
 
 
 /* =========================================================
-   LOGOUT / LOCK
+   STARTUP
    ========================================================= */
 
-function koronaLogout() {
+async function startKorona() {
 
-    document
-        .getElementById(
-            "app"
-        )
-        .style.display =
-        "none";
+    console.log(
+        "Korona starting..."
+    );
 
-    document
-        .getElementById(
-            "authGate"
-        )
-        .style.display =
-        "flex";
 
-    document
-        .getElementById(
-            "authMessage"
-        )
-        .textContent =
-        "Korona locked. This browser ID was kept.";
+    /*
+     * AUTH BUTTONS ARE SET UP FIRST.
+     *
+     * This means a Supabase problem cannot
+     * prevent the buttons from receiving clicks.
+     */
+
+    setupAuthButtons();
+
+
+    /*
+     * Setup normal application controls.
+     */
+
+    setupNavigation();
+
+
+    /*
+     * Start browser.
+     */
+
+    createTab();
+
+
+    /*
+     * Apply saved theme.
+     */
+
+    document.body.classList.toggle(
+        "switch-theme",
+        currentTheme ===
+            "switch"
+    );
+
+
+    /*
+     * Show authentication while checking.
+     */
+
+    showAuth();
+
+
+    /*
+     * Check saved account.
+     */
+
+    await checkSavedUser();
 
 }
 
 
 /* =========================================================
-   CREATE SCREEN
+   START
    ========================================================= */
 
-document
-    .getElementById(
-        "showCreateButton"
-    )
-    .onclick =
-    () => {
+if (
+    document.readyState ===
+    "loading"
+) {
 
-        document
-            .getElementById(
-                "loginScreen"
-            )
-            .style.display =
-            "none";
+    document.addEventListener(
+        "DOMContentLoaded",
+        startKorona
+    );
 
-        document
-            .getElementById(
-                "createScreen"
-            )
-            .style.display =
-            "block";
+} else {
 
-    };
+    startKorona();
 
-
-document
-    .getElementById(
-        "backLoginButton"
-    )
-    .onclick =
-    () => {
-
-        document
-            .getElementById(
-                "createScreen"
-            )
-            .style.display =
-            "none";
-
-        document
-            .getElementById(
-                "loginScreen"
-            )
-            .style.display =
-            "block";
-
-    };
+}
 
 
 /* =========================================================
-   MANUAL ACCESS CHECK
+   SWITCH CLOCK
    ========================================================= */
 
-document
-    .getElementById(
-        "loginButton"
-    )
-    .onclick =
+setInterval(
     () => {
 
-        checkSavedUser();
+        const clock =
+            $("switchClock");
 
-    };
-
-
-/* =========================================================
-   CREATE ACCOUNT
-   ========================================================= */
-
-document
-    .getElementById(
-        "createButton"
-    )
-    .onclick =
-    async () => {
-
-        const firstName =
-            document
-                .getElementById(
-                    "firstName"
-                )
-                .value
-                .trim();
-
-        const lastName =
-            document
-                .getElementById(
-                    "lastName"
-                )
-                .value
-                .trim();
-
-        const message =
-            document
-                .getElementById(
-                    "createMessage"
-                );
-
-        if (
-            !firstName ||
-            !lastName
-        ) {
-
-            message.textContent =
-                "Enter your first and last name.";
-
+        if (!clock) {
             return;
         }
 
-        const id =
+        clock.textContent =
+            new Date().toLocaleTimeString(
+                [],
+                {
+                    hour:
+                        "numeric",
 
-            `${firstName}.${lastName}`
-
-                .toLowerCase()
-
-                .replace(
-                    /[^a-z0-9.]/g,
-                    ""
-                );
-
-        try {
-
-            const {
-                data: existing,
-                error: checkError
-            } =
-                await supabase
-
-                    .from(
-                        "korona_users"
-                    )
-
-                    .select(
-                        "id"
-                    )
-
-                    .eq(
-                        "id",
-                        id
-                    )
-
-                    .maybeSingle();
-
-            if (checkError) {
-
-                console.error(
-                    checkError
-                );
-
-                message.textContent =
-                    "Could not check that Korona ID.";
-
-                return;
-            }
-
-            if (existing) {
-
-                message.textContent =
-                    `"${id}" is already taken.`;
-
-                return;
-            }
-
-            const {
-                data,
-                error
-            } =
-                await supabase
-
-                    .from(
-                        "korona_users"
-                    )
-
-                    .insert({
-
-                        id:
-                            id,
-
-                        name:
-                            `${firstName} ${lastName}`,
-
-                        active:
-                            true
-
-                    })
-
-                    .select(
-                        "id,name,active"
-                    )
-
-                    .single();
-
-            if (error) {
-
-                console.error(
-                    "Korona account creation failed:",
-                    error
-                );
-
-                message.textContent =
-                    error.message ||
-                    "Could not create the account.";
-
-                return;
-            }
-
-            localStorage.setItem(
-                USER_KEY,
-                data.id
+                    minute:
+                        "2-digit"
+                }
             );
 
-            localStorage.setItem(
-                "korona.user.id",
-                data.id
-            );
-
-            localStorage.setItem(
-                "korona.user.name",
-                data.name || ""
-            );
-
-            document
-                .getElementById(
-                    "authGate"
-                )
-                .style.display =
-                "none";
-
-            document
-                .getElementById(
-                    "app"
-                )
-                .style.display =
-                "block";
-
-            renderAll();
-
-            console.log(
-                "Korona account created:",
-                data.id
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Korona account creation error:",
-                error
-            );
-
-            message.textContent =
-                "Something went wrong creating the account.";
-        }
-    };
-
-
-/* =========================================================
-   STARTUP
-   ========================================================= */
-
-(async function init() {
-
-    currentTheme =
-        localStorage.getItem(
-            "korona.theme"
-        )
-        ||
-        "default";
-
-    currentCharacter =
-        localStorage.getItem(
-            "korona.character"
-        )
-        ||
-        "none";
-
-    createTab();
-
-    applyTheme();
-
-    await checkSavedUser();
-
-})();
+    },
+    1000
+);
 
 </script>
 
