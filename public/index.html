@@ -1,10 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Korona</title>
-<meta name="description" content="Korona browser">
+
+<meta name="theme-color" content="#242424">
 
 <!-- Scramjet -->
 <script src="/scram/scramjet.all.js"></script>
@@ -14,4187 +16,4484 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{box-sizing:border-box}
-
-html,body{
-  width:100%;
-  height:100%;
-  margin:0;
-  overflow:hidden
-}
-
-body{
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  background:var(--bg);
-  color:var(--text)
-}
-
-button,input,select{
-  font:inherit;
-  color:inherit
-}
-
-button{cursor:pointer}
-
-:root{
-  --bg:#100e05;
-  --surface:#171306;
-  --surface2:#201a08;
-  --surface3:#2a210b;
-  --text:#f7efd0;
-  --muted:#aa9b68;
-  --line:#655018;
-  --accent:#d9ad32;
-  --accent2:#f0c84d;
-  --danger:#d85c62;
-  --shadow:0 14px 50px rgba(0,0,0,.34)
-}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:radial-gradient(
-    circle at 50% 15%,
-    color-mix(in srgb,var(--accent) 7%,transparent),
-    transparent 35%
-  );
-  pointer-events:none;
-  z-index:0
-}
-
-#particles{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  z-index:0;
-  pointer-events:none;
-  opacity:.65
-}
-
-#app{
-  position:relative;
-  z-index:1;
-  width:100%;
-  height:100%;
-  display:grid;
-  grid-template-rows:38px 42px 1fr
-}
-
-/* =========================
-   TABS
-========================= */
-
-#tabStrip{
-  display:flex;
-  align-items:stretch;
-  background:color-mix(in srgb,var(--surface) 94%,transparent);
-  border-bottom:1px solid var(--line);
-  overflow:hidden
-}
-
-.tab{
-  min-width:150px;
-  max-width:230px;
-  height:38px;
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:0 10px 0 12px;
-  border-right:1px solid var(--line);
-  background:transparent;
-  color:var(--muted);
-  user-select:none;
-  cursor:pointer
-}
-
-.tab.active{
-  background:var(--surface2);
-  color:var(--text);
-  box-shadow:inset 0 -2px 0 var(--accent)
-}
-
-.tab-title{
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  flex:1;
-  font-size:12px
-}
-
-.tab-close{
-  border:0;
-  background:none;
-  color:var(--muted);
-  width:22px;
-  height:22px;
-  padding:0;
-  display:grid;
-  place-items:center;
-  border-radius:4px
-}
-
-.tab-close:hover{
-  color:var(--text);
-  background:var(--surface3)
-}
-
-.tab-icon{
-  width:16px;
-  height:16px;
-  border:1px solid var(--accent);
-  display:grid;
-  place-items:center;
-  font-size:9px;
-  color:var(--accent);
-  flex:0 0 auto
-}
-
-#newTab{
-  width:42px;
-  border:0;
-  border-left:1px solid var(--line);
-  background:transparent;
-  color:var(--accent);
-  font-size:20px
-}
-
-#newTab:hover{
-  background:var(--surface2)
-}
-
-/* =========================
-   BROWSER BAR
-========================= */
-
-#browserBar{
-  display:grid;
-  grid-template-columns:auto 1fr auto;
-  align-items:center;
-  gap:8px;
-  padding:6px 9px;
-  background:var(--surface);
-  border-bottom:1px solid var(--line)
-}
-
-#navButtons,
-#barActions{
-  display:flex;
-  gap:5px
-}
-
-.iconBtn{
-  width:32px;
-  height:30px;
-  border:1px solid var(--line);
-  background:var(--surface2);
-  display:grid;
-  place-items:center;
-  color:var(--muted)
-}
-
-.iconBtn:hover{
-  color:var(--text);
-  border-color:var(--accent);
-  background:var(--surface3)
-}
-
-#addressWrap{
-  height:30px;
-  display:flex;
-  align-items:center;
-  border:1px solid var(--line);
-  background:#0c0a04;
-  min-width:0
-}
-
-#addressWrap:focus-within{
-  border-color:var(--accent);
-  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)
-}
-
-#address{
-  width:100%;
-  height:28px;
-  border:0;
-  outline:0;
-  background:transparent;
-  padding:0 13px;
-  color:var(--text);
-  font-size:12px
-}
-
-#address::placeholder{
-  color:#776b45
-}
-
-/* =========================
-   WORKSPACE
-========================= */
-
-#workspace{
-  min-height:0;
-  display:grid;
-  grid-template-columns:176px 1fr;
-  background:var(--bg)
-}
-
-#side{
-  border-right:1px solid var(--line);
-  background:color-mix(in srgb,var(--surface) 96%,transparent);
-  padding:13px 9px;
-  display:flex;
-  flex-direction:column;
-  gap:5px;
-  overflow:auto
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:8px 9px 18px;
-  color:var(--text);
-  font-weight:800;
-  letter-spacing:.4px
-}
-
-.brandMark{
-  width:26px;
-  height:26px;
-  border:1px solid var(--accent);
-  display:grid;
-  place-items:center;
-  color:var(--accent);
-  font-size:12px
-}
-
-.sideBtn{
-  width:100%;
-  height:38px;
-  border:1px solid transparent;
-  background:transparent;
-  color:var(--muted);
-  text-align:left;
-  padding:0 11px;
-  display:flex;
-  align-items:center;
-  gap:11px
-}
-
-.sideBtn:hover{
-  background:var(--surface2);
-  color:var(--text)
-}
-
-.sideBtn.active{
-  background:var(--surface3);
-  color:var(--text);
-  border-color:var(--accent)
-}
-
-.sideIcon{
-  width:18px;
-  text-align:center;
-  color:var(--accent)
-}
-
-.sideBottom{
-  margin-top:auto;
-  padding-top:10px;
-  border-top:1px solid var(--line)
-}
-
-#main{
-  min-width:0;
-  min-height:0;
-  position:relative;
-  overflow:hidden
-}
-
-.view{
-  position:absolute;
-  inset:0;
-  display:none;
-  overflow:auto;
-  padding:34px 42px
-}
-
-.view.active{
-  display:block
-}
-
-.view h1{
-  font-size:22px;
-  margin:0 0 7px;
-  text-transform:lowercase;
-  letter-spacing:-.4px
-}
-
-.sub{
-  color:var(--muted);
-  font-size:12px;
-  margin:0 0 25px
-}
-
-.panel{
-  border-top:1px solid var(--line);
-  padding:24px 0
-}
-
-/* =========================
-   HOME
-========================= */
-
-.hero{
-  max-width:720px;
-  margin:13vh auto 0;
-  text-align:center
-}
-
-.heroMark{
-  width:58px;
-  height:58px;
-  border:1px solid var(--accent);
-  display:grid;
-  place-items:center;
-  margin:0 auto 18px;
-  color:var(--accent);
-  font-size:24px;
-  font-weight:800;
-  background:var(--surface2)
-}
-
-.hero h1{
-  font-size:31px
-}
-
-.hero p{
-  color:var(--muted);
-  font-size:13px
-}
-
-.heroSearch{
-  margin:22px auto;
-  max-width:650px;
-  height:44px;
-  border:1px solid var(--line);
-  display:flex;
-  background:var(--surface)
-}
-
-.heroSearch input{
-  flex:1;
-  border:0;
-  background:transparent;
-  outline:0;
-  padding:0 14px;
-  color:var(--text)
-}
-
-.heroSearch button{
-  width:90px;
-  border:0;
-  border-left:1px solid var(--line);
-  background:var(--surface2);
-  color:var(--accent)
-}
-
-.quick{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  flex-wrap:wrap
-}
-
-.quick button{
-  border:1px solid var(--line);
-  background:var(--surface2);
-  padding:9px 13px;
-  color:var(--muted)
-}
-
-.quick button:hover{
-  border-color:var(--accent);
-  color:var(--text)
-}
-
-/* =========================
-   BROWSER
-========================= */
-
-#view-browser{
-  padding:0;
-  overflow:hidden;
-  background:#050504
-}
-
-#frames{
-  position:absolute;
-  inset:0;
-  background:#050504
-}
-
-.browserFrame{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  border:0;
-  display:none;
-  background:#fff
-}
-
-.browserFrame.active{
-  display:block
-}
 
-#browserOverlay{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(180deg,#0d0b05,#080704);
-  color:var(--muted);
-  pointer-events:none
-}
-
-#browserOverlay.hidden{
-  display:none
-}
-
-.overlayBox{
-  text-align:center
-}
-
-.overlayLogo{
-  font-size:44px;
-  color:var(--accent);
-  font-weight:900
-}
-
-.overlayBox strong{
-  display:block;
-  color:var(--text);
-  font-size:18px;
-  margin-top:8px
-}
-
-.overlayBox span{
-  display:block;
-  margin-top:5px;
-  font-size:12px
-}
+/* =========================================================
+   KORONA
+   ========================================================= */
 
-/* =========================
-   GAMES
-========================= */
-
-#gamesGrid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
-  gap:12px
-}
+:root {
+    --bg: #07110b;
+    --panel: #0d1b12;
+    --panel2: #122319;
+    --panel3: #172d20;
 
-.game{
-  background:var(--surface);
-  border:1px solid var(--line);
-  min-width:0;
-  transition:.15s transform,.15s border-color
-}
+    --text: #effff3;
+    --muted: #8aa592;
 
-.game:hover{
-  transform:translateY(-2px);
-  border-color:var(--accent)
-}
+    --accent: #38e67b;
+    --accent2: #23b85d;
 
-.gameImg{
-  height:112px;
-  background:var(--surface2);
-  display:block;
-  width:100%;
-  object-fit:cover
-}
+    --border: #21452d;
 
-.gameBody{
-  padding:12px
-}
+    --danger: #ff5d68;
 
-.gameTitle{
-  font-weight:750;
-  font-size:13px
+    --shadow:
+        0 18px 60px rgba(0,0,0,.45);
 }
 
-.gameDesc{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:5px;
-  min-height:30px
-}
 
-.gameGo{
-  margin-top:10px;
-  width:100%;
-  height:31px;
-  border:1px solid var(--line);
-  background:transparent;
-  color:var(--accent)
-}
+/* =========================================================
+   SWITCH THEME VARIABLES
+   ========================================================= */
 
-.gameGo:hover{
-  background:var(--surface2);
-  border-color:var(--accent)
-}
+body.switch-theme {
 
-/* =========================
-   CONTROLS
-========================= */
-
-.controls{
-  display:flex;
-  gap:8px;
-  margin-bottom:18px
-}
+    --bg: #242424;
 
-.controls input,
-.controls select{
-  height:34px;
-  border:1px solid var(--line);
-  background:var(--surface);
-  outline:0;
-  padding:0 10px
-}
+    --panel: #303030;
+    --panel2: #383838;
+    --panel3: #414141;
 
-.controls input{
-  flex:1
-}
+    --text: #f4f4f4;
+    --muted: #b9b9b9;
 
-.controls select{
-  min-width:145px
-}
+    --accent: #42c8ff;
+    --accent2: #42c8ff;
 
-/* =========================
-   SETTINGS
-========================= */
+    --border: #505050;
 
-.settingsGrid{
-  max-width:900px
-}
+    --danger: #ff5a5f;
 
-.setting{
-  padding:20px 0;
-  border-top:1px solid var(--line)
+    --shadow:
+        0 20px 70px rgba(0,0,0,.45);
 }
 
-.settingHead{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:20px
-}
 
-.settingTitle{
-  font-weight:750
-}
+/* =========================================================
+   GLOBAL
+   ========================================================= */
 
-.settingHelp{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:4px;
-  max-width:650px
+* {
+    box-sizing: border-box;
 }
 
-.themeGrid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:7px;
-  margin-top:15px
-}
+html,
+body {
 
-.themeBtn{
-  height:54px;
-  border:1px solid var(--line);
-  background:var(--surface);
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:0 10px;
-  color:var(--muted);
-  text-align:left
-}
+    width: 100%;
+    height: 100%;
 
-.themeBtn:hover,
-.themeBtn.selected{
-  border-color:var(--accent);
-  color:var(--text);
-  background:var(--surface2)
-}
+    margin: 0;
 
-.swatch{
-  width:22px;
-  height:22px;
-  border:1px solid rgba(255,255,255,.12);
-  flex:0 0 auto
-}
+    overflow: hidden;
 
-#characterSelect{
-  height:36px;
-  border:1px solid var(--line);
-  background:var(--surface);
-  outline:0;
-  padding:0 10px;
-  min-width:220px
-}
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 
-#styleSelect{
-  height:36px;
-  min-width:190px;
-  border:1px solid var(--line);
-  background:var(--surface);
-  outline:0;
-  padding:0 12px;
-  color:var(--text)
+    background: var(--bg);
+    color: var(--text);
 }
 
-.check{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  color:var(--muted);
-  font-size:12px
-}
+button,
+input,
+select {
 
-.check input{
-  accent-color:var(--accent)
+    font: inherit;
 }
 
-/* =========================
-   CHARACTER
-========================= */
-
-#character{
-  position:fixed;
-  right:22px;
-  bottom:0;
-  width:min(280px,25vw);
-  max-height:62vh;
-  object-fit:contain;
-  object-position:bottom right;
-  opacity:.42;
-  z-index:2;
-  pointer-events:none;
-  display:none;
-  filter:drop-shadow(0 8px 25px rgba(0,0,0,.45))
-}
+button {
 
-#character.show{
-  display:block
+    cursor: pointer;
 }
 
-/* =========================
-   ACCOUNT
-========================= */
-
-#accountCard{
-  max-width:700px;
-  border:1px solid var(--line);
-  background:var(--surface);
-  padding:22px
-}
+button:focus,
+input:focus,
+select:focus {
 
-.kv{
-  display:grid;
-  grid-template-columns:130px 1fr;
-  gap:8px;
-  font-size:12px;
-  padding:9px 0;
-  border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)
+    outline: none;
 }
 
-.kv span:first-child{
-  color:var(--muted)
-}
 
-/* =========================
+/* =========================================================
    AUTH
-========================= */
+   ========================================================= */
 
-#authGate{
-  position:fixed;
-  inset:0;
-  z-index:99999;
-  background:#090804;
-  display:grid;
-  place-items:center;
-  overflow:hidden
+#authGate {
+
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 10000;
+
+    background:
+        radial-gradient(
+            circle at 50% 25%,
+            #1c4429 0%,
+            #07110b 55%,
+            #020402 100%
+        );
+}
+
+body.switch-theme #authGate {
+
+    background: #242424;
+}
+
+
+.auth-card {
+
+    width: min(440px, 92vw);
+
+    padding: 38px;
+
+    background: rgba(11,23,16,.96);
+
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow);
+
+    text-align: center;
+}
+
+body.switch-theme .auth-card {
+
+    background: #303030;
+
+    border: 0;
+
+    box-shadow: none;
+}
+
+
+.auth-logo {
+
+    font-size: 46px;
+
+    font-weight: 900;
+
+    letter-spacing: -3px;
+}
+
+
+.auth-sub {
+
+    color: var(--muted);
+
+    margin:
+        8px
+        0
+        28px;
 }
+
+
+.auth-input {
+
+    width: 100%;
+
+    padding: 14px 16px;
+
+    margin-bottom: 12px;
+
+    background: #07100a;
+
+    border: 1px solid var(--border);
 
-.authPanel{
-  width:min(420px,calc(100vw - 36px));
-  border:1px solid var(--accent);
-  background:#100e05;
-  padding:28px;
-  box-shadow:var(--shadow)
+    color: var(--text);
 }
 
-.authLogo{
-  width:48px;
-  height:48px;
-  border:1px solid var(--accent);
-  display:grid;
-  place-items:center;
-  color:var(--accent);
-  font-weight:900;
-  margin-bottom:18px
+
+body.switch-theme .auth-input {
+
+    background: #242424;
+
+    border-color: #555;
 }
+
+
+.auth-button {
+
+    width: 100%;
+
+    padding: 14px;
 
-.authPanel h2{
-  margin:0 0 6px
+    border: 0;
+
+    background: var(--accent);
+
+    color: #031007;
+
+    font-weight: 800;
+
+    margin-top: 8px;
 }
+
+
+.auth-secondary {
+
+    width: 100%;
 
-.authPanel p{
-  color:var(--muted);
-  font-size:12px
+    padding: 13px;
+
+    border: 1px solid var(--border);
+
+    background: transparent;
+
+    color: var(--text);
+
+    margin-top: 10px;
 }
+
+
+.auth-message {
 
-.authPanel label{
-  display:block;
-  color:var(--text);
-  font-size:12px;
-  margin-top:10px
+    min-height: 22px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+    margin: 12px 0;
 }
+
+
+/* =========================================================
+   APPLICATION
+   ========================================================= */
+
+#app {
+
+    display: none;
 
-.authPanel input{
-  width:100%;
-  height:38px;
-  border:1px solid var(--line);
-  background:#080703;
-  outline:0;
-  padding:0 10px;
-  margin-top:8px
+    width: 100%;
+    height: 100%;
 }
 
-.authPanel button{
-  height:38px;
-  border:1px solid var(--accent);
-  background:var(--surface2);
-  color:var(--accent);
-  padding:0 14px;
-  margin-top:10px
+
+#appShell {
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+
+    grid-template-columns: 210px 1fr;
 }
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar {
 
-.authPanel button:hover{
-  background:var(--accent);
-  color:#110d03
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    padding: 16px 12px;
+
+    background: #08130b;
+
+    border-right: 1px solid var(--border);
 }
+
+
+body.switch-theme .sidebar {
 
-.authPanel button:disabled{
-  opacity:.55;
-  cursor:not-allowed
+    background: #303030;
+
+    border-right: 0;
 }
+
+
+.brand {
 
-.authRow{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px
+    padding:
+        10px
+        12px
+        18px;
+
+    font-size: 25px;
+
+    font-weight: 900;
+
+    letter-spacing: -1px;
 }
+
 
-.authMsg{
-  font-size:11px;
-  min-height:18px;
-  color:var(--danger);
-  margin-top:8px;
-  line-height:1.55
+.nav {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
 }
+
+
+.nav button {
+
+    width: 100%;
+
+    border: 0;
 
-.authSwitch{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:17px
+    background: transparent;
+
+    color: var(--muted);
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    text-align: left;
+
+    transition:
+        background .15s,
+        color .15s;
 }
+
+
+.nav button:hover {
 
-.authSwitch button{
-  border:0;
-  background:none;
-  padding:0;
-  margin:0;
-  color:var(--accent);
-  height:auto
+    background: var(--panel2);
+
+    color: var(--text);
 }
+
+
+.nav button.active {
 
-.authOnly{
-  display:none
+    background: var(--panel2);
+
+    color: var(--text);
 }
+
 
-.authOnly.visible{
-  display:block
+.sidebar-bottom {
+
+    margin-top: auto;
 }
+
 
-/* =========================
-   SWITCH STYLE
-========================= */
+/* =========================================================
+   SWITCH SIDEBAR
+   ========================================================= */
 
-#switchHome{
-  display:none
+body.switch-theme .sidebar {
+
+    border-radius: 0;
+
 }
+
 
-.switchHomeTop{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:18px;
-  margin-bottom:22px
+body.switch-theme .nav button {
+
+    border-radius: 0;
+
+    padding:
+        13px
+        14px;
 }
+
 
-.switchEyebrow{
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:2px;
-  color:var(--accent)
+body.switch-theme .nav button.active {
+
+    background: #414141;
+
+    border-left:
+        4px solid
+        #42c8ff;
 }
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+.main {
+
+    min-width: 0;
+
+    height: 100%;
 
-.switchHomeTop h2{
-  font-size:34px;
-  margin:4px 0 0
+    display: flex;
+
+    flex-direction: column;
 }
+
+
+/* =========================================================
+   TABS
+   ========================================================= */
+
+.tabstrip {
+
+    display: flex;
+
+    gap: 5px;
+
+    padding:
+        7px
+        10px;
 
-.switchHomeTop button{
-  border:0;
-  border-radius:999px;
-  background:var(--accent);
-  color:#fff;
-  padding:11px 17px;
-  font-weight:800
+    background: #060d08;
+
+    border-bottom: 1px solid var(--border);
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
 }
 
-.switchGameGrid{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:18px
+
+.tabstrip::-webkit-scrollbar {
+
+    display: none;
 }
+
+
+body.switch-theme .tabstrip {
 
-.switchGameCard{
-  min-height:215px;
-  border-radius:18px;
-  overflow:hidden;
-  background:var(--surface);
-  border:1px solid color-mix(in srgb,var(--line) 65%,transparent);
-  box-shadow:0 10px 30px rgba(0,0,0,.22);
-  transition:.16s
+    background: #2a2a2a;
+
+    border-bottom:
+        1px solid
+        #454545;
 }
+
+
+.tab {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    white-space: nowrap;
 
-.switchGameCard:hover{
-  transform:translateY(-5px);
-  box-shadow:0 16px 38px rgba(0,0,0,.3)
+    min-width: 130px;
+
+    padding:
+        8px
+        11px;
+
+    background: var(--panel);
+
+    color: var(--muted);
+
+    border:
+        1px solid
+        transparent;
 }
+
+
+.tab.active {
+
+    background: var(--panel2);
 
-.switchGameCard img{
-  width:100%;
-  height:150px;
-  object-fit:cover;
-  display:block;
-  background:var(--surface2)
+    color: var(--text);
+
+    border-color: var(--border);
 }
+
+
+.tab .close {
 
-.switchGameCard .sgBody{
-  padding:12px 14px 15px
+    opacity: .7;
+
+    margin-left: auto;
 }
+
+
+.tabadd {
+
+    border: 0;
 
-.switchGameCard .sgTitle{
-  font-weight:850;
-  font-size:14px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis
+    background: transparent;
+
+    color: var(--text);
+
+    font-size: 20px;
+
+    padding:
+        4px
+        10px;
 }
+
+
+/* =========================================================
+   TOP BROWSER BAR
+   ========================================================= */
+
+.topbar {
+
+    height: 58px;
 
-.switchGameCard .sgOpen{
-  margin-top:9px;
-  border:0;
-  border-radius:999px;
-  background:var(--accent);
-  color:#fff;
-  padding:7px 12px;
-  font-size:11px;
-  font-weight:800
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding:
+        8px
+        14px;
+
+    background: #08130b;
+
+    border-bottom:
+        1px solid
+        var(--border);
 }
+
 
-body.switch-mode{
-  --bg:#101114;
-  --surface:#181a1e;
-  --surface2:#22252b;
-  --surface3:#2d3138;
-  --text:#f7f8fb;
-  --muted:#9ba0aa;
-  --line:#3b4048;
-  --accent:#e60012;
-  --accent2:#ff3345;
-  --danger:#ff5b6b;
-  --shadow:0 18px 55px rgba(0,0,0,.34)
+body.switch-theme .topbar {
+
+    background: #242424;
+
+    border-bottom:
+        1px solid
+        #484848;
 }
+
+
+.topbar button {
+
+    border: 0;
+
+    background: var(--panel2);
+
+    color: var(--text);
 
-body.switch-mode::before{
-  background:
-    radial-gradient(circle at 12% 8%,rgba(230,0,18,.15),transparent 24%),
-    radial-gradient(circle at 88% 12%,rgba(0,174,239,.13),transparent 26%)
+    padding:
+        9px
+        12px;
 }
 
-body.switch-mode #app{
-  grid-template-rows:58px 54px 1fr
+
+.address {
+
+    flex: 1;
+
+    min-width: 0;
+
+    display: flex;
+
+    gap: 8px;
 }
+
+
+.address input {
 
-body.switch-mode #tabStrip{
-  background:#17191d;
-  border-bottom:0;
-  padding:7px 9px 0;
-  gap:6px
+    flex: 1;
+
+    min-width: 0;
+
+    padding:
+        10px
+        14px;
+
+    background: var(--panel);
+
+    border:
+        1px solid
+        var(--border);
+
+    color: var(--text);
 }
+
+
+body.switch-theme .address input {
 
-body.switch-mode .tab{
-  min-width:170px;
-  height:51px;
-  border:0;
-  border-radius:13px 13px 0 0;
-  background:#24272c;
-  color:#aeb3bc;
-  padding:0 13px;
-  box-shadow:none
+    background: #303030;
+
+    border-color: #505050;
 }
+
+
+/* =========================================================
+   WORKSPACE
+   ========================================================= */
+
+.workspace {
+
+    position: relative;
+
+    flex: 1;
+
+    min-height: 0;
 
-body.switch-mode .tab.active{
-  background:#34383f;
-  color:#fff;
-  box-shadow:inset 0 -4px 0 var(--accent)
+    overflow: auto;
 }
 
-body.switch-mode .tab-icon{
-  border:0;
-  width:22px;
-  height:22px;
-  border-radius:50%;
-  background:var(--accent);
-  color:#fff;
-  font-weight:900
+
+.view {
+
+    display: none;
+
+    min-height: 100%;
+
+    padding: 28px;
 }
+
 
-body.switch-mode #newTab{
-  width:48px;
-  height:48px;
-  border:0;
-  border-radius:14px;
-  background:#24272c;
-  color:#fff;
-  margin-left:2px
+.view.active {
+
+    display: block;
 }
+
 
-body.switch-mode #browserBar{
-  grid-template-columns:auto 1fr auto;
-  background:#1c1f24;
-  border:0;
-  padding:8px 12px;
-  gap:10px
+h1 {
+
+    margin:
+        0
+        0
+        8px;
+
+    font-size: 34px;
 }
+
 
-body.switch-mode .iconBtn{
-  width:38px;
-  height:38px;
-  border:0;
-  border-radius:50%;
-  background:#2a2e34;
-  color:#e8ebef
+.muted {
+
+    color: var(--muted);
 }
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.cards {
 
-body.switch-mode .iconBtn:hover{
-  background:#383d45;
-  color:#fff
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(190px, 1fr)
+        );
+
+    gap: 16px;
+
+    margin-top: 24px;
 }
+
+
+.card {
+
+    background: var(--panel);
+
+    border:
+        1px solid
+        var(--border);
 
-body.switch-mode #addressWrap{
-  height:40px;
-  border:0;
-  border-radius:22px;
-  background:#0f1114;
-  box-shadow:inset 0 0 0 1px #343840
+    padding: 14px;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s,
+        border-color .15s;
 }
+
 
-body.switch-mode #address{
-  height:38px;
-  font-size:13px;
-  color:#fff
+.card:hover {
+
+    transform:
+        translateY(-2px);
+
+    border-color:
+        var(--accent);
 }
+
 
-body.switch-mode #address::placeholder{
-  color:#727780
+.card img {
+
+    width: 100%;
+
+    aspect-ratio: 16 / 9;
+
+    object-fit: cover;
+
+    background: #000;
+
+    margin-bottom: 12px;
 }
+
+
+.card h3 {
 
-body.switch-mode #workspace{
-  grid-template-columns:210px 1fr;
-  background:#111317
+    margin:
+        0
+        0
+        5px;
 }
 
-body.switch-mode #side{
-  background:#17191d;
-  border-right:1px solid #2c3036;
-  padding:16px 12px;
-  gap:8px
+
+.card p {
+
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 13px;
 }
+
+
+/* =========================================================
+   BROWSER
+   ========================================================= */
+
+.browser {
 
-body.switch-mode .brand{
-  padding:8px 12px 22px
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    flex-direction: column;
 }
+
+
+.browser-frame {
+
+    flex: 1;
+
+    min-height: 0;
+
+    background: white;
 
-body.switch-mode .brandMark{
-  width:38px;
-  height:38px;
-  border:0;
-  border-radius:50%;
-  background:var(--accent);
-  color:#fff;
-  font-size:17px
+    position: relative;
 }
 
-body.switch-mode .sideBtn{
-  height:48px;
-  border:0;
-  border-radius:14px;
-  padding:0 14px;
-  color:#b9bec7;
-  font-weight:700
+
+.browser-frame iframe {
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+
+    background: white;
 }
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
 
-body.switch-mode .sideBtn:hover{
-  background:#24272d;
-  color:#fff
+.settings-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(180px, 1fr)
+        );
+
+    gap: 14px;
+
+    margin-top: 20px;
 }
+
+
+.setting-card {
+
+    background: var(--panel);
 
-body.switch-mode .sideBtn.active{
-  background:#2c3037;
-  color:#fff;
-  border:0;
-  box-shadow:inset 4px 0 0 var(--accent)
+    border:
+        1px solid
+        var(--border);
+
+    padding: 18px;
 }
+
+
+.setting-card h3 {
 
-body.switch-mode .sideIcon{
-  color:#fff
+    margin-top: 0;
 }
+
+
+select {
+
+    width: 100%;
+
+    padding: 12px;
 
-body.switch-mode .sideBottom{
-  border-top:1px solid #2c3036
+    background: var(--panel);
+
+    color: var(--text);
+
+    border:
+        1px solid
+        var(--border);
 }
+
+
+.theme-preview {
+
+    height: 75px;
+
+    margin-bottom: 12px;
+
+    border:
+        1px solid
+        var(--border);
 
-body.switch-mode #main{
-  background:#111317
+    background:
+        linear-gradient(
+            135deg,
+            #0b1710,
+            #38e67b
+        );
 }
 
-body.switch-mode .view{
-  padding:34px 42px
+
+.theme-preview.switch {
+
+    background:
+        linear-gradient(
+            135deg,
+            #242424 0%,
+            #242424 48%,
+            #42c8ff 48%,
+            #42c8ff 52%,
+            #242424 52%
+        );
 }
+
+
+/* =========================================================
+   ACCOUNT
+   ========================================================= */
+
+.account {
+
+    max-width: 600px;
 
-body.switch-mode #view-home{
-  padding:0;
-  overflow:auto
+    background: var(--panel);
+
+    border:
+        1px solid
+        var(--border);
+
+    padding: 24px;
 }
+
+
+.account-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
 
-body.switch-mode #view-home>.hero{
-  display:none
+    border-bottom:
+        1px solid
+        var(--border);
+
+    padding: 13px 0;
 }
+
+
+.danger {
+
+    background: var(--danger);
+
+    color: white;
+
+    border: 0;
+
+    padding:
+        12px
+        16px;
 
-body.switch-mode #switchHome{
-  display:block;
-  padding:42px 48px 56px;
-  min-height:100%
+    margin-top: 18px;
 }
+
+
+/* =========================================================
+   SWITCH HOME
+   ========================================================= */
+
+.switch-home {
+
+    min-height: 100%;
+
+    padding:
+        28px
+        34px
+        22px;
+
+    display: flex;
+
+    flex-direction: column;
 
-body.switch-mode #gamesGrid{
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:18px
+    background: #242424;
+
+    color: #f4f4f4;
 }
+
+
+.switch-status {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 22px;
 
-body.switch-mode .game{
-  border:0;
-  border-radius:16px;
-  overflow:hidden;
-  background:#1b1e23;
-  box-shadow:0 8px 26px rgba(0,0,0,.22)
+    font-size: 14px;
 }
 
-body.switch-mode .game:hover{
-  border:0;
-  transform:translateY(-4px)
+
+.switch-profile {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
 }
+
+
+.switch-avatar {
+
+    width: 38px;
+    height: 38px;
 
-body.switch-mode .gameImg{
-  height:135px
+    border-radius: 50%;
+
+    background: #555;
+
+    display: grid;
+
+    place-items: center;
+
+    font-weight: 800;
 }
+
+
+.switch-time {
+
+    display: flex;
 
-body.switch-mode .gameBody{
-  padding:14px
+    align-items: center;
+
+    gap: 15px;
 }
+
+
+/* =========================================================
+   SWITCH SOFTWARE ROW
+   ========================================================= */
+
+.switch-games {
+
+    display: flex;
+
+    gap: 14px;
+
+    overflow-x: auto;
 
-body.switch-mode .gameGo{
-  border:0;
-  border-radius:999px;
-  background:#30343b;
-  color:#fff
+    padding:
+        8px
+        2px
+        22px;
+
+    scrollbar-width: none;
 }
+
+
+.switch-games::-webkit-scrollbar {
 
-body.switch-mode .gameGo:hover{
-  background:var(--accent)
+    display: none;
 }
+
+
+.switch-game {
+
+    flex:
+        0 0
+        190px;
 
-body.switch-mode .controls input,
-body.switch-mode .controls select,
-body.switch-mode #characterSelect,
-body.switch-mode #styleSelect{
-  border:0;
-  border-radius:12px;
-  background:#1d2025;
-  box-shadow:inset 0 0 0 1px #353a42;
-  color:#fff
+    aspect-ratio: 1;
+
+    position: relative;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    background: #111;
+
+    border: 0;
+
+    box-shadow:
+        0 0 0 1px #444;
 }
+
 
-body.switch-mode .themeBtn{
-  border:0;
-  border-radius:14px;
-  background:#1d2025;
-  color:#bfc4cc
+.switch-game img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
 }
+
+
+.switch-game span {
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    padding:
+        10px
+        9px;
 
-body.switch-mode .themeBtn:hover,
-body.switch-mode .themeBtn.selected{
-  background:#2c3037;
-  color:#fff;
-  border:0;
-  box-shadow:inset 0 0 0 2px var(--accent)
+    text-align: left;
+
+    font-weight: 700;
+
+    background:
+        linear-gradient(
+            transparent,
+            rgba(0,0,0,.85)
+        );
 }
+
 
-body.switch-mode #accountCard{
-  border:0;
-  border-radius:18px;
-  background:#1d2025
+.switch-game:hover {
+
+    box-shadow:
+        0 0 0 3px #777;
 }
+
 
-body.switch-mode .kv{
-  border-bottom-color:#30343a
+.switch-game.selected {
+
+    box-shadow:
+        0 0 0 4px #f4f4f4;
 }
+
 
-body.switch-mode #view-browser,
-body.switch-mode #frames{
-  background:#0d0f12
+/* =========================================================
+   SWITCH BOTTOM MENU
+   ========================================================= */
+
+.switch-more {
+
+    margin-top: 8px;
+
+    text-align: right;
+
+    color: #aaa;
+
+    font-size: 13px;
 }
+
+
+.switch-bottom {
+
+    margin-top: auto;
+
+    border-top:
+        1px solid
+        #555;
+
+    padding-top: 20px;
+
+    display: flex;
+
+    gap: 20px;
+
+    align-items: center;
+
+    justify-content: center;
 
-body.switch-mode #browserOverlay{
-  background:#0d0f12
+    flex-wrap: wrap;
 }
 
-body.switch-mode #authGate{
-  background:
-    radial-gradient(circle at 15% 25%,rgba(230,0,18,.18),transparent 25%),
-    radial-gradient(circle at 85% 75%,rgba(0,174,239,.16),transparent 27%),
-    #0e1013
+
+.switch-icon {
+
+    width: 58px;
+    height: 58px;
+
+    border-radius: 50%;
+
+    border: 0;
+
+    background: #444;
+
+    color: white;
+
+    display: grid;
+
+    place-items: center;
+
+    font-size: 23px;
+
+    box-shadow:
+        inset 0 1px #666;
+
+    transition:
+        transform .15s,
+        background .15s;
 }
+
+
+.switch-icon:hover {
+
+    background: #fff;
 
-body.switch-mode .authPanel{
-  width:min(470px,calc(100vw - 36px));
-  border:0;
-  border-radius:26px;
-  background:#1b1e23;
-  padding:34px;
-  box-shadow:0 24px 80px rgba(0,0,0,.5);
-  text-align:center
+    color: #222;
+
+    transform:
+        translateY(-2px);
 }
+
+
+/* =========================================================
+   SWITCH SECONDARY PAGES
+   ========================================================= */
+
+.switch-page {
+
+    min-height: 100%;
+
+    padding:
+        28px
+        34px;
 
-body.switch-mode .authLogo{
-  width:72px;
-  height:72px;
-  border:0;
-  border-radius:50%;
-  margin:0 auto 18px;
-  background:linear-gradient(135deg,#e60012 0 50%,#00aef0 50%);
-  color:#fff;
-  font-size:25px
+    background: #242424;
+
+    color: #f4f4f4;
 }
+
+
+.switch-page h1 {
 
-body.switch-mode .authPanel input{
-  border:0;
-  border-radius:12px;
-  background:#101216;
-  box-shadow:inset 0 0 0 1px #373c45;
-  color:#fff
+    font-weight: 500;
 }
+
+
+.switch-page .card {
+
+    background: #303030;
+
+    border-color: #4c4c4c;
 
-body.switch-mode .authPanel button{
-  border:0;
-  border-radius:999px;
-  background:#e60012;
-  color:#fff;
-  font-weight:800
+    border-radius: 0;
 }
 
-body.switch-mode .authPanel button:hover{
-  background:#ff2436;
-  color:#fff
+
+.switch-page .card:hover {
+
+    transform: none;
+
+    border-color: white;
 }
 
-body.switch-mode #character{
-  opacity:.34;
-  filter:drop-shadow(0 10px 30px rgba(0,0,0,.55))
+
+.switch-page .setting-card {
+
+    background: #303030;
+
+    border-color: #4c4c4c;
 }
+
 
-@media(max-width:1050px){
-  .switchGameGrid{
-    grid-template-columns:repeat(3,1fr)
-  }
+.switch-page .account {
+
+    background: #303030;
+
+    border-color: #4c4c4c;
 }
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+#browserOverlay {
+
+    position: absolute;
+
+    inset: 0;
 
-@media(max-width:850px){
-  #workspace{
-    grid-template-columns:64px 1fr
-  }
+    display: none;
 
-  .brand span,
-  .sideBtn span{
-    display:none
-  }
+    place-items: center;
 
-  .brand{
-    justify-content:center
-  }
+    background: rgba(0,0,0,.55);
 
-  .sideBtn{
-    justify-content:center;
-    padding:0
-  }
+    color: white;
 
-  .view{
-    padding:25px 20px
-  }
+    z-index: 50;
+}
+
+
+.loader {
 
-  .themeGrid{
-    grid-template-columns:repeat(2,1fr)
-  }
+    padding:
+        18px
+        24px;
 
-  #character{
-    width:220px;
-    opacity:.28
-  }
+    background: #222;
+
+    border:
+        1px solid
+        #555;
 }
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width: 800px) {
+
+    #appShell {
+
+        grid-template-columns:
+            72px
+            1fr;
+    }
+
+    .sidebar {
+
+        padding:
+            10px
+            6px;
+    }
+
+    .brand {
+
+        font-size: 0;
+
+        text-align: center;
+    }
 
-@media(max-width:760px){
-  .switchGameGrid{
-    grid-template-columns:repeat(2,1fr)
-  }
+    .brand::after {
 
-  body.switch-mode #workspace{
-    grid-template-columns:72px 1fr
-  }
+        content: "K";
 
-  body.switch-mode .brand span,
-  body.switch-mode .sideBtn span{
-    display:none
-  }
+        font-size: 25px;
+    }
 
-  body.switch-mode .sideBtn{
-    justify-content:center;
-    padding:0
-  }
+    .nav button {
+
+        font-size: 0;
+
+        text-align: center;
+    }
+
+    .nav button::first-letter {
+
+        font-size: 20px;
+    }
+
+    .view {
+
+        padding: 20px;
+    }
+
+    .topbar {
+
+        flex-wrap: wrap;
+
+        height: auto;
+    }
+
+    .switch-home,
+    .switch-page {
+
+        padding:
+            20px;
+    }
+
+    .switch-game {
+
+        flex-basis: 150px;
+    }
 }
+
 </style>
 </head>
 
+
 <body>
 
-<canvas id="particles"></canvas>
 
 <!-- =========================================================
      AUTH GATE
-========================================================= -->
+     ========================================================= -->
 
 <div id="authGate">
 
-  <div class="authPanel">
+    <div class="auth-card">
 
-    <div class="authLogo">K</div>
-
-    <h2>korona</h2>
-
-    <p id="authLead">
-      authenticate to enter the browser.
-    </p>
-
-    <!-- LOGIN -->
-    <section id="loginBox" class="authOnly visible">
-
-      <label>
-        Authentication code
-
-        <input
-          id="loginCode"
-          type="password"
-          autocomplete="current-password"
-          placeholder="authentication code"
-        >
-      </label>
-
-      <button id="loginBtn">
-        unlock korona
-      </button>
-
-      <div id="loginMsg" class="authMsg"></div>
-
-      <div class="authSwitch">
-        Need an ID?
-        <button id="showCreate">create one</button>
-      </div>
-
-    </section>
-
-    <!-- ACCOUNT CREATION -->
-    <section id="createBox" class="authOnly">
-
-      <div class="authRow">
-
-        <label>
-          First name
-          <input
-            id="firstName"
-            autocomplete="given-name"
-            placeholder="John"
-          >
-        </label>
-
-        <label>
-          Last name
-          <input
-            id="lastName"
-            autocomplete="family-name"
-            placeholder="Smith"
-          >
-        </label>
-
-      </div>
-
-      <button id="createBtn">
-        create korona id
-      </button>
-
-      <div id="createMsg" class="authMsg"></div>
-
-      <div class="authSwitch">
-        Already have one?
-        <button id="showLogin">sign in</button>
-      </div>
-
-    </section>
-
-  </div>
-
-</div>
-
-<!-- =========================================================
-     MAIN APP
-========================================================= -->
-
-<div id="app" hidden>
-
-  <!-- TABS -->
-
-  <div id="tabStrip">
-
-    <button
-      id="newTab"
-      title="New tab"
-    >
-      +
-    </button>
-
-  </div>
-
-  <!-- BROWSER BAR -->
-
-  <div id="browserBar">
-
-    <div id="navButtons">
-
-      <button class="iconBtn" id="backBtn">←</button>
-      <button class="iconBtn" id="forwardBtn">→</button>
-      <button class="iconBtn" id="reloadBtn">↻</button>
-      <button class="iconBtn" id="homeBtn">⌂</button>
-
-    </div>
-
-    <div id="addressWrap">
-
-      <input
-        id="address"
-        spellcheck="false"
-        placeholder="Search Google or enter a web address"
-      >
-
-    </div>
-
-    <div id="barActions">
-
-      <button class="iconBtn" id="goBtn">↵</button>
-      <button class="iconBtn" id="fullBtn">⛶</button>
-
-    </div>
-
-  </div>
-
-  <!-- WORKSPACE -->
-
-  <div id="workspace">
-
-    <aside id="side">
-
-      <div class="brand">
-
-        <div class="brandMark">
-          K
+        <div class="auth-logo">
+            KORONA
         </div>
 
-        <span>
-          korona
-        </span>
-
-      </div>
-
-      <button class="sideBtn active" data-view="home">
-        <i class="sideIcon">⌂</i>
-        <span>Home</span>
-      </button>
-
-      <button class="sideBtn" data-view="games">
-        <i class="sideIcon">▣</i>
-        <span>Games</span>
-      </button>
-
-      <button class="sideBtn" data-view="apps">
-        <i class="sideIcon">▤</i>
-        <span>Apps</span>
-      </button>
-
-      <button class="sideBtn" data-view="browser">
-        <i class="sideIcon">◎</i>
-        <span>Browser</span>
-      </button>
-
-      <button class="sideBtn" data-view="settings">
-        <i class="sideIcon">⚙</i>
-        <span>Settings</span>
-      </button>
-
-      <button class="sideBtn" data-view="account">
-        <i class="sideIcon">♙</i>
-        <span>Account</span>
-      </button>
-
-      <div class="sideBottom">
-
-        <button class="sideBtn" id="logoutBtn">
-          <i class="sideIcon">↪</i>
-          <span>Lock</span>
-        </button>
-
-      </div>
-
-    </aside>
-
-    <main id="main">
-
-      <!-- HOME -->
-
-      <section class="view active" id="view-home">
-
-        <div class="hero">
-
-          <div class="heroMark">K</div>
-
-          <h1>korona</h1>
-
-          <p>
-            A clean browser workspace with tabs, themes, games, and a proxy.
-          </p>
-
-          <div class="heroSearch">
-
-            <input
-              id="homeSearch"
-              placeholder="Search Google or enter a web address"
-            >
-
-            <button id="homeGo">
-              go
-            </button>
-
-          </div>
-
-          <div class="quick">
-
-            <button data-url="https://www.google.com">
-              Google
-            </button>
-
-            <button data-url="https://www.youtube.com">
-              YouTube
-            </button>
-
-            <button data-url="https://chatgpt.com">
-              ChatGPT
-            </button>
-
-          </div>
-
+        <div class="auth-sub">
+            This browser is registered to a Korona workspace.
         </div>
 
-        <!-- SWITCH HOME -->
 
-        <div id="switchHome">
+        <!-- LOGIN -->
 
-          <div class="switchHomeTop">
-
-            <div>
-
-              <div class="switchEyebrow">
-                KORONA PLAY
-              </div>
-
-              <h2>
-                Featured Games
-              </h2>
-
-            </div>
-
-            <button id="switchMoreGames">
-              More Games <span>→</span>
-            </button>
-
-          </div>
-
-          <div
-            id="switchFeatured"
-            class="switchGameGrid"
-          ></div>
-
-        </div>
-
-      </section>
-
-      <!-- GAMES -->
-
-      <section class="view" id="view-games">
-
-        <h1 id="gamesHeading">
-          games
-        </h1>
-
-        <p class="sub">
-          Open a game in a browser tab.
-        </p>
-
-        <div class="controls">
-
-          <input
-            id="gameSearch"
-            placeholder="Search games"
-          >
-
-          <select id="gameFilter">
-            <option value="all">All games</option>
-            <option value="saved">Saved</option>
-          </select>
-
-        </div>
-
-        <div id="gamesGrid"></div>
-
-      </section>
-
-      <!-- APPS -->
-
-      <section class="view" id="view-apps">
-
-        <h1>
-          apps
-        </h1>
-
-        <p class="sub">
-          Quick launch web apps in browser tabs.
-        </p>
-
-        <div
-          id="appGrid"
-          class="quick"
-          style="justify-content:flex-start"
-        ></div>
-
-      </section>
-
-      <!-- BROWSER -->
-
-      <section class="view" id="view-browser">
-
-        <div id="frames"></div>
-
-        <div id="browserOverlay">
-
-          <div class="overlayBox">
-
-            <div class="overlayLogo">
-              K
-            </div>
-
-            <strong>
-              browser ready
-            </strong>
-
-            <span>
-              enter an address or search term above
-            </span>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- SETTINGS -->
-
-      <section class="view" id="view-settings">
-
-        <h1>
-          settings
-        </h1>
-
-        <p class="sub">
-          Change the appearance without changing the browser engine.
-        </p>
-
-        <div class="settingsGrid">
-
-          <!-- STYLE -->
-
-          <div class="setting">
-
-            <div class="settingHead">
-
-              <div>
-
-                <div class="settingTitle">
-                  interface style
-                </div>
-
-                <div class="settingHelp">
-                  Change the entire interface between Korona and a console-inspired game layout.
-                </div>
-
-              </div>
-
-              <select
-                id="styleSelect"
-                aria-label="Interface style"
-              >
-
-                <option value="korona">
-                  Korona
-                </option>
-
-                <option value="switch">
-                  Nintendo Switch
-                </option>
-
-              </select>
-
-            </div>
-
-          </div>
-
-          <!-- THEME -->
-
-          <div class="setting">
-
-            <div class="settingHead">
-
-              <div>
-
-                <div class="settingTitle">
-                  theme
-                </div>
-
-                <div class="settingHelp">
-                  Each theme owns its color palette. Character selection is independent and can be mixed or matched freely.
-                </div>
-
-              </div>
-
-            </div>
+        <div id="loginScreen">
 
             <div
-              id="themeGrid"
-              class="themeGrid"
-            ></div>
-
-          </div>
-
-          <!-- CHARACTER -->
-
-          <div class="setting">
-
-            <div class="settingHead">
-
-              <div>
-
-                <div class="settingTitle">
-                  character overlay
-                </div>
-
-                <div class="settingHelp">
-                  Show one character overlay or none. Mismatching themes and characters is fully supported.
-                </div>
-
-              </div>
-
-              <select id="characterSelect">
-
-                <option value="none">
-                  None
-                </option>
-
-                <option value="neru">
-                  Akita Neru
-                </option>
-
-                <option value="miku">
-                  Hatsune Miku
-                </option>
-
-                <option value="teto">
-                  Kasane Teto
-                </option>
-
-                <option value="luka">
-                  Megurine Luka
-                </option>
-
-                <option value="rin">
-                  Kagamine Rin
-                </option>
-
-                <option value="len">
-                  Kagamine Len
-                </option>
-
-                <option value="kaito">
-                  KAITO
-                </option>
-
-                <option value="meiko">
-                  MEIKO
-                </option>
-
-              </select>
-
-            </div>
-
-          </div>
-
-          <!-- PARTICLES -->
-
-          <div class="setting">
-
-            <div class="settingTitle">
-              particles
-            </div>
-
-            <div class="settingHelp">
-              Tiny moving orbs connect to nearby particles. Disable them if you want a completely still background.
-            </div>
-
-            <label
-              class="check"
-              style="margin-top:12px"
+                class="auth-message"
+                id="authMessage"
             >
+                Checking this browser…
+            </div>
 
-              <input
-                type="checkbox"
-                id="particleToggle"
-                checked
-              >
+            <button
+                class="auth-button"
+                id="loginButton"
+            >
+                CHECK KORONA ACCESS
+            </button>
 
-              enable particle network
-
-            </label>
-
-          </div>
+            <button
+                class="auth-secondary"
+                id="showCreateButton"
+            >
+                CREATE ACCOUNT
+            </button>
 
         </div>
 
-      </section>
 
-      <!-- ACCOUNT -->
+        <!-- CREATE -->
 
-      <section class="view" id="view-account">
+        <div
+            id="createScreen"
+            style="display:none"
+        >
 
-        <h1>
-          account
-        </h1>
+            <input
+                class="auth-input"
+                id="firstName"
+                placeholder="First name"
+                autocomplete="given-name"
+            >
 
-        <p class="sub">
-          Current Korona identity.
-        </p>
+            <input
+                class="auth-input"
+                id="lastName"
+                placeholder="Last name"
+                autocomplete="family-name"
+            >
 
-        <div id="accountCard"></div>
+            <div
+                class="auth-message"
+                id="createMessage"
+            ></div>
 
-      </section>
+            <button
+                class="auth-button"
+                id="createButton"
+            >
+                CREATE KORONA ACCOUNT
+            </button>
 
-    </main>
+            <button
+                class="auth-secondary"
+                id="backLoginButton"
+            >
+                BACK
+            </button>
 
-  </div>
+        </div>
+
+    </div>
 
 </div>
 
-<img
-  id="character"
-  alt=""
->
+
+
+<!-- =========================================================
+     APPLICATION
+     ========================================================= -->
+
+<div id="app">
+
+    <div id="appShell">
+
+
+        <!-- =================================================
+             SIDEBAR
+             ================================================= -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                KORONA
+            </div>
+
+
+            <div class="nav">
+
+                <button
+                    data-view="home"
+                    class="active"
+                >
+                    ⌂
+                    <span>Home</span>
+                </button>
+
+
+                <button data-view="games">
+
+                    🎮
+
+                    <span>
+                        Games
+                    </span>
+
+                </button>
+
+
+                <button data-view="apps">
+
+                    ▦
+
+                    <span>
+                        Apps
+                    </span>
+
+                </button>
+
+
+                <button data-view="browser">
+
+                    ◉
+
+                    <span>
+                        Browser
+                    </span>
+
+                </button>
+
+
+                <button data-view="settings">
+
+                    ⚙
+
+                    <span>
+                        Settings
+                    </span>
+
+                </button>
+
+
+                <button data-view="account">
+
+                    ●
+
+                    <span>
+                        Account
+                    </span>
+
+                </button>
+
+            </div>
+
+
+            <div class="sidebar-bottom">
+
+                <button
+                    class="nav"
+                    id="logoutButton"
+                    style="
+                        width:100%;
+                        border:0;
+                        background:transparent;
+                        color:var(--muted);
+                        padding:12px;
+                    "
+                >
+                    ↪ Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =================================================
+             MAIN
+             ================================================= -->
+
+        <main class="main">
+
+
+            <!-- TABS -->
+
+            <div
+                class="tabstrip"
+                id="tabStrip"
+            ></div>
+
+
+            <!-- BROWSER BAR -->
+
+            <div class="topbar">
+
+                <button
+                    id="backButton"
+                    title="Back"
+                >
+                    ←
+                </button>
+
+
+                <button
+                    id="forwardButton"
+                    title="Forward"
+                >
+                    →
+                </button>
+
+
+                <button
+                    id="refreshButton"
+                    title="Refresh"
+                >
+                    ↻
+                </button>
+
+
+                <div class="address">
+
+                    <input
+                        id="addressInput"
+                        placeholder="Search or enter address"
+                    >
+
+                    <button id="goButton">
+                        Go
+                    </button>
+
+                </div>
+
+
+                <button
+                    id="fullscreenButton"
+                    title="Fullscreen"
+                >
+                    ⛶
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 WORKSPACE
+                 ================================================= -->
+
+            <section class="workspace">
+
+
+                <div
+                    id="view-home"
+                    class="view active"
+                ></div>
+
+
+                <div
+                    id="view-games"
+                    class="view"
+                ></div>
+
+
+                <div
+                    id="view-apps"
+                    class="view"
+                ></div>
+
+
+                <div
+                    id="view-browser"
+                    class="view"
+                ></div>
+
+
+                <div
+                    id="view-settings"
+                    class="view"
+                ></div>
+
+
+                <div
+                    id="view-account"
+                    class="view"
+                ></div>
+
+
+                <div id="browserOverlay">
+
+                    <div class="loader">
+                        Loading…
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</div>
+
+
 
 <script>
-(() => {
 
-  /* =========================================================
-     SUPABASE
-     
-     PUT YOUR EXISTING SUPABASE VALUES HERE.
-     
-     Do NOT put a service-role key here.
-  ========================================================= */
+/* =========================================================
+   SUPABASE
+   ========================================================= */
 
-  const SUPABASE_URL = "https://wlzvcbisyueopwxcgwiv.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
+const SUPABASE_URL =
+    "https://wlzvcbisyueopwxcgwiv.supabase.co";
 
-  const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+const SUPABASE_ANON_KEY =
+    "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
 
-
-  /* =========================================================
-     HELPERS
-  ========================================================= */
-
-  const $ = selector => document.querySelector(selector);
-
-  const $$ = selector => [
-    ...document.querySelectorAll(selector)
-  ];
+const supabase =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
 
 
-  /* =========================================================
-     STORAGE KEYS
-  ========================================================= */
+/* =========================================================
+   LOCAL USER
+   ========================================================= */
 
-  const THEME_KEY =
-    "korona.theme.v3";
-
-  const CHARACTER_KEY =
-    "korona.character.v3";
-
-  const PARTICLES_KEY =
-    "korona.particles.v3";
-
-  const STYLE_KEY =
-    "korona.style.v1";
-
-  /*
-   * IMPORTANT:
-   *
-   * This stores ONLY the Korona ID.
-   *
-   * The login screen never displays an ID field.
-   */
-  const USER_KEY =
+const USER_KEY =
     "korona.user.v3";
 
 
-  /* =========================================================
-     THEMES
-  ========================================================= */
+/* =========================================================
+   GAMES
+   ========================================================= */
 
-  const themes = {
+const games = [
 
-    default:{
-      label:"Default",
-      accent:"#d9ad32",
-      accent2:"#f0c84d",
-      bg:"#100e05",
-      surface:"#171306",
-      surface2:"#201a08",
-      surface3:"#2a210b",
-      text:"#f7efd0",
-      muted:"#aa9b68",
-      line:"#655018"
+    {
+        name:
+            "Friday Night Funkin'",
+
+        url:
+            "https://ninja-muffin24.itch.io/funkin",
+
+        img:
+            "https://placehold.co/600x338/111/fff?text=Friday+Night+Funkin%27"
     },
 
-    miku:{
-      label:"Teal Miku",
-      accent:"#39c5bb",
-      accent2:"#75efe7",
-      bg:"#061010",
-      surface:"#0b1a19",
-      surface2:"#102522",
-      surface3:"#15302d",
-      text:"#e7fffd",
-      muted:"#7fb6b1",
-      line:"#275d58"
+    {
+        name:
+            "NowGG.fun",
+
+        url:
+            "https://nowgg.fun",
+
+        img:
+            "https://placehold.co/600x338/111/fff?text=NowGG"
     },
 
-    teto:{
-      label:"Crimson Teto",
-      accent:"#ef4864",
-      accent2:"#ff7890",
-      bg:"#13070a",
-      surface:"#1d0b0f",
-      surface2:"#291116",
-      surface3:"#37151c",
-      text:"#ffecef",
-      muted:"#c28a95",
-      line:"#6e2633"
+    {
+        name:
+            "Shitty 2D Rocket League",
+
+        url:
+            "https://skempisty.github.io/rocket_league_2d/",
+
+        img:
+            "https://placehold.co/600x338/111/fff?text=Rocket+League+2D"
     },
 
-    neru:{
-      label:"Amber Neru",
-      accent:"#f1c73b",
-      accent2:"#ffe57a",
-      bg:"#110e04",
-      surface:"#1a1608",
-      surface2:"#26200a",
-      surface3:"#332b0d",
-      text:"#fff4c9",
-      muted:"#bca76a",
-      line:"#6f5b18"
+    {
+        name:
+            "Minecraft",
+
+        url:
+            "https://eaglercraft1-8.github.io",
+
+        img:
+            "https://placehold.co/600x338/111/fff?text=Minecraft"
     },
 
-    luka:{
-      label:"Soft Luka Pink",
-      accent:"#ffb3c6",
-      accent2:"#ffccd5",
-      bg:"#12080a",
-      surface:"#1c0d10",
-      surface2:"#291217",
-      surface3:"#36181f",
-      text:"#fff0f3",
-      muted:"#c28d98",
-      line:"#703542"
+    {
+        name:
+            "GeForceNOW",
+
+        url:
+            "https://play.geforcenow.com",
+
+        img:
+            "https://placehold.co/600x338/111/fff?text=GeForceNOW"
     },
 
-    rinlen:{
-      label:"Kagamine Gold",
-      accent:"#ffc800",
-      accent2:"#ffdf66",
-      bg:"#121004",
-      surface:"#1c1806",
-      surface2:"#282308",
-      surface3:"#362e0c",
-      text:"#fffde6",
-      muted:"#c2b477",
-      line:"#70621d"
+    {
+        name:
+            "ChatGPT",
+
+        url:
+            "https://chatgpt.com",
+
+        img:
+            "https://placehold.co/600x338/111/fff?text=ChatGPT"
     },
 
-    kaito:{
-      label:"Deep Blue Kaito",
-      accent:"#0066ff",
-      accent2:"#5c9cff",
-      bg:"#040812",
-      surface:"#060e1c",
-      surface2:"#0a162b",
-      surface3:"#0f1d38",
-      text:"#e6f0ff",
-      muted:"#779cc2",
-      line:"#1d4070"
+    {
+        name:
+            "YouTube",
+
+        url:
+            "https://youtube.com",
+
+        img:
+            "https://placehold.co/600x338/111/fff?text=YouTube"
     },
 
-    magma:{
-      label:"Magma",
-      accent:"#ff7b45",
-      accent2:"#ffad80",
-      bg:"#120804",
-      surface:"#1c0d07",
-      surface2:"#291209",
-      surface3:"#36180c",
-      text:"#fff0e7",
-      muted:"#c28d77",
-      line:"#70351e"
-    },
+    {
+        name:
+            "Google Snake",
 
-    minty:{
-      label:"Minty",
-      accent:"#64f29a",
-      accent2:"#9fffc0",
-      bg:"#06100a",
-      surface:"#0b1a10",
-      surface2:"#102719",
-      surface3:"#163521",
-      text:"#eafff1",
-      muted:"#83b99a",
-      line:"#2d6945"
-    },
+        url:
+            "https://www.google.com/search?q=google+snake",
 
-    cyberpunk:{
-      label:"Cyberpunk Neon",
-      accent:"#ff0055",
-      accent2:"#00f0ff",
-      bg:"#080010",
-      surface:"#120024",
-      surface2:"#1c0038",
-      surface3:"#28004f",
-      text:"#ffffff",
-      muted:"#a060d0",
-      line:"#500090"
-    },
-
-    obsidian:{
-      label:"Obsidian",
-      accent:"#ffffff",
-      accent2:"#cccccc",
-      bg:"#050505",
-      surface:"#0f0f0f",
-      surface2:"#181818",
-      surface3:"#222222",
-      text:"#ffffff",
-      muted:"#888888",
-      line:"#444444"
+        img:
+            "https://placehold.co/600x338/111/fff?text=Google+Snake"
     }
 
-  };
+];
 
 
-  /* =========================================================
-     CHARACTERS
-  ========================================================= */
+/* =========================================================
+   APPS
+   ========================================================= */
 
-  const characterSources = {
+const apps = [
 
-    neru:
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAIzCAYAAABxzsBYAAEAAElEQVR4nOz9d7glyXneCf4iIs2x199b3nS1Q1t4NCzRAEiAJEiQFEk5UhRFSSuN5lnNjh5JK82OltJIK42keXalGe0jzZIiJVKiaESJIEUQ3gMNNBrdaLSr7uquLm+uN8eliYj9I08ek/fY66oa7Og+9d0338g8eSIjvnjzy4hIceKQhwUEbLNp2oatRQjRItq495EsFtG02/k0ZfGA1OeErYXWabyedpeGXZ5R8b7Z9IKPyndjIUSz3qp1ptOnh0m3Ywfi9Idvw4CgHx7WDl63B2FlyzmZ5kXtwMlF7YGFxBjb4fxSLDBYEBJj21ikuOUEJbaF6Y1NUhkSZyZJvr5ZO2UTt3xugts+OD1OWqf2Hzf/yOAx+awdxu+ntXuE983aMfk2bjs7kXF+TUxm+xBMP8wgnLX02T6abYmNEfmDwllRtI3P2kG8GLBfL34ELE4c8khT6vxaOFV2w3CHc2tjMIBsOb00pSexvYfM8ttSeu6t7+/4Tf33+t5KA4qnJ78Nt6/PwfAj4lbdHIHvvOCj8AxWbNsUXqued+fbN0x3O8jyfQp6RJy1+83vxqbpoHiQ3UpPtpWeafaIGeVnU+fWrCSdyk90KT+QqSLsVHYdWGRwWwnKbcovUXwpThVfhxJsXpTeNr1m7e304enf++FtSm0Iv5/KbBi/DdsD5kfEdgyeHvkH8MMU2zaFN0zZ7TVmMA+7wVnbzafOoI17891OZAQltyPL/vCiH0+iAPv7xyZuKb1037TSpc4rVY7duHfML9uTjJD6HKaz4389DUnDCqpfB5/F+yYIMhd0j/i2j+yn9Hrw6e7N7b3qdS8+WzAJ2mnB7VnBvm4HWLmTmB+ZmJ8YK+aXYp3Y3pA802f/u3O35jS4b8w3z/18Y2e4b3yR2m/mS8U20z0Xg0kZp9jOnO3M6U9c5d+vI2439d/N2C50pzeC/x/8f74+P",
+    {
+        name: "Google",
+        url: "https://google.com",
+        icon: "G"
+    },
+
+    {
+        name: "YouTube",
+        url: "https://youtube.com",
+        icon: "▶"
+    },
+
+    {
+        name: "ChatGPT",
+        url: "https://chatgpt.com",
+        icon: "◎"
+    },
+
+    {
+        name: "GitHub",
+        url: "https://github.com",
+        icon: "●"
+    },
+
+    {
+        name: "Piapro",
+        url: "https://piapro.jp",
+        icon: "P"
+    },
+
+    {
+        name: "Kasane Teto",
+        url: "https://kasaneteto.jp",
+        icon: "T"
+    }
+
+];
+
+
+/* =========================================================
+   THEMES
+   ========================================================= */
+
+const themes = [
+
+    {
+        id: "default",
+        name: "Korona Default",
+        character: "none"
+    },
+
+    {
+        id: "miku",
+        name: "Hatsune Miku",
+        character: "miku"
+    },
+
+    {
+        id: "teto",
+        name: "Kasane Teto",
+        character: "teto"
+    },
+
+    {
+        id: "neru",
+        name: "Neru",
+        character: "neru"
+    },
+
+    {
+        id: "magma",
+        name: "Magma",
+        character: "none"
+    },
+
+    {
+        id: "awp",
+        name: "AWP",
+        character: "none"
+    },
+
+    {
+        id: "minty",
+        name: "Minty",
+        character: "none"
+    },
+
+    {
+        id: "frogies",
+        name: "frogie's arcade",
+        character: "none"
+    },
+
+    {
+        id: "konata",
+        name: "Konata Izumi",
+        character: "none"
+    },
+
+    {
+        id: "truffled",
+        name: "Truffled",
+        character: "none"
+    },
+
+    {
+        id: "oneshot",
+        name: "OneShot: World Machine",
+        character: "none"
+    },
+
+    {
+        id: "luminal",
+        name: "Luminal",
+        character: "none"
+    },
+
+    {
+        id: "switch",
+        name: "Nintendo Switch",
+        character: "none"
+    }
+
+];
+
+
+/* =========================================================
+   CHARACTER SOURCES
+   ========================================================= */
+
+const characters = {
 
     miku:
-      "https://static.wikia.nocookie.net/vocaloid/images/f/f9/Miku_Chinese.png/revision/latest?cb=20220327221551",
+        "https://static.wikia.nocookie.net/vocaloid/images/f/f9/Miku_Chinese.png/revision/latest?cb=20220327221551",
 
     teto:
-      "https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834",
+        "https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834",
+
+    neru:
+        "",
 
     luka:
-      "https://upload.wikimedia.org/wikipedia/en/a/a2/Megurine_Luka.png",
+        "https://upload.wikimedia.org/wikipedia/commons/7/73/Megurine_Luka.png",
 
     rin:
-      "https://upload.wikimedia.org/wikipedia/en/8/82/Kagamine_Rin_and_Len.png",
+        "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kagamine_Rin_and_Len.png",
 
     len:
-      "https://upload.wikimedia.org/wikipedia/en/8/82/Kagamine_Rin_and_Len.png",
+        "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kagamine_Rin_and_Len.png",
 
     kaito:
-      "https://upload.wikimedia.org/wikipedia/en/d/da/Kaito_V3.png",
+        "https://upload.wikimedia.org/wikipedia/commons/0/0d/Kaito_V3.png",
 
     meiko:
-      "https://upload.wikimedia.org/wikipedia/en/d/db/Meiko_V3.png"
+        "https://upload.wikimedia.org/wikipedia/commons/4/4e/Meiko_V3.png"
 
-  };
-
-
-  /* =========================================================
-     GAMES
-  ========================================================= */
-
-  const games = [
-
-    [
-      "Friday Night Funkin'",
-      "https://ninja-muffin24.itch.io/funkin"
-    ],
-
-    [
-      "NowGG.fun",
-      "https://nowgg.fun"
-    ],
-
-    [
-      "Shitty 2D Rocket League",
-      "https://skempisty.github.io/rocket_league_2d/"
-    ],
-
-    [
-      "Minecraft",
-      "https://eaglercraft1-8.github.io"
-    ],
-
-    [
-      "GeForceNow",
-      "https://play.geforcenow.com"
-    ],
-
-    [
-      "ChatGPT",
-      "https://chatgpt.com"
-    ],
-
-    [
-      "YouTube",
-      "https://youtube.com"
-    ],
-
-    [
-      "Google Snake",
-      "https://www.google.com/search?q=google+snake"
-    ]
-
-  ];
+};
 
 
-  /* =========================================================
-     APPS
-  ========================================================= */
+/* =========================================================
+   STATE
+   ========================================================= */
 
-  const apps = [
+let currentView =
+    "home";
 
-    [
-      "Google",
-      "https://www.google.com"
-    ],
+let currentTheme =
+    localStorage.getItem("korona.theme")
+    ||
+    "default";
 
-    [
-      "YouTube",
-      "https://www.youtube.com"
-    ],
-
-    [
-      "ChatGPT",
-      "https://chatgpt.com"
-    ],
-
-    [
-      "GitHub",
-      "https://github.com"
-    ],
-
-    [
-      "Piapro",
-      "https://piapro.net/"
-    ],
-
-    [
-      "Kasane Teto",
-      "https://kasaneteto.jp/"
-    ]
-
-  ];
+let currentCharacter =
+    localStorage.getItem("korona.character")
+    ||
+    "none";
 
 
-  /* =========================================================
-     TAB STATE
-  ========================================================= */
+let tabs = [];
 
-  let tabs = [];
-
-  let activeTabId = null;
+let activeTabId =
+    null;
 
 
-  /* =========================================================
-     URL PROCESSING
-  ========================================================= */
+/* =========================================================
+   HTML ESCAPING
+   ========================================================= */
 
-  function processInputToUrl(input){
+function escapeHTML(value) {
 
-    let str = input.trim();
+    return String(value)
+        .replace(
+            /[&<>"']/g,
+            char => {
 
-    if(!str){
-      return "https://www.google.com";
-    }
+                return {
 
-    if(/^https?:\/\//i.test(str)){
-      return str;
-    }
+                    "&":
+                        "&amp;",
 
-    const urlPattern =
-      /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
+                    "<":
+                        "&lt;",
 
-    const localhostPattern =
-      /^localhost(:\d+)?(\/.*)?$/;
+                    ">":
+                        "&gt;",
 
-    const ipPattern =
-      /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/;
+                    '"':
+                        "&quot;",
 
-    if(
-      urlPattern.test(str) ||
-      localhostPattern.test(str) ||
-      ipPattern.test(str)
-    ){
+                    "'":
+                        "&#039;"
 
-      return "https://" + str;
+                }[char];
 
-    }
+            }
+        );
+}
 
-    return (
-      "https://www.google.com/search?q=" +
-      encodeURIComponent(str)
+
+/* =========================================================
+   SWITCH CHECK
+   ========================================================= */
+
+function isSwitch() {
+
+    return currentTheme === "switch";
+
+}
+
+
+/* =========================================================
+   APPLY THEME
+   ========================================================= */
+
+function applyTheme() {
+
+    document.body.classList.toggle(
+        "switch-theme",
+        isSwitch()
     );
 
-  }
+    localStorage.setItem(
+        "korona.theme",
+        currentTheme
+    );
+
+    localStorage.setItem(
+        "korona.character",
+        currentCharacter
+    );
+
+    renderAll();
+
+}
 
 
-  /* =========================================================
-     INITIALIZATION
-  ========================================================= */
+/* =========================================================
+   NAV LABELS
+   ========================================================= */
 
-  async function init(){
+function switchNavLabel(view) {
 
-    setupViews();
+    if (!isSwitch()) {
 
-    setupSettings();
+        return {
 
-    setupTabEngine();
+            home:
+                "Home",
 
-    setupParticles();
+            games:
+                "Games",
 
-    renderAppGrid();
+            apps:
+                "Apps",
 
-    renderGamesGrid();
+            browser:
+                "Browser",
 
-    setupAuth();
+            settings:
+                "Settings",
 
-  }
+            account:
+                "Account"
 
-
-  /* =========================================================
-     AUTHENTICATION
-     
-     IMPORTANT:
-     
-     The ID is NEVER entered during login.
-     
-     It is silently retrieved from localStorage.
-  ========================================================= */
-
-  async function setupAuth(){
-
-  const savedId =
-    localStorage.getItem(USER_KEY);
-
-  /*
-   * If this browser has never been registered,
-   * the user must create an account first.
-   *
-   * If it HAS been registered, we still require
-   * the authentication code.
-   *
-   * The ID is never displayed or entered on login.
-   */
-
-  if(!savedId){
-
-    $("#loginMsg").textContent =
-      "This browser has no Korona ID. Create one first.";
-
-  }
-
-
-  /* =====================================================
-     LOGIN
-  ===================================================== */
-
-  $("#loginBtn").onclick = async () => {
-
-    const code =
-      $("#loginCode").value.trim();
-
-    const storedId =
-      localStorage.getItem(USER_KEY);
-
-    $("#loginMsg").textContent = "";
-
-
-    if(!storedId){
-
-      $("#loginMsg").textContent =
-        "This browser is not registered with Korona.";
-
-      return;
+        }[view];
 
     }
 
 
-    if(!code){
+    return {
 
-      $("#loginMsg").textContent =
-        "Please enter your authentication code.";
+        home:
+            "Home",
 
-      return;
+        games:
+            "More Games",
 
-    }
+        apps:
+            "Apps",
 
+        browser:
+            "Internet",
 
-    $("#loginBtn").disabled = true;
+        settings:
+            "System Settings",
 
-    $("#loginBtn").textContent =
-      "checking...";
+        account:
+            "User Page"
 
+    }[view];
 
-    try{
-
-      const {
-        data,
-        error
-      } = await supabase
-
-        .from("korona_users")
-
-        .select(
-          "id,name,auth_code,active"
-        )
-
-        .eq(
-          "id",
-          storedId
-        )
-
-        .eq(
-          "active",
-          true
-        )
-
-        .maybeSingle();
+}
 
 
-      if(error){
+/* =========================================================
+   VIEW SWITCHING
+   ========================================================= */
 
-        console.error(
-          "Supabase login error:",
-          error
+function showView(view) {
+
+    currentView =
+        view;
+
+
+    document
+        .querySelectorAll(".view")
+        .forEach(
+            element =>
+                element.classList.remove(
+                    "active"
+                )
         );
 
-        $("#loginMsg").textContent =
-          "Authentication server error.";
 
-        return;
-
-      }
-
-
-      if(!data){
-
-        $("#loginMsg").textContent =
-          "This Korona ID is inactive or no longer exists.";
-
-        return;
-
-      }
+    const element =
+        document.getElementById(
+            "view-" + view
+        );
 
 
-      if(data.auth_code !== code){
+    if (element) {
 
-        $("#loginMsg").textContent =
-          "Incorrect authentication code.";
-
-        return;
-
-      }
-
-
-      /*
-       * Code is correct.
-       *
-       * Keep the ID stored locally.
-       */
-      localStorage.setItem(
-        USER_KEY,
-        data.id
-      );
-
-
-      $("#loginCode").value = "";
-
-      unlockApp(data);
-
-
-    }catch(error){
-
-      console.error(
-        "Korona login error:",
-        error
-      );
-
-      $("#loginMsg").textContent =
-        "Could not contact the authentication server.";
-
-    }finally{
-
-      $("#loginBtn").disabled = false;
-
-      $("#loginBtn").textContent =
-        "unlock korona";
-
-    }
-
-  };
-
-
-  /* =====================================================
-     CREATE ACCOUNT
-  ===================================================== */
-
-  $("#createBtn").onclick = async () => {
-
-    const fn =
-      $("#firstName").value.trim();
-
-    const ln =
-      $("#lastName").value.trim();
-
-
-    $("#createMsg").textContent = "";
-
-
-    if(!fn || !ln){
-
-      $("#createMsg").textContent =
-        "First and last name required.";
-
-      return;
+        element.classList.add(
+            "active"
+        );
 
     }
 
 
-    /*
-     * Generate the Korona ID.
-     *
-     * John Smith -> john.smith
-     */
+    document
+        .querySelectorAll(
+            ".nav button[data-view]"
+        )
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.view === view
+            );
+
+        });
+
+
+    renderView(view);
+
+}
+
+
+/* =========================================================
+   TABS
+   ========================================================= */
+
+function createTab(url = "") {
+
     const id =
-      `${fn}.${ln}`
-        .toLowerCase()
-        .replace(/[^a-z0-9.]/g,"");
+        crypto.randomUUID();
 
 
-    if(
-      !id ||
-      !id.includes(".")
-    ){
+    const tab = {
 
-      $("#createMsg").textContent =
-        "Please enter a valid name.";
+        id,
 
-      return;
+        title:
+            "New Tab",
+
+        url:
+            "",
+
+        history:
+            [],
+
+        index:
+            -1
+
+    };
+
+
+    tabs.push(tab);
+
+    activeTabId =
+        id;
+
+
+    renderTabs();
+
+
+    if (url) {
+
+        navigate(url);
+
+    } else {
+
+        showView("browser");
+
+    }
+
+}
+
+
+/* =========================================================
+   ACTIVE TAB
+   ========================================================= */
+
+function activeTab() {
+
+    return tabs.find(
+        tab =>
+            tab.id === activeTabId
+    ) || null;
+
+}
+
+
+/* =========================================================
+   RENDER TABS
+   ========================================================= */
+
+function renderTabs() {
+
+    const strip =
+        document.getElementById(
+            "tabStrip"
+        );
+
+
+    strip.innerHTML =
+
+        tabs.map(tab => `
+
+            <div
+                class="tab ${
+                    tab.id === activeTabId
+                        ? "active"
+                        : ""
+                }"
+                data-id="${tab.id}"
+            >
+
+                <span>
+                    ${
+                        escapeHTML(
+                            tab.title
+                        )
+                    }
+                </span>
+
+                <span
+                    class="close"
+                    data-close="${tab.id}"
+                >
+                    ×
+                </span>
+
+            </div>
+
+        `).join("") +
+
+        `
+
+            <button
+                class="tabadd"
+                id="newTabButton"
+            >
+                +
+            </button>
+
+        `;
+
+
+    strip
+        .querySelectorAll(".tab")
+        .forEach(element => {
+
+            element.onclick =
+                event => {
+
+                    if (
+                        event.target.dataset.close
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    activeTabId =
+                        element.dataset.id;
+
+
+                    const tab =
+                        activeTab();
+
+
+                    if (tab) {
+
+                        document
+                            .getElementById(
+                                "addressInput"
+                            )
+                            .value =
+                            tab.url || "";
+
+                    }
+
+
+                    showView(
+                        "browser"
+                    );
+
+
+                    renderTabs();
+
+                };
+
+        });
+
+
+    strip
+        .querySelectorAll(
+            "[data-close]"
+        )
+        .forEach(close => {
+
+            close.onclick =
+                event => {
+
+                    event.stopPropagation();
+
+                    closeTab(
+                        close.dataset.close
+                    );
+
+                };
+
+        });
+
+
+    document
+        .getElementById(
+            "newTabButton"
+        )
+        .onclick =
+        () => createTab();
+
+}
+
+
+/* =========================================================
+   CLOSE TAB
+   ========================================================= */
+
+function closeTab(id) {
+
+    const index =
+        tabs.findIndex(
+            tab =>
+                tab.id === id
+        );
+
+
+    if (index < 0) {
+
+        return;
 
     }
 
 
-    $("#createBtn").disabled = true;
-
-    $("#createBtn").textContent =
-      "checking...";
-
-
-    try{
-
-      /*
-       * Check if the ID already exists.
-       */
-      const {
-        data: existing,
-        error: checkError
-      } = await supabase
-
-        .from("korona_users")
-
-        .select("id")
-
-        .eq(
-          "id",
-          id
-        )
-
-        .maybeSingle();
+    tabs.splice(
+        index,
+        1
+    );
 
 
-      if(checkError){
+    if (
+        activeTabId === id
+    ) {
 
-        console.error(
-          "Supabase ID check error:",
-          checkError
-        );
+        activeTabId =
+            tabs[
+                Math.max(
+                    0,
+                    index - 1
+                )
+            ]?.id || null;
 
-        $("#createMsg").textContent =
-          "Could not check ID availability.";
+    }
+
+
+    if (!tabs.length) {
+
+        createTab();
 
         return;
 
-      }
+    }
 
 
-      if(existing){
+    renderTabs();
 
-        $("#createMsg").textContent =
-          `"${id}" is already taken. Please choose another name.`;
+    renderBrowser();
+
+}
+
+
+/* =========================================================
+   URL NORMALIZER
+   ========================================================= */
+
+function normalizeURL(value) {
+
+    value =
+        value.trim();
+
+
+    if (!value) {
+
+        return "";
+
+    }
+
+
+    if (
+        /^https?:\/\//i.test(
+            value
+        )
+    ) {
+
+        return value;
+
+    }
+
+
+    if (
+        value.includes(".") &&
+        !value.includes(" ")
+    ) {
+
+        return "https://" + value;
+
+    }
+
+
+    return (
+        "https://www.google.com/search?q="
+        +
+        encodeURIComponent(
+            value
+        )
+    );
+
+}
+
+
+/* =========================================================
+   NAVIGATE
+   ========================================================= */
+
+function navigate(raw) {
+
+    const url =
+        normalizeURL(raw);
+
+
+    if (!url) {
 
         return;
 
-      }
+    }
 
 
-      /*
-       * Generate the authentication code.
-       */
-      const authCode =
-        crypto.randomUUID()
-          .replace(/-/g,"")
-          .slice(0,12)
-          .toUpperCase();
+    let tab =
+        activeTab();
 
 
-      /*
-       * Insert the new account.
-       */
-      const {
-        data,
-        error
-      } = await supabase
+    if (!tab) {
 
-        .from("korona_users")
+        createTab();
 
-        .insert({
+        tab =
+            activeTab();
 
-          id:id,
+    }
 
-          name:`${fn} ${ln}`,
 
-          auth_code:authCode,
+    if (
+        tab.index <
+        tab.history.length - 1
+    ) {
 
-          active:true
+        tab.history =
+            tab.history.slice(
+                0,
+                tab.index + 1
+            );
 
-        })
+    }
 
-        .select(
-          "id,name,auth_code,active"
+
+    tab.history.push(
+        url
+    );
+
+
+    tab.index++;
+
+
+    tab.url =
+        url;
+
+
+    try {
+
+        tab.title =
+            new URL(
+                url
+            ).hostname;
+
+    } catch {
+
+        tab.title =
+            "Korona Browser";
+
+    }
+
+
+    document
+        .getElementById(
+            "addressInput"
         )
+        .value =
+        url;
 
-        .single();
+
+    renderTabs();
+
+    renderBrowser();
+
+}
 
 
-      if(error){
+/* =========================================================
+   OPEN URL
+   ========================================================= */
 
-        console.error(
-          "Supabase account creation error:",
-          error
+function openURL(url) {
+
+    if (!activeTab()) {
+
+        createTab();
+
+    }
+
+
+    navigate(url);
+
+    showView(
+        "browser"
+    );
+
+}
+
+
+/* =========================================================
+   BROWSER VIEW
+   ========================================================= */
+
+function renderBrowser() {
+
+    const view =
+        document.getElementById(
+            "view-browser"
         );
 
 
-        if(
-          error.code === "23505" ||
-          error.message
-            ?.toLowerCase()
-            .includes("duplicate")
-        ){
+    const tab =
+        activeTab();
 
-          $("#createMsg").textContent =
-            `"${id}" is already taken.`;
 
-        }else{
+    if (!tab) {
 
-          $("#createMsg").textContent =
-            `Supabase error: ${error.message}`;
+        view.innerHTML = `
+
+            <h1>
+                Browser
+            </h1>
+
+            <p class="muted">
+                Create a tab to start browsing.
+            </p>
+
+        `;
+
+        return;
+
+    }
+
+
+    view.innerHTML = `
+
+        <div class="browser">
+
+            <div class="browser-frame">
+
+                <iframe
+                    id="browserFrame"
+                    src="${
+                        tab.url
+                            ? escapeHTML(tab.url)
+                            : "about:blank"
+                    }"
+                    referrerpolicy="no-referrer"
+                ></iframe>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById(
+            "addressInput"
+        )
+        .value =
+        tab.url || "";
+
+}
+
+
+/* =========================================================
+   GAME CARD
+   ========================================================= */
+
+function gameCard(game) {
+
+    return `
+
+        <article
+            class="card"
+            onclick="openURL('${game.url.replace(
+                /'/g,
+                "\\'"
+            )}')"
+        >
+
+            <img
+                src="${game.img}"
+                alt=""
+            >
+
+            <h3>
+                ${
+                    escapeHTML(
+                        game.name
+                    )
+                }
+            </h3>
+
+            <p>
+                Open in Korona Browser
+            </p>
+
+        </article>
+
+    `;
+
+}
+
+
+/* =========================================================
+   HOME
+   ========================================================= */
+
+function renderHome() {
+
+    const element =
+        document.getElementById(
+            "view-home"
+        );
+
+
+    if (isSwitch()) {
+
+        const featured =
+            games.slice(
+                0,
+                7
+            );
+
+
+        element.innerHTML = `
+
+            <div class="switch-home">
+
+
+                <div class="switch-status">
+
+
+                    <div class="switch-profile">
+
+                        <div class="switch-avatar">
+
+                            ${
+                                escapeHTML(
+                                    (
+                                        localStorage
+                                            .getItem(
+                                                "korona.user.name"
+                                            )
+                                        ||
+                                        "K"
+                                    )
+                                    .charAt(0)
+                                    .toUpperCase()
+                                )
+                            }
+
+                        </div>
+
+
+                        <div>
+
+                            ${
+                                escapeHTML(
+                                    localStorage
+                                        .getItem(
+                                            "korona.user.name"
+                                        )
+                                    ||
+                                    "Korona User"
+                                )
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="switch-time">
+
+                        <span
+                            id="switchClock"
+                        ></span>
+
+                        <span>
+                            ⌁
+                        </span>
+
+                        <span>
+                            ▰
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="switch-games">
+
+                    ${
+                        featured.map(
+                            (
+                                game,
+                                index
+                            ) => `
+
+                                <button
+                                    class="
+                                        switch-game
+                                        ${
+                                            index === 0
+                                                ? "selected"
+                                                : ""
+                                        }
+                                    "
+                                    onclick="openURL('${game.url.replace(
+                                        /'/g,
+                                        "\\'"
+                                    )}')"
+                                >
+
+                                    <img
+                                        src="${game.img}"
+                                        alt=""
+                                    >
+
+                                    <span>
+                                        ${
+                                            escapeHTML(
+                                                game.name
+                                            )
+                                        }
+                                    </span>
+
+                                </button>
+
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+
+                <div class="switch-more">
+
+                    View more software →
+
+                </div>
+
+
+                <div class="switch-bottom">
+
+
+                    <button
+                        class="switch-icon"
+                        onclick="showView('apps')"
+                        title="Apps"
+                    >
+                        ▦
+                    </button>
+
+
+                    <button
+                        class="switch-icon"
+                        onclick="showView('games')"
+                        title="More Games"
+                    >
+                        🎮
+                    </button>
+
+
+                    <button
+                        class="switch-icon"
+                        onclick="showView('browser')"
+                        title="Internet"
+                    >
+                        ◎
+                    </button>
+
+
+                    <button
+                        class="switch-icon"
+                        onclick="showView('settings')"
+                        title="System Settings"
+                    >
+                        ⚙
+                    </button>
+
+
+                    <button
+                        class="switch-icon"
+                        onclick="showView('account')"
+                        title="User Page"
+                    >
+                        ●
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
+        `;
+
+
+        updateSwitchClock();
+
+
+        return;
+
+    }
+
+
+    element.innerHTML = `
+
+        <h1>
+            Home
+        </h1>
+
+        <p class="muted">
+            Your Korona workspace.
+        </p>
+
+        <div class="cards">
+
+            ${
+                games
+                    .slice(0, 6)
+                    .map(gameCard)
+                    .join("")
+            }
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   GAMES
+   ========================================================= */
+
+function renderGames() {
+
+    const element =
+        document.getElementById(
+            "view-games"
+        );
+
+
+    if (isSwitch()) {
+
+        element.innerHTML = `
+
+            <div class="switch-page">
+
+                <h1>
+                    More Games
+                </h1>
+
+                <p class="muted">
+                    Your complete software library.
+                </p>
+
+                <div class="cards">
+
+                    ${
+                        games
+                            .map(gameCard)
+                            .join("")
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    element.innerHTML = `
+
+        <h1>
+            Games
+        </h1>
+
+        <p class="muted">
+            Launch a game in a Korona tab.
+        </p>
+
+        <div class="cards">
+
+            ${
+                games
+                    .map(gameCard)
+                    .join("")
+            }
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   APPS
+   ========================================================= */
+
+function renderApps() {
+
+    const element =
+        document.getElementById(
+            "view-apps"
+        );
+
+
+    const cards =
+        apps.map(
+            app => `
+
+                <article
+                    class="card"
+                    onclick="openURL('${app.url.replace(
+                        /'/g,
+                        "\\'"
+                    )}')"
+                >
+
+                    <div
+                        style="
+                            height:150px;
+                            display:grid;
+                            place-items:center;
+                            font-size:60px;
+                            background:
+                                var(--panel2);
+                            margin-bottom:12px;
+                        "
+                    >
+                        ${
+                            escapeHTML(
+                                app.icon
+                            )
+                        }
+                    </div>
+
+
+                    <h3>
+                        ${
+                            escapeHTML(
+                                app.name
+                            )
+                        }
+                    </h3>
+
+
+                    <p>
+                        Open application
+                    </p>
+
+                </article>
+
+            `
+        ).join("");
+
+
+    if (isSwitch()) {
+
+        element.innerHTML = `
+
+            <div class="switch-page">
+
+                <h1>
+                    Apps
+                </h1>
+
+                <p class="muted">
+                    Korona applications.
+                </p>
+
+                <div class="cards">
+
+                    ${cards}
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    element.innerHTML = `
+
+        <h1>
+            Apps
+        </h1>
+
+        <p class="muted">
+            Open a web app in a Korona tab.
+        </p>
+
+        <div class="cards">
+
+            ${cards}
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+function renderSettings() {
+
+    const element =
+        document.getElementById(
+            "view-settings"
+        );
+
+
+    const themeOptions =
+        themes.map(
+            theme => `
+
+                <option
+                    value="${theme.id}"
+                    ${
+                        theme.id ===
+                        currentTheme
+                            ? "selected"
+                            : ""
+                    }
+                >
+
+                    ${
+                        escapeHTML(
+                            theme.name
+                        )
+                    }
+
+                </option>
+
+            `
+        ).join("");
+
+
+    const characterOptions = `
+
+        <option value="none">
+            None
+        </option>
+
+        <option value="miku">
+            Miku
+        </option>
+
+        <option value="teto">
+            Teto
+        </option>
+
+        <option value="neru">
+            Neru
+        </option>
+
+        <option value="luka">
+            Luka
+        </option>
+
+        <option value="rin">
+            Rin / Len
+        </option>
+
+        <option value="kaito">
+            Kaito
+        </option>
+
+        <option value="meiko">
+            Meiko
+        </option>
+
+    `;
+
+
+    if (isSwitch()) {
+
+        element.innerHTML = `
+
+            <div class="switch-page">
+
+                <h1>
+                    System Settings
+                </h1>
+
+                <p class="muted">
+                    Korona system preferences.
+                </p>
+
+
+                <div class="settings-grid">
+
+
+                    <div class="setting-card">
+
+                        <h3>
+                            Theme
+                        </h3>
+
+                        <select
+                            id="themeSelect"
+                        >
+
+                            ${themeOptions}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="setting-card">
+
+                        <h3>
+                            Character
+                        </h3>
+
+                        <select
+                            id="characterSelect"
+                        >
+
+                            ${characterOptions}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="setting-card">
+
+                        <h3>
+                            Korona
+                        </h3>
+
+                        <p class="muted">
+
+                            Switch mode changes
+                            the entire Korona
+                            interface.
+
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        `;
+
+    } else {
+
+        element.innerHTML = `
+
+            <h1>
+                Settings
+            </h1>
+
+            <p class="muted">
+                Customize Korona.
+            </p>
+
+
+            <div class="settings-grid">
+
+
+                <div class="setting-card">
+
+                    <div class="theme-preview switch"></div>
+
+                    <h3>
+                        Site Theme
+                    </h3>
+
+                    <select
+                        id="themeSelect"
+                    >
+
+                        ${themeOptions}
+
+                    </select>
+
+                </div>
+
+
+                <div class="setting-card">
+
+                    <h3>
+                        Character
+                    </h3>
+
+                    <select
+                        id="characterSelect"
+                    >
+
+                        ${characterOptions}
+
+                    </select>
+
+                </div>
+
+
+            </div>
+
+        `;
+
+    }
+
+
+    const themeSelect =
+        document.getElementById(
+            "themeSelect"
+        );
+
+
+    const characterSelect =
+        document.getElementById(
+            "characterSelect"
+        );
+
+
+    themeSelect.onchange =
+        event => {
+
+            currentTheme =
+                event.target.value;
+
+            applyTheme();
+
+        };
+
+
+    characterSelect.value =
+        currentCharacter;
+
+
+    characterSelect.onchange =
+        event => {
+
+            currentCharacter =
+                event.target.value;
+
+            applyTheme();
+
+        };
+
+}
+
+
+/* =========================================================
+   ACCOUNT
+   ========================================================= */
+
+function renderAccount() {
+
+    const element =
+        document.getElementById(
+            "view-account"
+        );
+
+
+    const id =
+        localStorage.getItem(
+            USER_KEY
+        )
+        ||
+        "Not registered";
+
+
+    const name =
+        localStorage.getItem(
+            "korona.user.name"
+        )
+        ||
+        "Unknown";
+
+
+    if (isSwitch()) {
+
+        element.innerHTML = `
+
+            <div class="switch-page">
+
+                <h1>
+                    User Page
+                </h1>
+
+
+                <div class="account">
+
+
+                    <div class="account-row">
+
+                        <span>
+                            Name
+                        </span>
+
+                        <strong>
+                            ${
+                                escapeHTML(
+                                    name
+                                )
+                            }
+                        </strong>
+
+                    </div>
+
+
+                    <div class="account-row">
+
+                        <span>
+                            Korona ID
+                        </span>
+
+                        <strong>
+                            ${
+                                escapeHTML(
+                                    id
+                                )
+                            }
+                        </strong>
+
+                    </div>
+
+
+                    <div class="account-row">
+
+                        <span>
+                            Browser registration
+                        </span>
+
+                        <strong>
+                            Saved
+                        </strong>
+
+                    </div>
+
+
+                    <button
+                        class="danger"
+                        onclick="koronaLogout()"
+                    >
+                        Lock Korona
+                    </button>
+
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    element.innerHTML = `
+
+        <h1>
+            Account
+        </h1>
+
+
+        <div class="account">
+
+
+            <div class="account-row">
+
+                <span>
+                    Name
+                </span>
+
+                <strong>
+                    ${
+                        escapeHTML(
+                            name
+                        )
+                    }
+                </strong>
+
+            </div>
+
+
+            <div class="account-row">
+
+                <span>
+                    Korona ID
+                </span>
+
+                <strong>
+                    ${
+                        escapeHTML(
+                            id
+                        )
+                    }
+                </strong>
+
+            </div>
+
+
+            <div class="account-row">
+
+                <span>
+                    Registered Browser
+                </span>
+
+                <strong>
+                    Saved locally
+                </strong>
+
+            </div>
+
+
+            <button
+                class="danger"
+                onclick="koronaLogout()"
+            >
+                Logout / Lock
+            </button>
+
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   VIEW RENDERER
+   ========================================================= */
+
+function renderView(view) {
+
+    if (view === "home")
+        renderHome();
+
+    if (view === "games")
+        renderGames();
+
+    if (view === "apps")
+        renderApps();
+
+    if (view === "browser")
+        renderBrowser();
+
+    if (view === "settings")
+        renderSettings();
+
+    if (view === "account")
+        renderAccount();
+
+}
+
+
+/* =========================================================
+   RENDER EVERYTHING
+   ========================================================= */
+
+function renderAll() {
+
+    document
+        .querySelectorAll(
+            ".nav button[data-view]"
+        )
+        .forEach(button => {
+
+            const span =
+                button.querySelector(
+                    "span"
+                );
+
+
+            if (span) {
+
+                span.textContent =
+                    switchNavLabel(
+                        button.dataset.view
+                    );
+
+            }
+
+        });
+
+
+    renderView(
+        currentView
+    );
+
+
+    renderTabs();
+
+}
+
+
+/* =========================================================
+   SWITCH CLOCK
+   ========================================================= */
+
+function updateSwitchClock() {
+
+    const clock =
+        document.getElementById(
+            "switchClock"
+        );
+
+
+    if (!clock) {
+
+        return;
+
+    }
+
+
+    clock.textContent =
+        new Date()
+            .toLocaleTimeString(
+                [],
+                {
+                    hour:
+                        "numeric",
+
+                    minute:
+                        "2-digit"
+                }
+            );
+
+}
+
+
+setInterval(
+    updateSwitchClock,
+    1000
+);
+
+
+/* =========================================================
+   NAVIGATION BUTTONS
+   ========================================================= */
+
+document
+    .querySelectorAll(
+        ".nav button[data-view]"
+    )
+    .forEach(button => {
+
+        button.onclick =
+            () =>
+                showView(
+                    button.dataset.view
+                );
+
+    });
+
+
+/* =========================================================
+   ADDRESS BAR
+   ========================================================= */
+
+document
+    .getElementById(
+        "goButton"
+    )
+    .onclick =
+    () => {
+
+        navigate(
+            document
+                .getElementById(
+                    "addressInput"
+                )
+                .value
+        );
+
+    };
+
+
+document
+    .getElementById(
+        "addressInput"
+    )
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key ===
+                "Enter"
+            ) {
+
+                navigate(
+                    event.target.value
+                );
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   REFRESH
+   ========================================================= */
+
+document
+    .getElementById(
+        "refreshButton"
+    )
+    .onclick =
+    () => {
+
+        const frame =
+            document.getElementById(
+                "browserFrame"
+            );
+
+
+        if (frame) {
+
+            frame.src =
+                frame.src;
 
         }
 
-        return;
-
-      }
+    };
 
 
-      /*
-       * Save ONLY the ID locally.
-       *
-       * The authentication code remains in Supabase.
-       */
-      localStorage.setItem(
-        USER_KEY,
-        data.id
-      );
+/* =========================================================
+   BACK
+   ========================================================= */
+
+document
+    .getElementById(
+        "backButton"
+    )
+    .onclick =
+    () => {
+
+        const tab =
+            activeTab();
 
 
-      /*
-       * Show the authentication code once.
-       */
-      $("#createMsg").innerHTML = `
+        if (
+            !tab ||
+            tab.index <= 0
+        ) {
 
-        <span style="color:var(--accent)">
-          Korona account created.
-        </span>
+            return;
 
-        <br><br>
-
-        <span style="color:var(--text)">
-          Authentication code:
-          <strong>${escapeHtml(data.auth_code)}</strong>
-        </span>
-
-        <br><br>
-
-        <span style="color:var(--muted)">
-          Save this code. You will need it to unlock Korona.
-        </span>
-
-      `;
+        }
 
 
-      $("#createBtn").disabled = true;
+        tab.index--;
 
-      $("#createBtn").textContent =
-        "created";
-
-
-      /*
-       * Return to login after showing the code.
-       */
-      setTimeout(() => {
-
-        $("#createBox")
-          .classList
-          .remove("visible");
-
-        $("#loginBox")
-          .classList
-          .add("visible");
-
-        $("#authLead").textContent =
-          "enter your authentication code to unlock korona.";
-
-        $("#loginMsg").textContent =
-          "Account created. Enter your authentication code.";
-
-        $("#createBtn").disabled = false;
-
-        $("#createBtn").textContent =
-          "create korona id";
-
-      },3500);
+        tab.url =
+            tab.history[
+                tab.index
+            ];
 
 
-    }catch(error){
+        renderBrowser();
 
-      console.error(
-        "Korona account creation error:",
-        error
-      );
+        renderTabs();
 
-      $("#createMsg").textContent =
-        "Could not create the Korona account.";
+    };
 
-      $("#createBtn").disabled = false;
 
-      $("#createBtn").textContent =
-        "create korona id";
+/* =========================================================
+   FORWARD
+   ========================================================= */
+
+document
+    .getElementById(
+        "forwardButton"
+    )
+    .onclick =
+    () => {
+
+        const tab =
+            activeTab();
+
+
+        if (
+            !tab ||
+            tab.index >=
+                tab.history.length - 1
+        ) {
+
+            return;
+
+        }
+
+
+        tab.index++;
+
+        tab.url =
+            tab.history[
+                tab.index
+            ];
+
+
+        renderBrowser();
+
+        renderTabs();
+
+    };
+
+
+/* =========================================================
+   FULLSCREEN
+   ========================================================= */
+
+document
+    .getElementById(
+        "fullscreenButton"
+    )
+    .onclick =
+    async () => {
+
+        try {
+
+            if (
+                !document.fullscreenElement
+            ) {
+
+                await document
+                    .documentElement
+                    .requestFullscreen();
+
+            } else {
+
+                await document
+                    .exitFullscreen();
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Fullscreen failed:",
+                error
+            );
+
+        }
+
+    };
+
+
+/* =========================================================
+   AUTH
+   ========================================================= */
+
+async function checkSavedUser() {
+
+    const savedId =
+        localStorage.getItem(
+            USER_KEY
+        );
+
+
+    /*
+     * No saved ID.
+     */
+
+    if (!savedId) {
+
+        document
+            .getElementById(
+                "authGate"
+            )
+            .style.display =
+            "flex";
+
+
+        document
+            .getElementById(
+                "app"
+            )
+            .style.display =
+            "none";
+
+
+        document
+            .getElementById(
+                "authMessage"
+            )
+            .textContent =
+            "This browser has no Korona account.";
+
+
+        return false;
 
     }
 
-  };
+
+    const message =
+        document.getElementById(
+            "authMessage"
+        );
 
 
-  /* =====================================================
-     AUTH SCREEN SWITCHING
-  ===================================================== */
-
-  $("#showCreate").onclick = () => {
-
-    $("#loginBox")
-      .classList
-      .remove("visible");
-
-    $("#createBox")
-      .classList
-      .add("visible");
-
-    $("#authLead").textContent =
-      "create your Korona identity.";
-
-    $("#loginMsg").textContent =
-      "";
-
-  };
+    message.textContent =
+        "Checking Korona access…";
 
 
-  $("#showLogin").onclick = () => {
+    try {
 
-    $("#createBox")
-      .classList
-      .remove("visible");
+        /*
+         * auth_code is intentionally NOT selected.
+         *
+         * It is completely ignored.
+         */
 
-    $("#loginBox")
-      .classList
-      .add("visible");
+        const {
+            data,
+            error
+        } =
+            await supabase
 
-    $("#authLead").textContent =
-      "authenticate to enter the browser.";
+                .from(
+                    "korona_users"
+                )
 
-    $("#createMsg").textContent =
-      "";
+                .select(
+                    "id,name,active"
+                )
 
-  };
+                .eq(
+                    "id",
+                    savedId
+                )
+
+                .maybeSingle();
 
 
-  /* =====================================================
-     LOCK / LOGOUT
-  ===================================================== */
+        if (error) {
 
-  $("#logoutBtn").onclick = () => {
+            console.error(
+                "Korona Supabase error:",
+                error
+            );
+
+            message.textContent =
+                "Could not connect to Korona.";
+
+            return false;
+
+        }
+
+
+        /*
+         * User no longer exists.
+         */
+
+        if (!data) {
+
+            localStorage.removeItem(
+                USER_KEY
+            );
+
+            message.textContent =
+                "This Korona ID no longer exists.";
+
+            return false;
+
+        }
+
+
+        /*
+         * ACTIVE IS THE ONLY ACCESS CHECK.
+         */
+
+        if (
+            data.active !== true
+        ) {
+
+            message.textContent =
+                "This Korona account is not active.";
+
+            document
+                .getElementById(
+                    "authGate"
+                )
+                .style.display =
+                "flex";
+
+
+            document
+                .getElementById(
+                    "app"
+                )
+                .style.display =
+                "none";
+
+
+            return false;
+
+        }
+
+
+        /*
+         * Save current user info.
+         */
+
+        localStorage.setItem(
+            "korona.user.id",
+            data.id
+        );
+
+
+        localStorage.setItem(
+            "korona.user.name",
+            data.name || ""
+        );
+
+
+        /*
+         * Automatically enter Korona.
+         */
+
+        document
+            .getElementById(
+                "authGate"
+            )
+            .style.display =
+            "none";
+
+
+        document
+            .getElementById(
+                "app"
+            )
+            .style.display =
+            "block";
+
+
+        renderAll();
+
+
+        console.log(
+            "Korona automatically logged in:",
+            data.id
+        );
+
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Korona login error:",
+            error
+        );
+
+
+        message.textContent =
+            "Something went wrong connecting to Korona.";
+
+
+        return false;
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGOUT / LOCK
+   ========================================================= */
+
+function koronaLogout() {
 
     /*
      * IMPORTANT:
      *
-     * Do NOT remove USER_KEY.
+     * USER_KEY IS NOT DELETED.
      *
-     * This keeps this browser associated with
-     * its Korona ID.
+     * This means the browser remains
+     * registered to the Korona account.
      */
-    $("#app").hidden = true;
 
-    $("#authGate").style.display =
-      "grid";
+    document
+        .getElementById(
+            "app"
+        )
+        .style.display =
+        "none";
 
-    $("#loginCode").value =
-      "";
 
-    $("#loginMsg").textContent =
-      "";
+    document
+        .getElementById(
+            "authGate"
+        )
+        .style.display =
+        "flex";
 
-    $("#authLead").textContent =
-      "authenticate to enter the browser.";
 
-  };
+    document
+        .getElementById(
+            "authMessage"
+        )
+        .textContent =
+        "Korona locked. This browser ID was kept.";
 
 }
 
-  /* =========================================================
-     VIEWS
-  ========================================================= */
 
-  function setupViews(){
+/* =========================================================
+   CREATE SCREEN
+   ========================================================= */
 
-    $$(".sideBtn[data-view]")
-      .forEach(btn => {
+document
+    .getElementById(
+        "showCreateButton"
+    )
+    .onclick =
+    () => {
 
-        btn.onclick = () => {
-
-          $$(".sideBtn")
-            .forEach(b =>
-              b.classList.remove("active")
-            );
-
-          $$(".view")
-            .forEach(v =>
-              v.classList.remove("active")
-            );
-
-          btn.classList.add("active");
-
-          $(`#view-${btn.dataset.view}`)
-            .classList
-            .add("active");
-
-        };
-
-      });
+        document
+            .getElementById(
+                "loginScreen"
+            )
+            .style.display =
+            "none";
 
 
-    const handleHomeSearch = () => {
-
-      const val =
-        $("#homeSearch").value;
-
-      if(!val)return;
-
-      const targetUrl =
-        processInputToUrl(val);
-
-      openInBrowserTab(targetUrl);
-
-      $("#homeSearch").value =
-        "";
+        document
+            .getElementById(
+                "createScreen"
+            )
+            .style.display =
+            "block";
 
     };
 
 
-    $("#homeGo").onclick =
-      handleHomeSearch;
-
-
-    $("#homeSearch").onkeydown =
-      e => {
-
-        if(e.key === "Enter"){
-
-          handleHomeSearch();
-
-        }
-
-      };
-
-
-    $$(".quick button")
-      .forEach(btn => {
-
-        btn.onclick = () => {
-
-          openInBrowserTab(
-            btn.dataset.url
-          );
-
-        };
-
-      });
-
-  }
-
-
-  /* =========================================================
-     SETTINGS
-  ========================================================= */
-
-  function setupSettings(){
-
-    const savedStyle =
-      localStorage.getItem(STYLE_KEY) ||
-      "korona";
-
-
-    $("#styleSelect").value =
-      savedStyle;
-
-
-    if(savedStyle === "switch"){
-
-      document.body
-        .classList
-        .add("switch-mode");
-
-    }
-
-
-    $("#styleSelect").onchange =
-      e => {
-
-        const val =
-          e.target.value;
-
-        localStorage.setItem(
-          STYLE_KEY,
-          val
-        );
-
-        if(val === "switch"){
-
-          document.body
-            .classList
-            .add("switch-mode");
-
-        }else{
-
-          document.body
-            .classList
-            .remove("switch-mode");
-
-        }
-
-      };
-
-
-    const savedTheme =
-      localStorage.getItem(THEME_KEY) ||
-      "default";
-
-
-    applyTheme(savedTheme);
-
-    renderThemeGrid(savedTheme);
-
-
-    const savedChar =
-      localStorage.getItem(CHARACTER_KEY) ||
-      "none";
-
-
-    $("#characterSelect").value =
-      savedChar;
-
-
-    applyCharacter(savedChar);
-
-
-    $("#characterSelect").onchange =
-      e => {
-
-        const val =
-          e.target.value;
-
-        localStorage.setItem(
-          CHARACTER_KEY,
-          val
-        );
-
-        applyCharacter(val);
-
-      };
-
-
-    $("#switchMoreGames").onclick =
-      () => {
-
-        $$(".sideBtn[data-view='games']")[0]
-          .click();
-
-      };
-
-  }
-
-
-  /* =========================================================
-     APPLY THEME
-  ========================================================= */
-
-  function applyTheme(key){
-
-    const t =
-      themes[key] ||
-      themes.default;
-
-    const r =
-      document.documentElement;
-
-
-    r.style.setProperty(
-      "--bg",
-      t.bg
-    );
-
-    r.style.setProperty(
-      "--surface",
-      t.surface
-    );
-
-    r.style.setProperty(
-      "--surface2",
-      t.surface2
-    );
-
-    r.style.setProperty(
-      "--surface3",
-      t.surface3
-    );
-
-    r.style.setProperty(
-      "--text",
-      t.text
-    );
-
-    r.style.setProperty(
-      "--muted",
-      t.muted
-    );
-
-    r.style.setProperty(
-      "--line",
-      t.line
-    );
-
-    r.style.setProperty(
-      "--accent",
-      t.accent
-    );
-
-    r.style.setProperty(
-      "--accent2",
-      t.accent2
-    );
-
-    localStorage.setItem(
-      THEME_KEY,
-      key
-    );
-
-  }
-
-
-  /* =========================================================
-     THEME GRID
-  ========================================================= */
-
-  function renderThemeGrid(activeKey){
-
-    const grid =
-      $("#themeGrid");
-
-    grid.innerHTML =
-      "";
-
-
-    Object.keys(themes)
-      .forEach(key => {
-
-        const t =
-          themes[key];
-
-        const btn =
-          document.createElement("button");
-
-        btn.className =
-          `themeBtn ${
-            key === activeKey
-              ? "selected"
-              : ""
-          }`;
-
-
-        btn.innerHTML = `
-
-          <div
-            class="swatch"
-            style="background:${t.accent}"
-          ></div>
-
-          <span>
-            ${escapeHtml(t.label)}
-          </span>
-
-        `;
-
-
-        btn.onclick = () => {
-
-          $$(".themeBtn")
-            .forEach(b =>
-              b.classList.remove("selected")
-            );
-
-          btn.classList.add("selected");
-
-          applyTheme(key);
-
-        };
-
-
-        grid.appendChild(btn);
-
-      });
-
-  }
-
-
-  /* =========================================================
-     CHARACTER
-  ========================================================= */
-
-  function applyCharacter(key){
-
-    const img =
-      $("#character");
-
-
-    if(
-      key === "none" ||
-      !characterSources[key]
-    ){
-
-      img.classList.remove(
-        "show"
-      );
-
-      img.src =
-        "";
-
-      return;
-
-    }
-
-
-    img.src =
-      characterSources[key];
-
-    img.classList.add(
-      "show"
-    );
-
-  }
-
-
-  /* =========================================================
-     BROWSER / TABS
-  ========================================================= */
-
-  function setupTabEngine(){
-
-    $("#newTab").onclick =
-      () => {
-
-        createTab(
-          "New Tab",
-          ""
-        );
-
-      };
-
-
-    const handleAddressSubmit = () => {
-
-      const raw =
-        $("#address").value;
-
-      if(!raw)return;
-
-
-      const targetUrl =
-        processInputToUrl(raw);
-
-
-      if(activeTabId){
-
-        updateTab(
-          activeTabId,
-          targetUrl
-        );
-
-      }else{
-
-        createTab(
-          targetUrl,
-          targetUrl
-        );
-
-      }
+document
+    .getElementById(
+        "backLoginButton"
+    )
+    .onclick =
+    () => {
+
+        document
+            .getElementById(
+                "createScreen"
+            )
+            .style.display =
+            "none";
+
+
+        document
+            .getElementById(
+                "loginScreen"
+            )
+            .style.display =
+            "block";
 
     };
 
 
-    $("#goBtn").onclick =
-      handleAddressSubmit;
-
-
-    $("#address").onkeydown =
-      e => {
-
-        if(e.key === "Enter"){
-
-          handleAddressSubmit();
-
-        }
-
-      };
-
-
-    $("#reloadBtn").onclick =
-      () => {
-
-        if(!activeTabId)return;
-
-        const iframe =
-          $(`#frame-${activeTabId}`);
-
-        if(iframe){
-
-          try{
-
-            iframe.contentWindow.location.reload();
-
-          }catch{
-
-            iframe.src =
-              iframe.src;
-
-          }
-
-        }
-
-      };
-
-
-    $("#backBtn").onclick =
-      () => {
-
-        const iframe =
-          activeFrame();
-
-        if(!iframe)return;
-
-        try{
-
-          iframe.contentWindow.history.back();
-
-        }catch{}
-
-      };
-
-
-    $("#forwardBtn").onclick =
-      () => {
-
-        const iframe =
-          activeFrame();
-
-        if(!iframe)return;
-
-        try{
-
-          iframe.contentWindow.history.forward();
-
-        }catch{}
-
-      };
-
-
-    $("#homeBtn").onclick =
-      () => {
-
-        $$(".sideBtn[data-view='home']")[0]
-          .click();
-
-      };
-
-
-    $("#fullBtn").onclick =
-      async () => {
-
-        const browser =
-          $("#view-browser");
-
-        if(!document.fullscreenElement){
-
-          try{
-
-            await browser.requestFullscreen();
-
-          }catch{
-
-            try{
-
-              await $("#frames").requestFullscreen();
-
-            }catch{}
-
-          }
-
-        }else{
-
-          try{
-
-            await document.exitFullscreen();
-
-          }catch{}
-
-        }
-
-      };
-
-
-    createTab(
-      "Korona Home",
-      ""
-    );
-
-  }
-
-
-  /* =========================================================
-     ACTIVE FRAME
-  ========================================================= */
-
-  function activeFrame(){
-
-    if(!activeTabId){
-      return null;
-    }
-
-    return $(
-      `#frame-${activeTabId}`
-    );
-
-  }
-
-
-  /* =========================================================
-     CREATE TAB
-  ========================================================= */
-
-  function createTab(title,url){
-
-    const id =
-      "tab_" +
-      Math.random()
-        .toString(36)
-        .substr(2,9);
-
-
-    const tabObj = {
-
-      id,
-
-      title:
-        title ||
-        "New Tab",
-
-      url
+/* =========================================================
+   MANUAL ACCESS CHECK
+   ========================================================= */
+
+document
+    .getElementById(
+        "loginButton"
+    )
+    .onclick =
+    () => {
+
+        checkSavedUser();
 
     };
 
 
-    tabs.push(
-      tabObj
-    );
-
-
-    const frame =
-      document.createElement("iframe");
-
-
-    frame.className =
-      "browserFrame";
-
-
-    frame.id =
-      `frame-${id}`;
-
-
-    /*
-     * Keep browser functionality working
-     * using the current Korona iframe engine.
-     *
-     * If your Scramjet build exposes a controller,
-     * the hook below can be connected without
-     * changing the rest of Korona.
-     */
-    if(url){
-
-      loadBrowserFrame(
-        frame,
-        url
-      );
-
-    }
-
-
-    $("#frames")
-      .appendChild(frame);
-
-
-    renderTabs();
-
-    switchTab(id);
-
-  }
-
-
-  /* =========================================================
-     LOAD BROWSER FRAME
-     
-     This function is isolated so Scramjet can be
-     connected without rewriting the entire UI.
-  ========================================================= */
-
-  function loadBrowserFrame(
-    frame,
-    url
-  ){
-
-    /*
-     * Prevent javascript: URLs from being loaded.
-     */
-    if(
-      /^javascript:/i.test(url)
-    ){
-
-      return;
-
-    }
-
-
-    frame.src =
-      url;
-
-  }
-
-
-  /* =========================================================
-     UPDATE TAB
-  ========================================================= */
-
-  function updateTab(id,url){
-
-    const t =
-      tabs.find(
-        x => x.id === id
-      );
-
-
-    if(!t)return;
-
-
-    t.url =
-      url;
-
-
-    t.title =
-      url.replace(
-        /^https?:\/\//,
-        ""
-      );
-
-
-    const iframe =
-      $(`#frame-${id}`);
-
-
-    if(iframe){
-
-      loadBrowserFrame(
-        iframe,
-        url
-      );
-
-    }
-
-
-    renderTabs();
-
-
-    if(activeTabId === id){
-
-      $("#address").value =
-        url;
-
-    }
-
-  }
-
-
-  /* =========================================================
-     SWITCH TAB
-  ========================================================= */
-
-  function switchTab(id){
-
-    activeTabId =
-      id;
-
-
-    $$(".tab")
-      .forEach(t => {
-
-        t.classList.toggle(
-          "active",
-          t.dataset.id === id
-        );
-
-      });
-
-
-    $$(".browserFrame")
-      .forEach(f => {
-
-        f.classList.toggle(
-          "active",
-          f.id === `frame-${id}`
-        );
-
-      });
-
-
-    const t =
-      tabs.find(
-        x => x.id === id
-      );
-
-
-    if(t){
-
-      $("#address").value =
-        t.url;
-
-
-      $("#browserOverlay")
-        .classList
-        .toggle(
-          "hidden",
-          !!t.url
-        );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     CLOSE TAB
-  ========================================================= */
-
-  function closeTab(id,e){
-
-    e.stopPropagation();
-
-
-    tabs =
-      tabs.filter(
-        t => t.id !== id
-      );
-
-
-    const frame =
-      $(`#frame-${id}`);
-
-
-    if(frame){
-
-      frame.remove();
-
-    }
-
-
-    if(activeTabId === id){
-
-      activeTabId =
-        tabs.length
-          ? tabs[tabs.length - 1].id
-          : null;
-
-    }
-
-
-    if(!tabs.length){
-
-      createTab(
-        "New Tab",
-        ""
-      );
-
-    }else{
-
-      renderTabs();
-
-      if(activeTabId){
-
-        switchTab(
-          activeTabId
-        );
-
-      }
-
-    }
-
-  }
-
-
-  /* =========================================================
-     RENDER TABS
-  ========================================================= */
-
-  function renderTabs(){
-
-    const strip =
-      $("#tabStrip");
-
-
-    $$("#tabStrip .tab")
-      .forEach(
-        el => el.remove()
-      );
-
-
-    tabs.forEach(t => {
-
-      const el =
-        document.createElement("div");
-
-
-      el.className =
-        `tab ${
-          t.id === activeTabId
-            ? "active"
-            : ""
-        }`;
-
-
-      el.dataset.id =
-        t.id;
-
-
-      el.innerHTML = `
-
-        <div class="tab-icon">
-          ◎
-        </div>
-
-        <span class="tab-title">
-          ${escapeHtml(t.title)}
-        </span>
-
-        <button class="tab-close">
-          ×
-        </button>
-
-      `;
-
-
-      el.onclick =
-        () => switchTab(t.id);
-
-
-      el.querySelector(
-        ".tab-close"
-      ).onclick =
-        e => closeTab(
-          t.id,
-          e
-        );
-
-
-      strip.insertBefore(
-        el,
-        $("#newTab")
-      );
-
-    });
-
-  }
-
-
-  /* =========================================================
-     OPEN IN BROWSER TAB
-  ========================================================= */
-
-  function openInBrowserTab(url){
-
-    $$(".sideBtn[data-view='browser']")[0]
-      .click();
-
-
-    const current =
-      activeTabId
-        ? tabs.find(
-            x => x.id === activeTabId
-          )
-        : null;
-
-
-    if(
-      current &&
-      !current.url
-    ){
-
-      updateTab(
-        activeTabId,
-        url
-      );
-
-    }else{
-
-      createTab(
-        url,
-        url
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     GAMES
-  ========================================================= */
-
-  function renderGamesGrid(){
-
-    const grid =
-      $("#gamesGrid");
-
-
-    grid.innerHTML =
-      "";
-
-
-    games.forEach(
-      ([name,url]) => {
-
-        const card =
-          document.createElement("div");
-
-
-        card.className =
-          "game";
-
-
-        card.innerHTML = `
-
-          <div class="gameBody">
-
-            <div class="gameTitle">
-              ${escapeHtml(name)}
-            </div>
-
-            <div class="gameDesc">
-              ${escapeHtml(url)}
-            </div>
-
-            <button class="gameGo">
-              Play Game
-            </button>
-
-          </div>
-
-        `;
-
-
-        card.querySelector(
-          ".gameGo"
-        ).onclick =
-          () => openInBrowserTab(url);
-
-
-        grid.appendChild(
-          card
-        );
-
-      }
-
-    );
-
-
-    setupGameSearch();
-
-  }
-
-
-  /* =========================================================
-     GAME SEARCH
-  ========================================================= */
-
-  function setupGameSearch(){
-
-    const input =
-      $("#gameSearch");
-
-
-    input.oninput =
-      () => {
-
-        const query =
-          input.value
-            .trim()
-            .toLowerCase();
-
-
-        $$("#gamesGrid .game")
-          .forEach(card => {
-
-            const title =
-              card.querySelector(
-                ".gameTitle"
-              )?.textContent
-                .toLowerCase() || "";
-
-
-            card.style.display =
-              !query ||
-              title.includes(query)
-                ? ""
-                : "none";
-
-          });
-
-      };
-
-  }
-
-
-  /* =========================================================
-     APPS
-  ========================================================= */
-
-  function renderAppGrid(){
-
-    const grid =
-      $("#appGrid");
-
-
-    grid.innerHTML =
-      "";
-
-
-    apps.forEach(
-      ([name,url]) => {
-
-        const btn =
-          document.createElement("button");
-
-
-        btn.textContent =
-          name;
-
-
-        btn.onclick =
-          () => openInBrowserTab(url);
-
-
-        grid.appendChild(
-          btn
-        );
-
-      }
-
-    );
-
-  }
-
-
-  /* =========================================================
-     SWITCH FEATURED GAMES
-  ========================================================= */
-
-  function renderSwitchFeatured(){
-
-    const grid =
-      $("#switchFeatured");
-
-
-    if(!grid)return;
-
-
-    grid.innerHTML =
-      "";
-
-
-    games.slice(0,6)
-      .forEach(
-        ([name,url],index) => {
-
-          const card =
-            document.createElement("div");
-
-
-          card.className =
-            "switchGameCard";
-
-
-          card.innerHTML = `
-
-            <div
-              style="
-                height:150px;
-                display:grid;
-                place-items:center;
-                background:
-                  linear-gradient(
-                    135deg,
-                    color-mix(
-                      in srgb,
-                      var(--accent) 22%,
-                      var(--surface2)
-                    ),
-                    var(--surface2)
-                  );
-                font-size:42px;
-                font-weight:900;
-                color:var(--accent);
-              "
-            >
-              ${index + 1}
-            </div>
-
-            <div class="sgBody">
-
-              <div class="sgTitle">
-                ${escapeHtml(name)}
-              </div>
-
-              <button class="sgOpen">
-                Open
-              </button>
-
-            </div>
-
-          `;
-
-
-          card.querySelector(
-            ".sgOpen"
-          ).onclick =
-            () => openInBrowserTab(url);
-
-
-          grid.appendChild(
-            card
-          );
-
-        }
-
-      );
-
-  }
-
-
-  /* =========================================================
-     PARTICLES
-  ========================================================= */
-
-  function setupParticles(){
-
-    const canvas =
-      $("#particles");
-
-
-    const ctx =
-      canvas.getContext("2d");
-
-
-    let pts = [];
-
-
-    let enabled =
-      localStorage.getItem(
-        PARTICLES_KEY
-      ) !== "false";
-
-
-    $("#particleToggle").checked =
-      enabled;
-
-
-    canvas.style.display =
-      enabled
-        ? "block"
-        : "none";
-
-
-    $("#particleToggle").onchange =
-      e => {
-
-        enabled =
-          e.target.checked;
-
-
-        localStorage.setItem(
-          PARTICLES_KEY,
-          enabled
-        );
-
-
-        canvas.style.display =
-          enabled
-            ? "block"
-            : "none";
-
-      };
-
-
-    function resize(){
-
-      canvas.width =
-        window.innerWidth;
-
-      canvas.height =
-        window.innerHeight;
-
-    }
-
-
-    window.addEventListener(
-      "resize",
-      resize
-    );
-
-
-    resize();
-
-
-    for(
-      let i = 0;
-      i < 45;
-      i++
-    ){
-
-      pts.push({
-
-        x:
-          Math.random() *
-          window.innerWidth,
-
-        y:
-          Math.random() *
-          window.innerHeight,
-
-        vx:
-          (Math.random() - .5) *
-          .6,
-
-        vy:
-          (Math.random() - .5) *
-          .6
-
-      });
-
-    }
-
-
-    function loop(){
-
-      if(enabled){
-
-        ctx.clearRect(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-
-
-        const accent =
-          getComputedStyle(
-            document.documentElement
-          )
-          .getPropertyValue(
-            "--accent"
-          )
-          .trim() ||
-          "#d9ad32";
-
-
-        ctx.fillStyle =
-          accent;
-
-        ctx.strokeStyle =
-          accent;
-
-
-        pts.forEach(
-          (p,i) => {
-
-            p.x += p.vx;
-            p.y += p.vy;
-
-
-            if(
-              p.x < 0 ||
-              p.x > canvas.width
-            ){
-
-              p.vx *= -1;
-
-            }
-
-
-            if(
-              p.y < 0 ||
-              p.y > canvas.height
-            ){
-
-              p.vy *= -1;
-
-            }
-
-
-            ctx.beginPath();
-
-            ctx.arc(
-              p.x,
-              p.y,
-              1.8,
-              0,
-              Math.PI * 2
-            );
-
-            ctx.fill();
-
-
-            for(
-              let j = i + 1;
-              j < pts.length;
-              j++
-            ){
-
-              const p2 =
-                pts[j];
-
-
-              const dist =
-                Math.hypot(
-                  p.x - p2.x,
-                  p.y - p2.y
-                );
-
-
-              if(dist < 110){
-
-                ctx.globalAlpha =
-                  (1 - dist / 110) *
-                  .25;
-
-
-                ctx.beginPath();
-
-                ctx.moveTo(
-                  p.x,
-                  p.y
-                );
-
-                ctx.lineTo(
-                  p2.x,
-                  p2.y
-                );
-
-                ctx.stroke();
-
-
-                ctx.globalAlpha =
-                  1;
-
-              }
-
-            }
-
-          }
-
-        );
-
-      }
-
-
-      requestAnimationFrame(
-        loop
-      );
-
-    }
-
-
-    loop();
-
-  }
-
-
-  /* =========================================================
-     START
-  ========================================================= */
-
-  window.addEventListener(
-    "load",
+/* =========================================================
+   CREATE ACCOUNT
+   ========================================================= */
+
+document
+    .getElementById(
+        "createButton"
+    )
+    .onclick =
     async () => {
 
-      renderSwitchFeatured();
+        const firstName =
+            document
+                .getElementById(
+                    "firstName"
+                )
+                .value
+                .trim();
 
-      await init();
 
-      renderSwitchFeatured();
+        const lastName =
+            document
+                .getElementById(
+                    "lastName"
+                )
+                .value
+                .trim();
 
-    }
-  );
+
+        const message =
+            document
+                .getElementById(
+                    "createMessage"
+                );
+
+
+        if (
+            !firstName ||
+            !lastName
+        ) {
+
+            message.textContent =
+                "Enter your first and last name.";
+
+            return;
+
+        }
+
+
+        /*
+         * John Smith
+         *
+         * becomes
+         *
+         * john.smith
+         */
+
+        const id =
+
+            `${firstName}.${lastName}`
+
+                .toLowerCase()
+
+                .replace(
+                    /[^a-z0-9.]/g,
+                    ""
+                );
+
+
+        try {
+
+            /*
+             * Check ID.
+             */
+
+            const {
+                data: existing,
+                error: checkError
+            } =
+                await supabase
+
+                    .from(
+                        "korona_users"
+                    )
+
+                    .select(
+                        "id"
+                    )
+
+                    .eq(
+                        "id",
+                        id
+                    )
+
+                    .maybeSingle();
+
+
+            if (checkError) {
+
+                console.error(
+                    checkError
+                );
+
+                message.textContent =
+                    "Could not check that Korona ID.";
+
+                return;
+
+            }
+
+
+            if (existing) {
+
+                message.textContent =
+                    `"${id}" is already taken.`;
+
+                return;
+
+            }
+
+
+            /*
+             * Create account.
+             *
+             * auth_code is NOT touched.
+             */
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+
+                    .from(
+                        "korona_users"
+                    )
+
+                    .insert({
+
+                        id:
+                            id,
+
+                        name:
+                            `${firstName} ${lastName}`,
+
+                        active:
+                            true
+
+                    })
+
+                    .select(
+                        "id,name,active"
+                    )
+
+                    .single();
+
+
+            if (error) {
+
+                console.error(
+                    "Korona account creation failed:",
+                    error
+                );
+
+
+                message.textContent =
+                    error.message ||
+                    "Could not create the account.";
+
+                return;
+
+            }
+
+
+            /*
+             * Save the browser identity.
+             */
+
+            localStorage.setItem(
+                USER_KEY,
+                data.id
+            );
+
+
+            localStorage.setItem(
+                "korona.user.id",
+                data.id
+            );
+
+
+            localStorage.setItem(
+                "korona.user.name",
+                data.name || ""
+            );
+
+
+            /*
+             * Immediately enter.
+             */
+
+            document
+                .getElementById(
+                    "authGate"
+                )
+                .style.display =
+                "none";
+
+
+            document
+                .getElementById(
+                    "app"
+                )
+                .style.display =
+                "block";
+
+
+            renderAll();
+
+
+            console.log(
+                "Korona account created:",
+                data.id
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Korona account creation error:",
+                error
+            );
+
+
+            message.textContent =
+                "Something went wrong creating the account.";
+
+        }
+
+    };
+
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+(async function init() {
+
+    /*
+     * Restore preferences.
+     */
+
+    currentTheme =
+        localStorage.getItem(
+            "korona.theme"
+        )
+        ||
+        "default";
+
+
+    currentCharacter =
+        localStorage.getItem(
+            "korona.character"
+        )
+        ||
+        "none";
+
+
+    /*
+     * Start with one browser tab.
+     */
+
+    createTab();
+
+
+    /*
+     * Apply theme.
+     */
+
+    applyTheme();
+
+
+    /*
+     * THIS IS THE IMPORTANT PART:
+     *
+     * On every refresh:
+     *
+     * saved ID
+     *      ↓
+     * Supabase
+     *      ↓
+     * active === true
+     *      ↓
+     * Korona opens
+     */
+
+    await checkSavedUser();
 
 })();
+
 </script>
 
 </body>
