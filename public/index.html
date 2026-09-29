@@ -1,1855 +1,2306 @@
-<!-- KORONA / FERN V2
-     PART 1 OF 5
-     Keep the parts in this exact order.
--->
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Korona</title>
-
-    <meta name="fern-version" content="1.2.20">
-
-    <style>
-        :root {
-            --bg: #030603;
-            --bg-light: #071008;
-            --panel: #09110b;
-            --panel-hover: #0d180f;
-
-            --green: #00ff66;
-            --green-dark: #00b84a;
-            --green-soft: #75ffa5;
-
-            --text: #eaffef;
-            --muted: #72877a;
-
-            --border: rgba(0, 255, 102, 0.16);
-            --border-bright: rgba(0, 255, 102, 0.4);
-
-            --red: #ff526f;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-        }
-
-        body {
-            overflow: hidden;
-            color: var(--text);
-            font-family:
-                Inter,
-                system-ui,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                sans-serif;
-
-            background:
-                radial-gradient(
-                    circle at 10% 10%,
-                    rgba(0,255,102,.055),
-                    transparent 28%
-                ),
-                radial-gradient(
-                    circle at 90% 90%,
-                    rgba(0,255,102,.04),
-                    transparent 30%
-                ),
-                var(--bg);
-        }
-
-        #bgCanvas {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        #koronaBootError {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 2147483647;
-            padding: 32px;
-            overflow: auto;
-
-            background: #080808;
-            color: white;
-
-            font-family: system-ui, sans-serif;
-            font-size: 16px;
-        }
-
-        #koronaBootError h1 {
-            margin-top: 0;
-            color: #00ff66;
-        }
-
-        #koronaBootError pre {
-            white-space: pre-wrap;
-            background: #111;
-            padding: 16px;
-            border: 1px solid #333;
-        }
-
-        /* =========================
-           AUTH
-           ========================= */
-
-        #authGate {
-            position: fixed;
-            inset: 0;
-            z-index: 10000;
-
-            display: grid;
-            place-items: center;
-
-            padding: 20px;
-
-            background:
-                linear-gradient(
-                    rgba(0,255,102,.025) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    90deg,
-                    rgba(0,255,102,.025) 1px,
-                    transparent 1px
-                ),
-                var(--bg);
-
-            background-size: 42px 42px;
-        }
-
-        .authShell {
-            width: min(440px, 100%);
-            padding: 32px;
-
-            background: rgba(7,14,9,.96);
-
-            border: 1px solid var(--border);
-
-            border-radius: 0;
-
-            box-shadow:
-                0 0 80px rgba(0,255,102,.07),
-                inset 0 0 35px rgba(0,255,102,.015);
-
-            backdrop-filter: blur(15px);
-        }
-
-        .brandLarge {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .brandLargeIcon {
-            width: 44px;
-            height: 44px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            color: var(--green);
-
-            border: 1px solid var(--border-bright);
-
-            font-size: 22px;
-
-            box-shadow:
-                0 0 20px rgba(0,255,102,.08);
-        }
-
-        .brandLarge h1 {
-            margin: 0;
-
-            font-size: 31px;
-            letter-spacing: -1.5px;
-        }
-
-        .brandLarge h1 span {
-            color: var(--green);
-
-            text-shadow:
-                0 0 15px rgba(0,255,102,.35);
-        }
-
-        .authSubtitle {
-            margin: 0 0 25px;
-
-            color: var(--muted);
-
-            font-size: 13px;
-        }
-
-        .authOnly {
-            display: none;
-        }
-
-        .authOnly.visible {
-            display: block;
-        }
-
-        .field {
-            margin-bottom: 14px;
-        }
-
-        .field label {
-            display: block;
-
-            margin-bottom: 7px;
-
-            color: var(--muted);
-
-            font-size: 11px;
-            font-weight: 800;
-
-            letter-spacing: .13em;
-            text-transform: uppercase;
-        }
-
-        .field input {
-            width: 100%;
-
-            padding: 13px 14px;
-
-            color: var(--text);
-
-            background: #030703;
-
-            border: 1px solid var(--border);
-
-            border-radius: 0;
-
-            outline: none;
-
-            transition: .2s;
-        }
-
-        .field input:focus {
-            border-color: var(--border-bright);
-
-            box-shadow:
-                0 0 0 3px rgba(0,255,102,.06);
-        }
-
-        .primaryButton {
-            width: 100%;
-
-            padding: 13px;
-
-            color: #001b08;
-
-            background: var(--green);
-
-            border: 0;
-
-            border-radius: 0;
-
-            font-weight: 900;
-
-            cursor: pointer;
-
-            transition: .2s;
-        }
-
-        .primaryButton:hover {
-            transform: translateY(-1px);
-
-            box-shadow:
-                0 0 25px rgba(0,255,102,.2);
-        }
-
-        .secondaryButton {
-            width: 100%;
-
-            padding: 12px;
-
-            margin-top: 9px;
-
-            color: var(--green);
-
-            background: rgba(0,255,102,.045);
-
-            border: 1px solid var(--border-bright);
-
-            border-radius: 0;
-
-            font-weight: 800;
-
-            cursor: pointer;
-        }
-
-        .secondaryButton:hover {
-            background: rgba(0,255,102,.09);
-        }
-
-        .authMessage {
-            min-height: 20px;
-
-            margin-top: 12px;
-
-            color: var(--red);
-
-            font-size: 12px;
-
-            text-align: center;
-        }
-
-        .authMessage.success {
-            color: var(--green-soft);
-        }
-
-        .authSwitch {
-            margin-top: 20px;
-            padding-top: 17px;
-
-            border-top:
-                1px solid rgba(255,255,255,.05);
-
-            text-align: center;
-        }
-
-        .authSwitch button {
-            padding: 0;
-
-            color: var(--green);
-
-            background: none;
-
-            border: 0;
-
-            cursor: pointer;
-
-            font-weight: 800;
-        }
-
-        .authJoke {
-            margin-top: 20px;
-
-            color: var(--muted);
-
-            font-size: 11px;
-
-            line-height: 1.5;
-
-            text-align: center;
-        }
-
-        /* =========================
-           APPLICATION
-           ========================= */
-
-        #app {
-            position: relative;
-            z-index: 2;
-
-            display: none;
-
-            width: 100%;
-            height: 100vh;
-
-            flex-direction: column;
-        }
-
-        .topbar {
-            height: 64px;
-            min-height: 64px;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            padding: 0 20px;
-
-            background: rgba(3,8,4,.92);
-
-            border-bottom:
-                1px solid var(--border);
-
-            backdrop-filter: blur(14px);
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-
-            gap: 9px;
-
-            font-size: 20px;
-            font-weight: 900;
-        }
-
-        .brandIcon {
-            color: var(--green);
-
-            text-shadow:
-                0 0 14px rgba(0,255,102,.5);
-        }
-
-        .nav {
-            display: flex;
-            gap: 5px;
-        }
-
-        .nav button {
-            padding: 9px 14px;
-
-            color: var(--muted);
-
-            background: transparent;
-
-            border: 1px solid transparent;
-
-            border-radius: 0;
-
-            font-weight: 750;
-
-            cursor: pointer;
-
-            transition: .18s;
-        }
-
-        .nav button:hover,
-        .nav button.active {
-            color: var(--green);
-
-            background:
-                rgba(0,255,102,.055);
-
-            border-color:
-                var(--border);
-        }
-
-        .userArea {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .online {
-            display: flex;
-            align-items: center;
-
-            gap: 8px;
-
-            color: var(--muted);
-
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .onlineDot {
-            width: 7px;
-            height: 7px;
-
-            background: var(--green);
-
-            border-radius: 50%;
-
-            box-shadow:
-                0 0 12px var(--green);
-        }
-
-        .lockButton {
-            padding: 7px 10px;
-
-            color: var(--muted);
-
-            background: transparent;
-
-            border: 1px solid var(--border);
-
-            border-radius: 0;
-
-            cursor: pointer;
-        }
-
-        .lockButton:hover {
-            color: var(--green);
-
-            border-color: var(--border-bright);
-        }
-
-        .content {
-            width: 100%;
-            height: auto;
-
-            flex: 1 1 auto;
-            min-height: 0;
-
-            overflow-x: hidden;
-            overflow-y: auto;
-
-            overscroll-behavior-y: contain;
-
-            -webkit-overflow-scrolling: touch;
-
-            scrollbar-gutter: stable;
-        }
-
-        .page {
-            display: none;
-
-            width: min(1200px, 100%);
-
-            margin: auto;
-
-            padding: 28px;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        .hero {
-            padding: 30px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(0,255,102,.055),
-                    transparent 55%
-                ),
-                var(--panel);
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-        }
-
-        .hero h2 {
-            margin: 0 0 7px;
-
-            font-size: clamp(28px, 5vw, 46px);
-
-            letter-spacing: -2px;
-        }
-
-        .hero h2 span {
-            color: var(--green);
-
-            text-shadow:
-                0 0 20px rgba(0,255,102,.25);
-        }
-
-        .hero p {
-            margin: 0;
-
-            color: var(--muted);
-
-            font-size: 13px;
-        }
-
-        .sectionTitle {
-            margin: 28px 0 14px;
-
-            font-size: 18px;
-        }
-
-        .gamesGrid {
-            display: grid;
-
-            grid-template-columns:
-                repeat(auto-fill, minmax(190px, 1fr));
-
-            gap: 12px;
-        }
-
-        .gameCard {
-            position: relative;
-
-            min-height: 150px;
-
-            padding: 18px;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-
-            overflow: hidden;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(0,255,102,.055),
-                    rgba(0,0,0,.2)
-                ),
-                var(--panel);
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-
-            cursor: pointer;
-
-            transition:
-                transform .18s,
-                border-color .18s,
-                background .18s;
-        }
-
-        .gameCard:hover {
-            transform: translateY(-3px);
-
-            border-color:
-                var(--border-bright);
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(0,255,102,.09),
-                    rgba(0,0,0,.2)
-                ),
-                var(--panel-hover);
-        }
-
-        .gameIcon {
-            position: absolute;
-
-            inset: 0;
-
-            width: 100%;
-            height: 100%;
-
-            object-fit: cover;
-
-            opacity: .2;
-
-            pointer-events: none;
-        }
-
-        .gameCardContent {
-            position: relative;
-            z-index: 2;
-        }
-
-        .gameName {
-            font-weight: 900;
-
-            font-size: 16px;
-        }
-
-        .gameDescription {
-            margin-top: 4px;
-
-            color: var(--muted);
-
-            font-size: 11px;
-        }
-
-        .searchRow {
-            display: flex;
-
-            gap: 9px;
-
-            margin: 20px 0;
-        }
-
-        .searchRow input {
-            flex: 1;
-
-            min-width: 0;
-
-            padding: 13px 14px;
-
-            color: var(--text);
-
-            background: #030703;
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-
-            outline: none;
-        }
-
-        .searchRow input:focus {
-            border-color:
-                var(--border-bright);
-        }
-
-        .searchRow button {
-            padding: 0 20px;
-
-            color: var(--green);
-
-            background:
-                rgba(0,255,102,.06);
-
-            border:
-                1px solid var(--border-bright);
-
-            border-radius: 0;
-
-            cursor: pointer;
-        }
-
-        .appsGrid {
-            display: grid;
-
-            grid-template-columns:
-                repeat(auto-fill, minmax(180px, 1fr));
-
-            gap: 12px;
-        }
-
-        .appCard {
-            padding: 18px;
-
-            background: var(--panel);
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-
-            cursor: pointer;
-
-            transition: .18s;
-        }
-
-        .appCard:hover {
-            transform: translateY(-3px);
-
-            border-color:
-                var(--border-bright);
-        }
-
-        .appCard h3 {
-            margin: 0 0 7px;
-        }
-
-        .appCard p {
-            margin: 0;
-
-            color: var(--muted);
-
-            font-size: 12px;
-        }
-
-        /* =========================
-           PROXY
-           ========================= */
-
-        .proxyControls {
-            display: flex;
-
-            gap: 9px;
-
-            margin-top: 21px;
-        }
-
-        #urlInput {
-            flex: 1;
-
-            min-width: 0;
-
-            padding: 13px 14px;
-
-            color: var(--text);
-
-            background: #030703;
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-
-            outline: none;
-        }
-
-        #urlInput:focus {
-            border-color:
-                var(--border-bright);
-
-            box-shadow:
-                0 0 0 3px rgba(0,255,102,.05);
-        }
-
-        #searchButton {
-            padding: 0 22px;
-
-            color: var(--green);
-
-            background:
-                rgba(0,255,102,.06);
-
-            border:
-                1px solid var(--border-bright);
-
-            border-radius: 0;
-
-            font-weight: 850;
-
-            cursor: pointer;
-        }
-
-        .iframeContainer {
-            position: relative;
-
-            width: 100%;
-
-            height: calc(100vh - 192px);
-
-            min-height: 400px;
-
-            margin-top: 18px;
-
-            overflow: hidden;
-
-            background: #020402;
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-        }
-
-        #iframeWindow {
-            width: 100%;
-            height: 100%;
-
-            border: 0;
-
-            background: white;
-        }
-
-        .iframeToolbar {
-            position: absolute;
-
-            top: 8px;
-            right: 8px;
-
-            z-index: 20;
-
-            display: flex;
-
-            gap: 5px;
-        }
-
-        .iframeToolbar button {
-            width: 34px;
-            height: 30px;
-
-            color: var(--green);
-
-            background:
-                rgba(3,8,4,.92);
-
-            border:
-                1px solid var(--border-bright);
-
-            border-radius: 0;
-
-            cursor: pointer;
-        }
-
-        .iframeToolbar button:hover {
-            background:
-                rgba(0,255,102,.12);
-        }
-
-        #iframeContainer:fullscreen {
-            width: 100vw;
-            height: 100vh;
-
-            margin: 0;
-
-            border: 0;
-        }
-
-        /* =========================
-           SETTINGS
-           ========================= */
-
-        .settingsPanel {
-            display: flex;
-            flex-direction: column;
-
-            gap: 18px;
-        }
-
-        .settingsSection {
-            padding: 22px;
-
-            background:
-                rgba(7,14,9,.72);
-
-            border:
-                1px solid var(--border);
-
-            backdrop-filter: blur(8px);
-        }
-
-        .settingsSection h3 {
-            margin: 0 0 5px;
-        }
-
-        .settingsSection p {
-            margin: 0;
-
-            color: var(--muted);
-
-            font-size: 12px;
-        }
-
-        .themeGrid {
-            display: grid;
-
-            grid-template-columns:
-                repeat(auto-fit, minmax(170px, 1fr));
-
-            gap: 10px;
-
-            margin-top: 18px;
-        }
-
-        .themeCard {
-            min-height: 80px;
-
-            padding: 13px;
-
-            color: var(--text);
-
-            background: #070d08;
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-
-            text-align: left;
-
-            cursor: pointer;
-
-            transition: .18s;
-        }
-
-        .themeCard:hover,
-        .themeCard.selected {
-            border-color:
-                var(--border-bright);
-
-            background:
-                rgba(0,255,102,.07);
-        }
-
-        .themeCard strong {
-            display: block;
-
-            margin-bottom: 5px;
-        }
-
-        .themeCard span {
-            color: var(--muted);
-
-            font-size: 11px;
-        }
-
-        /* =========================
-           CHARACTER
-           ========================= */
-
-        .characterSelect {
-            width: 100%;
-
-            margin-top: 16px;
-
-            padding: 12px;
-
-            color: var(--text);
-
-            background: #030703;
-
-            border:
-                1px solid var(--border);
-
-            border-radius: 0;
-
-            outline: none;
-        }
-
-        /* =========================
-           SWITCH THEME
-           ========================= */
-
-        body.switchTheme {
-            --bg: #f2f4f7;
-            --bg-light: #ffffff;
-            --panel: #ffffff;
-            --panel-hover: #f5f6f8;
-
-            --green: #e60012;
-            --green-dark: #b4000e;
-            --green-soft: #ff4b57;
-
-            --text: #202124;
-            --muted: #6b7078;
-
-            --border: rgba(0,0,0,.12);
-            --border-bright: rgba(0,0,0,.25);
-
-            --red: #e60012;
-
-            font-family:
-                system-ui,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                sans-serif;
-
-            background:
-                linear-gradient(
-                    180deg,
-                    #ffffff 0%,
-                    #eef1f5 100%
-                );
-        }
-
-        body.switchTheme #bgCanvas {
-            opacity: .12;
-        }
-
-        body.switchTheme .topbar {
-            background: rgba(255,255,255,.96);
-
-            border-bottom:
-                1px solid rgba(0,0,0,.1);
-        }
-
-        body.switchTheme .brandIcon,
-        body.switchTheme .onlineDot {
-            color: #e60012;
-        }
-
-        body.switchTheme .hero,
-        body.switchTheme .gameCard,
-        body.switchTheme .appCard,
-        body.switchTheme .settingsSection {
-            box-shadow:
-                0 5px 20px rgba(0,0,0,.07);
-        }
-
-        body.switchTheme #authGate {
-            background:
-                linear-gradient(
-                    135deg,
-                    #e9edf2,
-                    #ffffff
-                );
-        }
-
-        body.switchTheme .authShell {
-            background:
-                rgba(255,255,255,.98);
-
-            border:
-                1px solid rgba(0,0,0,.12);
-
-            box-shadow:
-                0 20px 50px rgba(0,0,0,.1);
-        }
-
-        body.switchTheme .brandLargeIcon {
-            color: #e60012;
-
-            border-color:
-                rgba(230,0,18,.35);
-        }
-
-        body.switchTheme .brandLarge h1 span {
-            color: #e60012;
-
-            text-shadow: none;
-        }
-
-        body.switchTheme .primaryButton {
-            color: white;
-
-            background: #e60012;
-        }
-
-        body.switchTheme .secondaryButton {
-            color: #e60012;
-
-            background: #fff;
-
-            border-color:
-                rgba(230,0,18,.35);
-        }
-
-        body.switchTheme .nav button.active,
-        body.switchTheme .nav button:hover {
-            color: #e60012;
-
-            background:
-                rgba(230,0,18,.06);
-
-            border-color:
-                rgba(230,0,18,.15);
-        }
-
-        /* =========================
-           SWITCH HOME
-           ========================= */
-
-        .switchHome {
-            display: none;
-        }
-
-        body.switchTheme .switchHome {
-            display: block;
-        }
-
-        body.switchTheme .normalHome {
-            display: none;
-        }
-
-        .switchHomeHero {
-            padding: 28px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #ffffff,
-                    #edf0f4
-                );
-
-            border:
-                1px solid rgba(0,0,0,.1);
-
-            box-shadow:
-                0 10px 35px rgba(0,0,0,.06);
-        }
-
-        .switchHomeHero h2 {
-            margin: 0;
-
-            font-size: 38px;
-
-            letter-spacing: -1.5px;
-        }
-
-        .switchHomeHero p {
-            margin: 8px 0 0;
-
-            color: #777;
-        }
-
-        .switchFeatured {
-            display: grid;
-
-            grid-template-columns:
-                repeat(auto-fit, minmax(190px, 1fr));
-
-            gap: 14px;
-
-            margin-top: 22px;
-        }
-
-        .switchTile {
-            min-height: 170px;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-
-            padding: 18px;
-
-            background: white;
-
-            border:
-                1px solid rgba(0,0,0,.09);
-
-            box-shadow:
-                0 7px 20px rgba(0,0,0,.07);
-
-            cursor: pointer;
-
-            transition: .18s;
-        }
-
-        .switchTile:hover {
-            transform: translateY(-4px);
-        }
-
-        .switchTile strong {
-            font-size: 17px;
-        }
-
-        .switchTile span {
-            margin-top: 5px;
-
-            color: #777;
-
-            font-size: 11px;
-        }
-
-        @media (max-width: 800px) {
-            .nav {
-                overflow-x: auto;
-            }
-
-            .online {
-                display: none;
-            }
-
-            .page {
-                padding: 18px;
-            }
-
-            .proxyControls {
-                flex-direction: column;
-            }
-
-            #searchButton {
-                min-height: 44px;
-            }
-
-            .iframeContainer {
-                min-height: 350px;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Korona</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:#07100b;
+    color:#f2f7f3;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+
+:root{
+    --green:#18d66b;
+    --green2:#0da951;
+    --bg:#07100b;
+    --panel:#0c1710;
+    --panel2:#101e14;
+    --panel3:#15271b;
+    --line:#1c3825;
+    --text:#f2f7f3;
+    --muted:#82998a;
+    --red:#ff4055;
+}
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+#authGate{
+    position:fixed;
+    inset:0;
+    z-index:999999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle at 50% 20%,rgba(24,214,107,.09),transparent 35%),
+        #050a07;
+}
+
+.authCard{
+    width:min(430px,calc(100vw - 32px));
+    border:1px solid #23452f;
+    background:#09130d;
+    padding:34px;
+    box-shadow:0 30px 100px rgba(0,0,0,.55);
+}
+
+.authLogo{
+    width:58px;
+    height:58px;
+    display:grid;
+    place-items:center;
+    border:2px solid var(--green);
+    color:var(--green);
+    font-size:25px;
+    font-weight:900;
+    margin-bottom:22px;
+}
+
+.authCard h1{
+    margin:0;
+    font-size:25px;
+}
+
+.authCard p{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+    margin:7px 0 24px;
+}
+
+.authField{
+    display:block;
+    color:#9bb2a1;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+    margin-top:13px;
+}
+
+.authField input{
+    width:100%;
+    height:43px;
+    margin-top:7px;
+    border:1px solid var(--line);
+    background:#050b07;
+    color:#fff;
+    outline:none;
+    padding:0 12px;
+}
+
+.authField input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 0 1px var(--green);
+}
+
+.authNames{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+}
+
+.authPrimary{
+    width:100%;
+    height:43px;
+    margin-top:18px;
+    border:0;
+    background:var(--green);
+    color:#031007;
+    font-weight:900;
+}
+
+.authPrimary:hover{
+    background:#32ed82;
+}
+
+.authSecondary{
+    width:100%;
+    height:40px;
+    margin-top:8px;
+    border:1px solid var(--line);
+    background:#0b160f;
+    color:#a8bdad;
+}
+
+.authSecondary:hover{
+    border-color:var(--green);
+    color:#fff;
+}
+
+.authSwitch{
+    margin-top:18px;
+    text-align:center;
+    font-size:11px;
+    color:#6f8677;
+}
+
+.authSwitch button{
+    border:0;
+    background:none;
+    color:var(--green);
+    padding:0;
+}
+
+.authMessage{
+    min-height:18px;
+    margin-top:10px;
+    font-size:11px;
+    color:var(--red);
+}
+
+.authMessage.ok{
+    color:var(--green);
+}
+
+.authBox{display:none}
+.authBox.active{display:block}
+
+/* =========================================================
+   APPLICATION
+========================================================= */
+
+#app{
+    width:100%;
+    height:100%;
+    display:grid;
+    grid-template-rows:58px 1fr;
+}
+
+.topbar{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:0 20px;
+    background:#09150d;
+    border-bottom:1px solid var(--line);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:900;
+    letter-spacing:.4px;
+}
+
+.brandMark{
+    width:32px;
+    height:32px;
+    display:grid;
+    place-items:center;
+    border:2px solid var(--green);
+    color:var(--green);
+}
+
+.topUser{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:#91a696;
+    font-size:12px;
+}
+
+.userDot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 12px var(--green);
+}
+
+#workspace{
+    min-height:0;
+    display:grid;
+    grid-template-columns:210px 1fr;
+}
+
+.sidebar{
+    min-height:0;
+    background:#08110b;
+    border-right:1px solid var(--line);
+    padding:16px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.navLabel{
+    padding:8px 11px;
+    color:#52695a;
+    text-transform:uppercase;
+    font-size:9px;
+    letter-spacing:1.2px;
+}
+
+.navButton{
+    height:43px;
+    width:100%;
+    border:1px solid transparent;
+    background:transparent;
+    color:#819587;
+    text-align:left;
+    padding:0 13px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.navButton:hover{
+    background:#0d1b11;
+    color:#fff;
+}
+
+.navButton.active{
+    background:#102519;
+    border-color:#245235;
+    color:var(--green);
+}
+
+.navIcon{
+    width:20px;
+    text-align:center;
+}
+
+.sidebarBottom{
+    margin-top:auto;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+}
+
+#main{
+    min-width:0;
+    min-height:0;
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 70% 0%,rgba(24,214,107,.035),transparent 30%),
+        var(--bg);
+}
+
+.view{
+    position:absolute;
+    inset:0;
+    overflow:auto;
+    display:none;
+    padding:34px;
+}
+
+.view.active{display:block}
+
+.viewHeader{
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:20px;
+    margin-bottom:25px;
+}
+
+.viewHeader h1{
+    margin:0;
+    font-size:27px;
+}
+
+.viewHeader p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:12px;
+}
+
+/* =========================================================
+   HOME
+========================================================= */
+
+.homeHero{
+    min-height:330px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    border:1px solid var(--line);
+    background:
+        radial-gradient(circle at 50% 30%,rgba(24,214,107,.08),transparent 45%),
+        #09150d;
+    margin-bottom:20px;
+}
+
+.homeHeroInner{
+    width:min(720px,90%);
+}
+
+.homeLogo{
+    font-size:52px;
+    font-weight:1000;
+    letter-spacing:-3px;
+    color:var(--green);
+}
+
+.homeHero h1{
+    margin:5px 0 0;
+    font-size:31px;
+}
+
+.homeHero p{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.searchBox{
+    height:47px;
+    display:flex;
+    border:1px solid #23452f;
+    background:#050b07;
+    margin:23px auto 0;
+}
+
+.searchBox input{
+    flex:1;
+    min-width:0;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:#fff;
+    padding:0 14px;
+}
+
+.searchBox button{
+    width:95px;
+    border:0;
+    background:var(--green);
+    color:#031007;
+    font-weight:900;
+}
+
+.quickLinks{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:7px;
+    margin-top:13px;
+}
+
+.quickLinks button{
+    border:1px solid var(--line);
+    background:#0c1910;
+    color:#8da294;
+    padding:8px 13px;
+}
+
+.quickLinks button:hover{
+    color:#fff;
+    border-color:var(--green);
+}
+
+/* =========================================================
+   GAMES
+========================================================= */
+
+.gameToolbar{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.gameToolbar input{
+    flex:1;
+    min-width:0;
+    height:38px;
+    border:1px solid var(--line);
+    background:#09150d;
+    color:#fff;
+    outline:none;
+    padding:0 12px;
+}
+
+.gameToolbar select{
+    height:38px;
+    border:1px solid var(--line);
+    background:#09150d;
+    color:#fff;
+    padding:0 10px;
+}
+
+.gamesGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+    gap:12px;
+}
+
+.gameCard{
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:#0b1710;
+    transition:.15s;
+}
+
+.gameCard:hover{
+    transform:translateY(-3px);
+    border-color:var(--green);
+}
+
+.gameImage{
+    width:100%;
+    height:118px;
+    object-fit:cover;
+    background:#101d14;
+    display:block;
+}
+
+.gameContent{
+    padding:13px;
+}
+
+.gameTitle{
+    font-size:13px;
+    font-weight:800;
+}
+
+.gameDescription{
+    min-height:30px;
+    margin-top:5px;
+    color:#718679;
+    font-size:10px;
+}
+
+.gameButton{
+    width:100%;
+    height:34px;
+    margin-top:11px;
+    border:1px solid #245235;
+    background:#102519;
+    color:var(--green);
+}
+
+.gameButton:hover{
+    background:var(--green);
+    color:#031007;
+}
+
+/* =========================================================
+   APPS
+========================================================= */
+
+.appsGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+    gap:12px;
+}
+
+.appCard{
+    min-height:120px;
+    border:1px solid var(--line);
+    background:#0b1710;
+    padding:18px;
+    cursor:pointer;
+}
+
+.appCard:hover{
+    border-color:var(--green);
+    background:#102519;
+}
+
+.appIcon{
+    width:42px;
+    height:42px;
+    display:grid;
+    place-items:center;
+    border:1px solid #285337;
+    color:var(--green);
+    margin-bottom:13px;
+    font-weight:900;
+}
+
+.appCard strong{
+    display:block;
+    font-size:14px;
+}
+
+.appCard span{
+    color:#718679;
+    font-size:11px;
+}
+
+/* =========================================================
+   BROWSER
+========================================================= */
+
+#browserView{
+    padding:0;
+    overflow:hidden;
+    background:#020503;
+}
+
+.browserTabs{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:38px;
+    z-index:20;
+    display:flex;
+    align-items:stretch;
+    background:#08110b;
+    border-bottom:1px solid var(--line);
+}
+
+.browserTab{
+    min-width:145px;
+    max-width:220px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 10px;
+    border-right:1px solid var(--line);
+    color:#718679;
+    font-size:11px;
+}
+
+.browserTab.active{
+    color:#fff;
+    background:#102016;
+    box-shadow:inset 0 -2px 0 var(--green);
+}
+
+.browserTabName{
+    flex:1;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.browserTab button{
+    border:0;
+    background:none;
+    color:#708578;
+}
+
+.browserTab button:hover{
+    color:#fff;
+}
+
+.newTab{
+    width:40px;
+    border:0;
+    background:none;
+    color:var(--green);
+    font-size:18px;
+}
+
+.browserControls{
+    position:absolute;
+    top:38px;
+    left:0;
+    right:0;
+    height:45px;
+    z-index:20;
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    gap:7px;
+    padding:6px;
+    background:#09150d;
+    border-bottom:1px solid var(--line);
+}
+
+.browserButtons{
+    display:flex;
+    gap:4px;
+}
+
+.browserButtons button,
+.browserActions button{
+    width:33px;
+    border:1px solid var(--line);
+    background:#0d1a11;
+    color:#82998a;
+}
+
+.browserButtons button:hover,
+.browserActions button:hover{
+    border-color:var(--green);
+    color:#fff;
+}
+
+.address{
+    min-width:0;
+    border:1px solid var(--line);
+    background:#050b07;
+    display:flex;
+}
+
+.address input{
+    flex:1;
+    min-width:0;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:#fff;
+    padding:0 12px;
+    font-size:11px;
+}
+
+.address button{
+    width:75px;
+    border:0;
+    background:#102519;
+    color:var(--green);
+    font-size:11px;
+}
+
+.browserActions{
+    display:flex;
+    gap:4px;
+}
+
+#browserFrames{
+    position:absolute;
+    inset:83px 0 0;
+}
+
+.browserFrame{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:0;
+    display:none;
+    background:#fff;
+}
+
+.browserFrame.active{display:block}
+
+.browserStart{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#050a07;
+    color:#718679;
+    z-index:5;
+}
+
+.browserStart.hidden{display:none}
+
+.browserStartBox{text-align:center}
+
+.browserStartBox b{
+    display:block;
+    font-size:46px;
+    color:var(--green);
+}
+
+.browserStartBox strong{
+    display:block;
+    color:#fff;
+    margin-top:6px;
+}
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+.settings{
+    max-width:900px;
+}
+
+.setting{
+    padding:20px 0;
+    border-top:1px solid var(--line);
+}
+
+.settingHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+}
+
+.settingTitle{
+    font-weight:800;
+}
+
+.settingDescription{
+    color:#718679;
+    font-size:11px;
+    margin-top:4px;
+    max-width:650px;
+}
+
+.setting select{
+    height:38px;
+    min-width:220px;
+    border:1px solid var(--line);
+    background:#09150d;
+    color:#fff;
+    padding:0 10px;
+}
+
+.themeButtons{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-top:14px;
+}
+
+.themeButton{
+    height:70px;
+    border:1px solid var(--line);
+    background:#0b1710;
+    color:#84998b;
+    text-align:left;
+    padding:10px;
+}
+
+.themeButton:hover,
+.themeButton.selected{
+    border-color:var(--green);
+    color:#fff;
+}
+
+.themePreview{
+    width:100%;
+    height:8px;
+    margin-bottom:9px;
+}
+
+.switchPreview{
+    background:linear-gradient(90deg,#e60012 0 50%,#00aef0 50%);
+}
+
+.greenPreview{background:#18d66b}
+.darkPreview{background:#8d8d8d}
+
+/* =========================================================
+   ACCOUNT
+========================================================= */
+
+.accountCard{
+    max-width:700px;
+    border:1px solid var(--line);
+    background:#0b1710;
+    padding:20px;
+}
+
+.accountRow{
+    display:grid;
+    grid-template-columns:140px 1fr;
+    padding:13px 0;
+    border-bottom:1px solid #162b1c;
+    font-size:12px;
+}
+
+.accountRow span:first-child{
+    color:#718679;
+}
+
+.logout{
+    margin-top:20px;
+    height:38px;
+    padding:0 18px;
+    border:1px solid #6b2832;
+    background:#241015;
+    color:#ff6877;
+}
+
+.logout:hover{
+    background:#35151c;
+}
+
+/* =========================================================
+   CHARACTER
+========================================================= */
+
+#character{
+    position:fixed;
+    z-index:50;
+    right:18px;
+    bottom:0;
+    width:min(280px,25vw);
+    max-height:60vh;
+    object-fit:contain;
+    object-position:bottom right;
+    pointer-events:none;
+    opacity:.42;
+    display:none;
+    filter:drop-shadow(0 10px 30px rgba(0,0,0,.6));
+}
+
+#character.show{display:block}
+
+/* =========================================================
+   NINTENDO SWITCH STYLE
+========================================================= */
+
+body.switchMode{
+    --green:#00c9ff;
+    --green2:#008fc4;
+    --bg:#f3f3f3;
+    --panel:#fff;
+    --panel2:#f0f0f0;
+    --panel3:#e6e6e6;
+    --line:#d4d4d4;
+    --text:#202124;
+    --muted:#707070;
+}
+
+body.switchMode{
+    background:#f3f3f3;
+    color:#202124;
+}
+
+body.switchMode #app{
+    grid-template-rows:62px 1fr;
+}
+
+body.switchMode .topbar{
+    background:#fff;
+    border-bottom:1px solid #ddd;
+    color:#222;
+    box-shadow:0 2px 10px rgba(0,0,0,.07);
+}
+
+body.switchMode .brandMark{
+    border:0;
+    border-radius:50%;
+    width:34px;
+    height:34px;
+    background:linear-gradient(90deg,#e60012 0 50%,#00aef0 50%);
+    color:#fff;
+}
+
+body.switchMode .sidebar{
+    background:#fff;
+    border-right:1px solid #ddd;
+}
+
+body.switchMode .navButton{
+    border-radius:12px;
+    color:#666;
+}
+
+body.switchMode .navButton.active{
+    background:#f0f0f0;
+    border-color:#ddd;
+    color:#111;
+    box-shadow:inset 4px 0 0 #e60012;
+}
+
+body.switchMode #main{
+    background:#f3f3f3;
+}
+
+body.switchMode .view{
+    padding:35px 42px;
+}
+
+body.switchMode .homeHero{
+    border:0;
+    border-radius:22px;
+    background:#fff;
+    box-shadow:0 5px 24px rgba(0,0,0,.08);
+}
+
+body.switchMode .homeLogo{
+    color:#222;
+    font-size:46px;
+    letter-spacing:-2px;
+}
+
+body.switchMode .searchBox{
+    border:0;
+    border-radius:999px;
+    background:#eee;
+    overflow:hidden;
+}
+
+body.switchMode .searchBox button{
+    background:#e60012;
+    color:#fff;
+}
+
+body.switchMode .quickLinks button{
+    border:0;
+    border-radius:999px;
+    background:#fff;
+    color:#555;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+body.switchMode .gameCard{
+    border:0;
+    border-radius:14px;
+    background:#fff;
+    box-shadow:0 4px 15px rgba(0,0,0,.09);
+    overflow:hidden;
+}
+
+body.switchMode .gameCard:hover{
+    transform:translateY(-4px);
+    border:0;
+    box-shadow:0 8px 25px rgba(0,0,0,.14);
+}
+
+body.switchMode .gameButton{
+    border:0;
+    border-radius:999px;
+    background:#e60012;
+    color:#fff;
+}
+
+body.switchMode .gameButton:hover{
+    background:#f32636;
+    color:#fff;
+}
+
+body.switchMode .appCard{
+    border:0;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+body.switchMode .appIcon{
+    border:0;
+    border-radius:50%;
+    background:#f0f0f0;
+}
+
+body.switchMode .setting{
+    border-color:#ddd;
+}
+
+body.switchMode .setting select{
+    border:1px solid #ddd;
+    border-radius:10px;
+    background:#fff;
+    color:#222;
+}
+
+body.switchMode .themeButton{
+    border:0;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+
+body.switchMode .themeButton.selected{
+    outline:3px solid #00aef0;
+}
+
+body.switchMode .accountCard{
+    border:0;
+    border-radius:15px;
+    background:#fff;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+body.switchMode .accountRow{
+    border-color:#eee;
+}
+
+body.switchMode .logout{
+    border:0;
+    border-radius:999px;
+    background:#e60012;
+    color:#fff;
+}
+
+body.switchMode #authGate{
+    background:
+        radial-gradient(circle at 20% 20%,rgba(230,0,18,.10),transparent 25%),
+        radial-gradient(circle at 80% 70%,rgba(0,174,240,.10),transparent 30%),
+        #f3f3f3;
+}
+
+body.switchMode .authCard{
+    border:0;
+    border-radius:25px;
+    background:#fff;
+    box-shadow:0 20px 60px rgba(0,0,0,.16);
+    text-align:center;
+}
+
+body.switchMode .authLogo{
+    border:0;
+    border-radius:50%;
+    background:linear-gradient(90deg,#e60012 0 50%,#00aef0 50%);
+    color:#fff;
+    margin:0 auto 20px;
+}
+
+body.switchMode .authCard input{
+    border:0;
+    border-radius:12px;
+    background:#f1f1f1;
+    color:#222;
+    box-shadow:inset 0 0 0 1px #ddd;
+}
+
+body.switchMode .authPrimary{
+    border-radius:999px;
+    background:#e60012;
+    color:#fff;
+}
+
+body.switchMode .authSecondary{
+    border:0;
+    border-radius:999px;
+    background:#eee;
+    color:#555;
+}
+
+body.switchMode .authSwitch button{
+    color:#008fc4;
+}
+
+body.switchMode .browserTabs,
+body.switchMode .browserControls{
+    background:#fff;
+    border-color:#ddd;
+}
+
+body.switchMode .browserTab.active{
+    background:#f4f4f4;
+    box-shadow:inset 0 -2px 0 #e60012;
+}
+
+body.switchMode .browserControls{
+    top:38px;
+}
+
+body.switchMode .address{
+    border:0;
+    border-radius:999px;
+    background:#eee;
+    overflow:hidden;
+}
+
+body.switchMode .address button{
+    background:#00aef0;
+    color:#fff;
+}
+
+body.switchMode .browserButtons button,
+body.switchMode .browserActions button{
+    border:0;
+    border-radius:50%;
+    background:#eee;
+}
+
+body.switchMode .browserStart{
+    background:#f3f3f3;
+}
+
+body.switchMode .browserStartBox b{
+    color:#e60012;
+}
+
+body.switchMode .topUser{
+    color:#555;
+}
+
+body.switchMode .userDot{
+    background:#24b86b;
+    box-shadow:none;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:850px){
+    #workspace{grid-template-columns:65px 1fr}
+    .navLabel,.navButton span{display:none}
+    .navButton{justify-content:center;padding:0}
+    .brand{justify-content:center}
+    .brand span{display:none}
+    .view{padding:22px 18px}
+    .themeButtons{grid-template-columns:1fr}
+    .topUser{display:none}
+}
+
+@media(max-width:600px){
+    .authCard{padding:24px}
+    .authNames{grid-template-columns:1fr}
+    .viewHeader{align-items:start}
+    .gamesGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .gameToolbar{flex-direction:column}
+    .gameToolbar select{width:100%}
+    .homeHero{min-height:290px}
+    .homeHero h1{font-size:25px}
+    .homeLogo{font-size:42px}
+    .view{padding:18px 12px}
+}
+</style>
 </head>
 
 <body>
 
-<div id="koronaBootError"></div>
+<!-- =======================================================
+     AUTH SCREEN
+======================================================== -->
 
-<canvas id="bgCanvas"></canvas>
+<div id="authGate">
+    <div class="authCard">
 
-<section id="authGate">
+        <div class="authLogo">K</div>
 
-    <div class="authShell">
+        <div id="loginBox" class="authBox active">
+            <h1>Korona</h1>
+            <p>Enter your approved Korona ID to continue.</p>
 
-        <div class="brandLarge">
-            <div class="brandLargeIcon">⌁</div>
+            <label class="authField">
+                Korona ID
+                <input id="loginId" autocomplete="username" placeholder="name.lastname">
+            </label>
 
-            <h1>
-                Koro<span>na</span>
-            </h1>
-        </div>
+            <div id="loginMsg" class="authMessage"></div>
 
-        <p class="authSubtitle">
-            private browser / games / apps
-        </p>
-
-        <section id="loginBox" class="authOnly visible">
-
-            <div class="field">
-                <label for="loginId">
-                    Korona ID
-                </label>
-
-                <input
-                    id="loginId"
-                    autocomplete="username"
-                    placeholder="name.lastname"
-                >
-            </div>
-
-            <button
-                id="loginBtn"
-                class="primaryButton"
-                type="button"
-            >
-                unlock korona
+            <button id="loginBtn" class="authPrimary">
+                ENTER KORONA
             </button>
-
-            <div
-                id="loginMsg"
-                class="authMessage"
-            ></div>
 
             <div class="authSwitch">
                 Don't have an ID?
-                <button
-                    id="showCreateBtn"
-                    type="button"
-                >
-                    create one
-                </button>
+                <button id="showCreate">Create one</button>
             </div>
+        </div>
 
-        </section>
+        <div id="createBox" class="authBox">
+            <h1>Create ID</h1>
+            <p>Your ID is generated from your first and last name. An administrator must approve it before you can sign in.</p>
 
-        <section id="createBox" class="authOnly">
-
-            <div class="field">
-                <label for="firstName">
+            <div class="authNames">
+                <label class="authField">
                     First name
+                    <input id="firstName" autocomplete="given-name">
                 </label>
 
-                <input
-                    id="firstName"
-                    autocomplete="given-name"
-                    placeholder="First"
-                >
-            </div>
-
-            <div class="field">
-                <label for="lastName">
+                <label class="authField">
                     Last name
+                    <input id="lastName" autocomplete="family-name">
                 </label>
-
-                <input
-                    id="lastName"
-                    autocomplete="family-name"
-                    placeholder="Last"
-                >
             </div>
 
-            <button
-                id="createBtn"
-                class="primaryButton"
-                type="button"
-            >
-                request Korona ID
-            </button>
+            <div id="createMsg" class="authMessage"></div>
 
-            <div
-                id="createMsg"
-                class="authMessage"
-            ></div>
+            <button id="createBtn" class="authPrimary">
+                REQUEST ID
+            </button>
 
             <div class="authSwitch">
                 Already have an ID?
-                <button
-                    id="showLoginBtn"
-                    type="button"
-                >
-                    go back
-                </button>
+                <button id="showLogin">Sign in</button>
             </div>
-
-        </section>
-
-        <div class="authJoke">
-            Your account stays locked until an administrator approves it.
         </div>
 
     </div>
+</div>
 
-</section>
+<!-- =======================================================
+     APPLICATION
+======================================================== -->
 
-<main id="app">
+<div id="app" hidden>
 
     <header class="topbar">
 
         <div class="brand">
-            <span class="brandIcon">⌁</span>
-            <span>Korona</span>
+            <div class="brandMark">K</div>
+            <span>KORONA</span>
         </div>
 
-        <nav class="nav">
-
-            <button
-                class="navBtn active"
-                data-page="homePage"
-                type="button"
-            >
-                Home
-            </button>
-
-            <button
-                class="navBtn"
-                data-page="gamesPage"
-                type="button"
-            >
-                Games
-            </button>
-
-            <button
-                class="navBtn"
-                data-page="moreGamesPage"
-                type="button"
-            >
-                More Games
-            </button>
-
-            <button
-                class="navBtn"
-                data-page="appsPage"
-                type="button"
-            >
-                Apps
-            </button>
-
-            <button
-                class="navBtn"
-                data-page="browserPage"
-                type="button"
-            >
-                Browser
-            </button>
-
-            <button
-                class="navBtn"
-                data-page="settingsPage"
-                type="button"
-            >
-                Settings
-            </button>
-
-        </nav>
-
-        <div class="userArea">
-
-            <div class="online">
-                <span class="onlineDot"></span>
-                <span id="userName">online</span>
-            </div>
-
-            <button
-                id="lockBtn"
-                class="lockButton"
-                type="button"
-            >
-                lock
-            </button>
-
+        <div class="topUser">
+            <div class="userDot"></div>
+            <span id="topUsername">offline</span>
         </div>
 
     </header>
 
-    <div class="content">
+    <div id="workspace">
 
-        <!-- HOME -->
+        <aside class="sidebar">
 
-        <section
-            id="homePage"
-            class="page active"
-        >
+            <div class="navLabel">Korona</div>
 
-            <div class="normalHome">
+            <button class="navButton active" data-view="home">
+                <span class="navIcon">⌂</span>
+                <span>Home</span>
+            </button>
 
-                <div class="hero">
+            <button class="navButton" data-view="games">
+                <span class="navIcon">▣</span>
+                <span id="gamesNavText">Games</span>
+            </button>
 
-                    <h2>
-                        welcome to
-                        <span>Korona</span>
-                    </h2>
+            <button class="navButton" data-view="more">
+                <span class="navIcon">✦</span>
+                <span>More Games</span>
+            </button>
 
-                    <p>
-                        games, apps, browsing, and questionable
-                        amounts of green.
-                    </p>
+            <button class="navButton" data-view="apps">
+                <span class="navIcon">▦</span>
+                <span>Apps</span>
+            </button>
+
+            <button class="navButton" data-view="browser">
+                <span class="navIcon">◎</span>
+                <span>Browser</span>
+            </button>
+
+            <div class="navLabel">System</div>
+
+            <button class="navButton" data-view="settings">
+                <span class="navIcon">⚙</span>
+                <span>Settings</span>
+            </button>
+
+            <button class="navButton" data-view="account">
+                <span class="navIcon">●</span>
+                <span>Account</span>
+            </button>
+
+        </aside>
+
+        <main id="main">
+
+            <!-- HOME -->
+            <section id="view-home" class="view active">
+
+                <div class="homeHero">
+
+                    <div class="homeHeroInner">
+
+                        <div class="homeLogo">KORONA</div>
+
+                        <h1 id="homeTitle">Welcome back.</h1>
+
+                        <p>
+                            Games, apps and your browser in one place.
+                        </p>
+
+                        <div class="searchBox">
+                            <input
+                                id="homeSearch"
+                                placeholder="Search Korona..."
+                                autocomplete="off"
+                            >
+                            <button id="homeSearchBtn">SEARCH</button>
+                        </div>
+
+                        <div class="quickLinks">
+                            <button data-open="games">Games</button>
+                            <button data-open="more">More Games</button>
+                            <button data-open="apps">Apps</button>
+                            <button data-open="browser">Browser</button>
+                        </div>
+
+                    </div>
 
                 </div>
 
-                <h3 class="sectionTitle">
-                    Featured
-                </h3>
+                <div class="viewHeader">
+                    <div>
+                        <h1>Featured</h1>
+                        <p>Jump straight into a game.</p>
+                    </div>
+                </div>
 
-                <div
-                    id="featuredGames"
-                    class="gamesGrid"
-                ></div>
+                <div id="featuredGrid" class="gamesGrid"></div>
 
-            </div>
+            </section>
 
-            <div class="switchHome">
+            <!-- GAMES -->
+            <section id="view-games" class="view">
 
-                <div class="switchHomeHero">
+                <div class="viewHeader">
+                    <div>
+                        <h1 id="gamesHeading">Games</h1>
+                        <p>Games available inside Korona.</p>
+                    </div>
+                </div>
 
-                    <h2>
-                        Korona
-                    </h2>
+                <div class="gameToolbar">
+                    <input id="gameSearch" placeholder="Search games...">
+                </div>
 
-                    <p>
-                        Choose something to play.
-                    </p>
+                <div id="gamesGrid" class="gamesGrid"></div>
 
-                    <div
-                        id="switchFeatured"
-                        class="switchFeatured"
-                    ></div>
+            </section>
+
+            <!-- MORE GAMES -->
+            <section id="view-more" class="view">
+
+                <div class="viewHeader">
+                    <div>
+                        <h1>More Games</h1>
+                        <p>Additional games and experiments.</p>
+                    </div>
+                </div>
+
+                <div class="gameToolbar">
+                    <input id="moreSearch" placeholder="Search more games...">
+                </div>
+
+                <div id="moreGrid" class="gamesGrid"></div>
+
+            </section>
+
+            <!-- APPS -->
+            <section id="view-apps" class="view">
+
+                <div class="viewHeader">
+                    <div>
+                        <h1>Apps</h1>
+                        <p>Quick access to useful websites.</p>
+                    </div>
+                </div>
+
+                <div id="appsGrid" class="appsGrid"></div>
+
+            </section>
+
+            <!-- BROWSER -->
+            <section id="view-browser" class="view">
+
+                <div class="browserTabs" id="browserTabs">
+                    <button class="newTab" id="newTab">+</button>
+                </div>
+
+                <div class="browserControls">
+
+                    <div class="browserButtons">
+                        <button id="backBtn">‹</button>
+                        <button id="forwardBtn">›</button>
+                        <button id="reloadBtn">↻</button>
+                    </div>
+
+                    <div class="address">
+                        <input
+                            id="address"
+                            placeholder="Search or enter a URL"
+                            spellcheck="false"
+                        >
+                        <button id="goBtn">GO</button>
+                    </div>
+
+                    <div class="browserActions">
+                        <button id="browserHomeBtn">⌂</button>
+                        <button id="fullscreenBtn">⛶</button>
+                    </div>
 
                 </div>
 
-            </div>
+                <div id="browserFrames"></div>
 
-        </section>
+                <div id="browserStart" class="browserStart">
+                    <div class="browserStartBox">
+                        <b>K</b>
+                        <strong>Korona Browser</strong>
+                        <span>Enter a URL above to start.</span>
+                    </div>
+                </div>
 
-        <!-- GAMES -->
+            </section>
 
-        <section
-            id="gamesPage"
-            class="page"
-        >
+            <!-- SETTINGS -->
+            <section id="view-settings" class="view">
 
-            <div class="hero">
+                <div class="viewHeader">
+                    <div>
+                        <h1>Settings</h1>
+                        <p>Customize the entire Korona interface.</p>
+                    </div>
+                </div>
 
-                <h2>
-                    <span>Games</span>
-                </h2>
+                <div class="settings">
 
-                <p>
-                    Pick something and launch it.
-                </p>
+                    <div class="setting">
 
-            </div>
+                        <div class="settingHead">
 
-            <div class="searchRow">
+                            <div>
+                                <div class="settingTitle">Interface style</div>
+                                <div class="settingDescription">
+                                    Switch the entire Korona interface between the normal Korona design and the Nintendo Switch-inspired interface.
+                                </div>
+                            </div>
 
-                <input
-                    id="gameSearch"
-                    type="search"
-                    placeholder="search games..."
-                    autocomplete="off"
-                >
+                            <select id="styleSelect">
+                                <option value="korona">Korona</option>
+                                <option value="switch">Nintendo Switch</option>
+                            </select>
 
-                <button
-                    id="clearGameSearch"
-                    type="button"
-                >
-                    clear
+                        </div>
+
+                    </div>
+
+                    <div class="setting">
+
+                        <div class="settingHead">
+
+                            <div>
+                                <div class="settingTitle">Character</div>
+                                <div class="settingDescription">
+                                    Display one character on the interface or disable character artwork completely.
+                                </div>
+                            </div>
+
+                            <select id="characterSelect">
+                                <option value="none">None</option>
+                                <option value="neru">Neru</option>
+                                <option value="miku">Hatsune Miku</option>
+                                <option value="teto">Kasane Teto</option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="setting">
+
+                        <div class="settingTitle">Theme</div>
+
+                        <div class="settingDescription">
+                            Change the color palette without changing the layout.
+                        </div>
+
+                        <div class="themeButtons">
+
+                            <button class="themeButton selected" data-theme="green">
+                                <div class="themePreview greenPreview"></div>
+                                Korona Green
+                            </button>
+
+                            <button class="themeButton" data-theme="dark">
+                                <div class="themePreview darkPreview"></div>
+                                Dark
+                            </button>
+
+                            <button class="themeButton" data-theme="switch">
+                                <div class="themePreview switchPreview"></div>
+                                Switch
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ACCOUNT -->
+            <section id="view-account" class="view">
+
+                <div class="viewHeader">
+                    <div>
+                        <h1>Account</h1>
+                        <p>Your current Korona identity.</p>
+                    </div>
+                </div>
+
+                <div id="accountCard" class="accountCard"></div>
+
+                <button id="logoutBtn" class="logout">
+                    LOCK / LOG OUT
                 </button>
 
-            </div>
+            </section>
 
-            <div
-                id="gamesGrid"
-                class="gamesGrid"
-            ></div>
-
-        </section>
-
-        <!-- MORE GAMES -->
-
-        <section
-            id="moreGamesPage"
-            class="page"
-        >
-
-            <div class="hero">
-
-                <h2>
-                    <span>More Games</span>
-                </h2>
-
-                <p>
-                    Extra games and experiments.
-                </p>
-
-            </div>
-
-            <div
-                id="moreGamesGrid"
-                class="gamesGrid"
-            ></div>
-
-        </section>
-
-        <!-- APPS -->
-
-        <section
-            id="appsPage"
-            class="page"
-        >
-
-            <div class="hero">
-
-                <h2>
-                    <span>Apps</span>
-                </h2>
-
-                <p>
-                    Useful stuff lives here.
-                </p>
-
-            </div>
-
-            <h3 class="sectionTitle">
-                Applications
-            </h3>
-
-            <div
-                id="appsGrid"
-                class="appsGrid"
-            ></div>
-
-        </section>
-
-        <!-- BROWSER -->
-
-        <section
-            id="browserPage"
-            class="page"
-        >
-
-            <div class="hero">
-
-                <h2>
-                    <span>Browser</span>
-                </h2>
-
-                <p>
-                    Enter a URL and open it through Korona.
-                </p>
-
-                <div class="proxyControls">
-
-                    <input
-                        id="urlInput"
-                        type="text"
-                        placeholder="https://example.com"
-                        autocomplete="off"
-                        spellcheck="false"
-                    >
-
-                    <button
-                        id="searchButton"
-                        type="button"
-                    >
-                        GO
-                    </button>
-
-                </div>
-
-            </div>
-
-            <div
-                id="iframeContainer"
-                class="iframeContainer"
-            >
-
-                <div class="iframeToolbar">
-
-                    <button
-                        id="backBtn"
-                        type="button"
-                        title="Back"
-                    >
-                        ←
-                    </button>
-
-                    <button
-                        id="forwardBtn"
-                        type="button"
-                        title="Forward"
-                    >
-                        →
-                    </button>
-
-                    <button
-                        id="reloadBtn"
-                        type="button"
-                        title="Reload"
-                    >
-                        ↻
-                    </button>
-
-                    <button
-                        id="fullscreenBtn"
-                        type="button"
-                        title="Fullscreen"
-                    >
-                        ⛶
-                    </button>
-
-                </div>
-
-                <iframe
-                    id="iframeWindow"
-                    title="Korona Browser"
-                    allow="fullscreen; autoplay; gamepad"
-                    allowfullscreen
-                    referrerpolicy="no-referrer"
-                ></iframe>
-
-            </div>
-
-        </section>
-
-        <!-- SETTINGS -->
-
-        <section
-            id="settingsPage"
-            class="page"
-        >
-
-            <div class="hero">
-
-                <h2>
-                    <span>Settings</span>
-                </h2>
-
-                <p>
-                    Customize Korona.
-                </p>
-
-            </div>
-
-            <div class="settingsPanel">
-
-                <section class="settingsSection">
-
-                    <h3>
-                        Site Style
-                    </h3>
-
-                    <p>
-                        Change the entire Korona interface.
-                    </p>
-
-                    <div
-                        id="themeGrid"
-                        class="themeGrid"
-                    ></div>
-
-                </section>
-
-                <section class="settingsSection">
-
-                    <h3>
-                        Character
-                    </h3>
-
-                    <p>
-                        Choose the character used by the background.
-                    </p>
-
-                    <select
-                        id="characterSelect"
-                        class="characterSelect"
-                    >
-                        <option value="none">
-                            None
-                        </option>
-
-                        <option value="miku">
-                            Hatsune Miku
-                        </option>
-
-                        <option value="teto">
-                            Kasane Teto
-                        </option>
-
-                        <option value="neru">
-                            Akita Neru
-                        </option>
-                    </select>
-
-                </section>
-
-            </div>
-
-        </section>
+        </main>
 
     </div>
 
-</main>
+</div>
+
+<img id="character" alt="">
 
 <script>
-    /* =========================================================
-       KORONA DATA
-       ========================================================= */
+"use strict";
 
-    const SUPABASE_URL =
-        "https://wlzvcbisyueopwxcgwiv.supabase.co";
+/* =========================================================
+   SUPABASE
+========================================================= */
 
-    const SUPABASE_KEY =
-        "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
+const SUPABASE_URL =
+    "https://wlzvcbisyueopwxcgwiv.supabase.co";
 
-    const USER_KEY =
-        "korona_saved_user";
+const SUPABASE_KEY =
+    "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
 
-    let supa = null;
-    let user = null;
+const supa =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
-    let authLocked = false;
-    let authWatcher = null;
+/* =========================================================
+   HELPERS
+========================================================= */
 
-    let selectedStyle =
-        localStorage.getItem("korona_style") ||
-        "korona";
+const $ = selector => document.querySelector(selector);
 
-    let selectedCharacter =
-        localStorage.getItem("korona_character") ||
-        "none";
+const $$ = selector =>
+    [...document.querySelectorAll(selector)];
 
-    let scram = null;
-    let mux = null;
-    let iframeWindow = null;
-    let scramReady = false;
-    let scramjetScriptsPromise = null;
+const USER_KEY = "korona_user";
+const STYLE_KEY = "korona_style";
+const THEME_KEY = "korona_theme";
+const CHARACTER_KEY = "korona_character";
 
-    /* =========================================================
-       HELPERS
-       ========================================================= */
+let currentUser = null;
+let authPoll = null;
+let authLocked = false;
 
-    function $(selector) {
-        return document.querySelector(selector);
+function setMessage(element, text, ok = false){
+    element.textContent = text;
+    element.classList.toggle("ok", ok);
+}
+
+function loadSavedUser(){
+    try{
+        const value = localStorage.getItem(USER_KEY);
+        return value ? JSON.parse(value) : null;
+    }catch{
+        localStorage.removeItem(USER_KEY);
+        return null;
+    }
+}
+
+function saveUser(user){
+    currentUser = {
+        id:user.id,
+        name:user.name || user.id
+    };
+
+    localStorage.setItem(
+        USER_KEY,
+        JSON.stringify(currentUser)
+    );
+}
+
+/* =========================================================
+   AUTH SCREEN
+========================================================= */
+
+function showAuth(mode){
+    $("#loginBox").classList.toggle(
+        "active",
+        mode === "login"
+    );
+
+    $("#createBox").classList.toggle(
+        "active",
+        mode === "create"
+    );
+
+    setMessage($("#loginMsg"), "");
+    setMessage($("#createMsg"), "");
+}
+
+function showApp(){
+    $("#authGate").style.display = "none";
+    $("#app").hidden = false;
+
+    $("#topUsername").textContent =
+        currentUser?.name ||
+        currentUser?.id ||
+        "user";
+
+    renderAccount();
+}
+
+function showGate(message = ""){
+    $("#app").hidden = true;
+    $("#authGate").style.display = "flex";
+
+    showAuth("login");
+
+    if(message){
+        setMessage(
+            $("#loginMsg"),
+            message
+        );
+    }
+}
+
+async function getUserRecord(id){
+    return await supa
+        .from("korona_users")
+        .select("id,name,active")
+        .eq("id", id)
+        .maybeSingle();
+}
+
+async function login(){
+
+    const id =
+        $("#loginId")
+            .value
+            .trim()
+            .toLowerCase();
+
+    setMessage($("#loginMsg"), "");
+
+    if(!id){
+        setMessage(
+            $("#loginMsg"),
+            "Enter your Korona ID."
+        );
+        return;
     }
 
-    function $$(selector) {
-        return [...document.querySelectorAll(selector)];
+    const button = $("#loginBtn");
+
+    button.disabled = true;
+    button.textContent = "CHECKING...";
+
+    try{
+
+        const {
+            data,
+            error
+        } = await getUserRecord(id);
+
+        if(error) throw error;
+
+        if(!data){
+
+            setMessage(
+                $("#loginMsg"),
+                "That Korona ID does not exist."
+            );
+
+            return;
+        }
+
+        if(data.active !== true){
+
+            setMessage(
+                $("#loginMsg"),
+                "Your Korona ID is waiting for approval."
+            );
+
+            return;
+        }
+
+        authLocked = false;
+
+        saveUser(data);
+
+        showApp();
+
+        startAuthWatcher();
+
+    }catch(error){
+
+        console.error(error);
+
+        setMessage(
+            $("#loginMsg"),
+            "Could not contact Korona. Try again."
+        );
+
+    }finally{
+
+        button.disabled = false;
+        button.textContent = "ENTER KORONA";
+    }
+}
+
+async function createAccount(){
+
+    const first =
+        $("#firstName")
+            .value
+            .trim();
+
+    const last =
+        $("#lastName")
+            .value
+            .trim();
+
+    setMessage($("#createMsg"), "");
+
+    if(!first || !last){
+
+        setMessage(
+            $("#createMsg"),
+            "Enter both your first and last name."
+        );
+
+        return;
     }
 
-    function msg(element, text, success = false) {
-        if (!element) return;
+    const id =
+        `${first}.${last}`
+            .toLowerCase()
+            .replace(/[^a-z0-9.]/g,"");
 
-        element.textContent = text || "";
-        element.classList.toggle("success", !!success);
+    if(!id){
+
+        setMessage(
+            $("#createMsg"),
+            "Those names could not make a valid ID."
+        );
+
+        return;
     }
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    const button = $("#createBtn");
+
+    button.disabled = true;
+    button.textContent = "CREATING...";
+
+    try{
+
+        const {
+            data,
+            error
+        } = await supa
+            .from("korona_users")
+            .insert({
+                id:id,
+                name:`${first} ${last}`,
+                active:false
+            })
+            .select("id,name,active")
+            .single();
+
+        if(error) throw error;
+
+        /*
+         * Force inactive even if a table default/trigger
+         * attempts to change it.
+         */
+
+        const {
+            error:updateError
+        } = await supa
+            .from("korona_users")
+            .update({
+                active:false
+            })
+            .eq("id",id);
+
+        if(updateError) throw updateError;
+
+        $("#loginId").value = id;
+
+        showAuth("login");
+
+        setMessage(
+            $("#loginMsg"),
+            "ID created. Waiting for approval.",
+            true
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        if(error.code === "23505"){
+
+            setMessage(
+                $("#createMsg"),
+                "That Korona ID already exists."
+            );
+
+        }else{
+
+            setMessage(
+                $("#createMsg"),
+                error.message ||
+                "Could not create your Korona ID."
+            );
+        }
+
+    }finally{
+
+        button.disabled = false;
+        button.textContent = "REQUEST ID";
     }
+}
 
-    /* =========================================================
-       DYNAMIC SCRIPT LOADER
-       ========================================================= */
+/* =========================================================
+   5 SECOND AUTH CHECK
+========================================================= */
 
-    function loadScript(src) {
-        return new Promise((resolve, reject) => {
+async function checkActiveStatus(){
+
+    if(authLocked) return;
+
+    const saved =
+        loadSavedUser();
+
+    if(!saved) return;
+
+    try{
+
+        const {
+            data,
+            error
+        } = await getUserRecord(saved.id);
+
+        /*
+         * IMPORTANT:
+         * Network/RLS failures do NOT log the user out.
+         */
+
+        if(error){
+
+            console.warn(
+                "Korona auth check failed:",
+                error
+            );
+
+            return;
+        }
+
+        /*
+         * The row disappeared OR active changed to false.
+         */
+
+        if(!data || data.active !== true){
+
+            authLocked = true;
+
+            stopAuthWatcher();
+
+            localStorage.removeItem(USER_KEY);
+
+            currentUser = null;
+
+            showGate(
+                data
+                    ? "Your Korona account is no longer active."
+                    : "Your Korona account no longer exists."
+            );
+
+            return;
+        }
+
+        /*
+         * Keep the saved name synchronized.
+         */
+
+        saveUser(data);
+
+        $("#topUsername").textContent =
+            currentUser.name;
+
+        renderAccount();
+
+    }catch(error){
+
+        console.warn(
+            "Korona auth check error:",
+            error
+        );
+
+        /*
+         * Never kick someone because of a temporary
+         * connection failure.
+         */
+    }
+}
+
+function startAuthWatcher(){
+
+    stopAuthWatcher();
+
+    authLocked = false;
+
+    authPoll =
+        setInterval(
+            checkActiveStatus,
+            5000
+        );
+}
+
+function stopAuthWatcher(){
+
+    if(authPoll){
+
+        clearInterval(authPoll);
+
+        authPoll = null;
+    }
+}
+
+function logout(){
+
+    authLocked = true;
+
+    stopAuthWatcher();
+
+    localStorage.removeItem(USER_KEY);
+
+    currentUser = null;
+
+    showGate();
+}
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function openView(name){
+
+    $$(".view").forEach(view =>
+        view.classList.remove("active")
+    );
+
+    $$(".navButton").forEach(button =>
+        button.classList.remove("active")
+    );
+
+    const view =
+        $(`#view-${name}`);
+
+    const button =
+        $(`.navButton[data-view="${name}"]`);
+
+    if(view)
+        view.classList.add("active");
+
+    if(button)
+        button.classList.add("active");
+
+    if(name === "browser"){
+        renderBrowserTabs();
+    }
+}
+
+$$(".navButton").forEach(button => {
+
+    button.addEventListener(
+        "click",
+        () => openView(button.dataset.view)
+    );
+
+});
+
+$$("[data-open]").forEach(button => {
+
+    button.addEventListener(
+        "click",
+        () => openView(button.dataset.open)
+    );
+
+});
+
+/* =========================================================
+   GAMES
+========================================================= */
+
+const games = [
+
+    ["1v1.LOL","https://1v1.lol"],
+    ["10 Minutes Till Dawn","https://10minutestilldawn.com"],
+    ["2048","https://play2048.co"],
+    ["A Dark Room","https://adarkroom.doublespeakgames.com"],
+    ["Adventure Capitalist","https://adventure-capitalist.fandom.com"],
+    ["Among Us","https://amongusplay.online"],
+    ["Backrooms","https://backrooms-game.io"],
+    ["BitLife","https://bitlifeonline.github.io"],
+    ["Bloxd.io","https://bloxd.io"],
+    ["Cookie Clicker","https://orteil.dashnet.org/cookieclicker/"],
+    ["Crossy Road","https://crossyroadgame.github.io"],
+    ["Doge Miner","https://dogeminer2.com"],
+    ["Drift Hunters","https://drifthunters2.github.io"],
+    ["Fireboy and Watergirl","https://fireboywatergirl.github.io"],
+    ["Flappy Bird","https://flappybird.io"],
+    ["Geometry Dash","https://geometrydash.io"],
+    ["Helix Jump","https://helixjump.io"],
+    ["Krunker","https://krunker.io"],
+    ["Minecraft Classic","https://classic.minecraft.net"],
+    ["Moto X3M","https://motox3m.github.io"],
+    ["Paper.io 2","https://paper-io.com"],
+    ["Retro Bowl","https://retrobowl.me"],
+    ["Slope","https://slopegame.io"],
+    ["Stickman Hook","https://stickmanhookgame.github.io"],
+    ["Subway Surfers","https://subwaysurfersgame.io"],
+    ["Tetris","https://tetris.com/play-tetris"],
+    ["The Impossible Quiz","https://theimpossiblequiz.io"],
+    ["Tiny Fishing","https://tinyfishing.github.io"],
+    ["Tunnel Rush","https://tunnelrush.io"],
+    ["Vex 3","https://vex3.github.io"]
+];
+
+const moreGames = [
+
+    ["Action Games","https://example.com"],
+    ["Arcade Collection","https://example.com"],
+    ["Classic Games","https://example.com"],
+    ["Puzzle Collection","https://example.com"],
+    ["Strategy Collection","https://example.com"],
+    ["Experimental Games","https://example.com"]
+];
+
+const apps = [
+
+    ["Google","https://www.google.com","G"],
+    ["YouTube","https://www.youtube.com","YT"],
+    ["ChatGPT","https://chatgpt.com","AI"],
+    ["GitHub","https://github.com","GH"],
+    ["Piapro","https://piapro.net","P"],
+    ["Kasane Teto","https://kasaneteto.jp","T"],
+    ["Nintendo","https://www.nintendo.com","N"],
+    ["Wikipedia","https://www.wikipedia.org","W"]
+];
+
+function gameImage(name){
+
+    const encoded =
+        encodeURIComponent(
+            name + " game logo"
+        );
+
+    return `https://www.google.com/search?tbm=isch&q=${encoded}`;
+}
+
+function makeGameCard(game){
+
+    const [name,url] = game;
+
+    const card =
+        document.createElement("article");
+
+    card.className = "gameCard";
+
+    const image =
+        document.createElement("img");
+
+    image.className = "gameImage";
+
+    image.alt = name;
+
+    /*
+     * Use a generated local-style fallback instead of
+     * allowing broken images to destroy the card.
+     */
+
+    image.src =
+        `https://www.google.com/s2/favicons?domain=${encodeURIComponent(url)}&sz=128`;
+
+    image.onerror = () => {
+        image.style.display = "none";
+    };
+
+    const content =
+        document.createElement("div");
+
+    content.className = "gameContent";
+
+    const title =
+        document.createElement("div");
+
+    title.className = "gameTitle";
+
+    title.textContent = name;
+
+    const description =
+        document.createElement("div");
+
+    description.className = "gameDescription";
+
+    description.textContent =
+        "Open in a new Korona browser tab.";
+
+    const button =
+        document.createElement("button");
+
+    button.className = "gameButton";
+
+    button.textContent = "PLAY";
+
+    button.addEventListener(
+        "click",
+        () => openBrowser(url,name)
+    );
+
+    content.append(
+        title,
+        description,
+        button
+    );
+
+    card.append(
+        image,
+        content
+    );
+
+    return card;
+}
+
+function renderGames(list,target){
+
+    target.innerHTML = "";
+
+    list.forEach(game => {
+
+        target.appendChild(
+            makeGameCard(game)
+        );
+
+    });
+}
+
+function renderAllGames(){
+
+    renderGames(
+        games,
+        $("#gamesGrid")
+    );
+
+    renderGames(
+        moreGames,
+        $("#moreGrid")
+    );
+
+    renderGames(
+        games.slice(0,6),
+        $("#featuredGrid")
+    );
+}
+
+function filterGames(){
+
+    const search =
+        $("#gameSearch")
+            .value
+            .toLowerCase();
+
+    renderGames(
+        games.filter(
+            game =>
+                game[0]
+                    .toLowerCase()
+                    .includes(search)
+        ),
+        $("#gamesGrid")
+    );
+}
+
+function filterMore(){
+
+    const search =
+        $("#moreSearch")
+            .value
+            .toLowerCase();
+
+    renderGames(
+        moreGames.filter(
+            game =>
+                game[0]
+                    .toLowerCase()
+                    .includes(search)
+        ),
+        $("#moreGrid")
+    );
+}
+
+/* =========================================================
+   APPS
+========================================================= */
+
+function renderApps(){
+
+    const grid =
+        $("#appsGrid");
+
+    grid.innerHTML = "";
+
+    apps.forEach(
+        ([name,url,icon]) => {
+
+            const card =
+                document.createElement("article");
+
+            card.className =
+                "appCard";
+
+            card.innerHTML = `
+                <div class="appIcon"></div>
+                <strong></strong>
+                <span>Open in Korona Browser</span>
+            `;
+
+            card.querySelector(".appIcon")
+                .textContent = icon;
+
+            card.querySelector("strong")
+                .textContent = name;
+
+            card.addEventListener(
+                "click",
+                () => openBrowser(url,name)
+            );
+
+            grid.appendChild(card);
+        }
+    );
+}
+
+/* =========================================================
+   BROWSER / SCRAMJET
+========================================================= */
+
+let tabs = [];
+let activeTab = null;
+let tabNumber = 0;
+
+let scram = null;
+let mux = null;
+let scramReady = false;
+let scramLoading = null;
+
+function loadScript(src){
+
+    return new Promise(
+        (resolve,reject) => {
 
             const existing =
                 document.querySelector(
                     `script[data-korona-src="${src}"]`
                 );
 
-            if (existing) {
-                if (existing.dataset.loaded === "true") {
+            if(existing){
+
+                if(existing.dataset.loaded === "true"){
                     resolve();
                     return;
                 }
 
-                existing.addEventListener("load", resolve, {
-                    once: true
-                });
+                existing.addEventListener(
+                    "load",
+                    resolve,
+                    {once:true}
+                );
 
-                existing.addEventListener("error", () => {
-                    reject(
-                        new Error(
-                            "Failed to load " + src
-                        )
-                    );
-                }, {
-                    once: true
-                });
+                existing.addEventListener(
+                    "error",
+                    () =>
+                        reject(
+                            new Error(
+                                "Could not load " + src
+                            )
+                        ),
+                    {once:true}
+                );
 
                 return;
             }
@@ -1858,6 +2309,7 @@
                 document.createElement("script");
 
             script.src = src;
+
             script.dataset.koronaSrc = src;
 
             script.onload = () => {
@@ -1865,2335 +2317,934 @@
                 resolve();
             };
 
-            script.onerror = () => {
+            script.onerror = () =>
                 reject(
                     new Error(
-                        "Failed to load " + src
+                        "Could not load " + src
                     )
                 );
-            };
 
             document.head.appendChild(script);
-        });
-    }
-
-    /* =========================================================
-       SUPABASE
-       ========================================================= */
-
-    let supabasePromise = null;
-
-    async function ensureSupabase() {
-
-        if (
-            window.supabase &&
-            typeof window.supabase.createClient === "function"
-        ) {
-            if (!supa) {
-                supa =
-                    window.supabase.createClient(
-                        SUPABASE_URL,
-                        SUPABASE_KEY
-                    );
-            }
-
-            return supa;
         }
+    );
+}
 
-        if (!supabasePromise) {
-            supabasePromise =
-                loadScript(
-                    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-                );
-        }
+async function ensureScramjet(){
 
-        await supabasePromise;
+    if(scramReady)
+        return;
 
-        if (
-            !window.supabase ||
-            typeof window.supabase.createClient !== "function"
-        ) {
-            throw new Error(
-                "Supabase failed to load."
-            );
-        }
+    if(scramLoading)
+        return scramLoading;
 
-        supa =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_KEY
+    scramLoading =
+        (async () => {
+
+            await loadScript(
+                "/scram/scramjet.all.js"
             );
 
-        return supa;
-    }
-
-    /* =========================================================
-       AUTH
-       ========================================================= */
-
-    function loadUser() {
-
-        try {
-            const raw =
-                localStorage.getItem(USER_KEY);
-
-            if (!raw) return null;
-
-            return JSON.parse(raw);
-
-        } catch {
-            localStorage.removeItem(USER_KEY);
-            return null;
-        }
-    }
-
-    function saveUser(account) {
-
-        user = account;
-
-        localStorage.setItem(
-            USER_KEY,
-            JSON.stringify(account)
-        );
-    }
-
-    function accountObject(data) {
-
-        return {
-            id: data.id,
-            name: data.name || data.id
-        };
-    }
-
-    async function getUserRecord(id) {
-
-        await ensureSupabase();
-
-        return await supa
-            .from("korona_users")
-            .select("id,name,active")
-            .eq("id", id)
-            .maybeSingle();
-    }
-
-    async function login() {
-
-        const input =
-            $("#loginId");
-
-        const id =
-            input.value.trim().toLowerCase();
-
-        msg($("#loginMsg"), "");
-
-        if (!id) {
-            msg(
-                $("#loginMsg"),
-                "Enter your Korona ID."
-            );
-            return;
-        }
-
-        try {
-
-            await ensureSupabase();
-
-            const {
-                data,
-                error
-            } =
-                await getUserRecord(id);
-
-            if (error) {
-                throw error;
-            }
-
-            if (!data) {
-                msg(
-                    $("#loginMsg"),
-                    "That Korona ID does not exist."
-                );
-                return;
-            }
-
-            if (data.active !== true) {
-                msg(
-                    $("#loginMsg"),
-                    "That Korona ID is waiting for approval."
-                );
-                return;
-            }
-
-            authLocked = false;
-
-            saveUser(
-                accountObject(data)
+            await loadScript(
+                "/baremux/index.js"
             );
 
-            unlock();
-
-            startAuthWatcher();
-
-        } catch (error) {
-
-            console.error(
-                "Korona login error:",
-                error
-            );
-
-            msg(
-                $("#loginMsg"),
-                error.message ||
-                "Could not connect to Korona."
-            );
-        }
-    }
-
-    async function createAccount() {
-
-        const first =
-            $("#firstName").value.trim();
-
-        const last =
-            $("#lastName").value.trim();
-
-        msg($("#createMsg"), "");
-
-        if (!first || !last) {
-            msg(
-                $("#createMsg"),
-                "Enter both names."
-            );
-            return;
-        }
-
-        const id =
-            (
-                first +
-                "." +
-                last
-            )
-                .toLowerCase()
-                .replace(
-                    /[^a-z0-9.]/g,
-                    ""
-                );
-
-        if (!id) {
-            msg(
-                $("#createMsg"),
-                "Those names could not make a valid Korona ID."
-            );
-            return;
-        }
-
-        try {
-
-            await ensureSupabase();
-
-            const payload = {
-                id,
-                name:
-                    first +
-                    " " +
-                    last,
-                active: false
-            };
-
-            const {
-                data,
-                error
-            } =
-                await supa
-                    .from("korona_users")
-                    .insert(payload)
-                    .select(
-                        "id,name,active"
-                    )
-                    .single();
-
-            if (error) {
-                throw error;
-            }
-
-            if (!data) {
+            if(
+                !window.$scramjetLoadController
+            ){
                 throw new Error(
-                    "The account was not created."
+                    "Scramjet was not found."
                 );
             }
 
-            const {
-                data: verify,
-                error: verifyError
-            } =
-                await getUserRecord(id);
+            const loaded =
+                window.$scramjetLoadController();
 
-            if (verifyError) {
-                throw verifyError;
-            }
+            const Controller =
+                loaded?.ScramjetController ||
+                window.ScramjetController;
 
-            if (
-                !verify ||
-                verify.active !== false
-            ) {
+            if(
+                typeof Controller !== "function"
+            ){
                 throw new Error(
-                    "The account was created, but active=false was not preserved."
+                    "ScramjetController was not found."
                 );
             }
 
-            $("#loginId").value = id;
-
-            showAuth("login");
-
-            msg(
-                $("#loginMsg"),
-                "Korona ID created. Waiting for approval.",
-                true
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Korona create error:",
-                error
-            );
-
-            msg(
-                $("#createMsg"),
-                error.message ||
-                "Could not create Korona ID."
-            );
-        }
-    }
-
-    async function checkActiveStatus() {
-
-        const saved =
-            loadUser();
-
-        if (
-            !saved ||
-            !supa ||
-            authLocked
-        ) {
-            return false;
-        }
-
-        try {
-
-            const {
-                data,
-                error
-            } =
-                await getUserRecord(
-                    saved.id
-                );
-
-            /*
-             * A temporary Supabase/network/RLS
-             * failure should NOT kick the user.
-             */
-
-            if (error) {
-                console.warn(
-                    "Korona auth poll:",
-                    error
-                );
-
-                return true;
-            }
-
-            if (
-                !data ||
-                data.active !== true
-            ) {
-
-                stopAuthWatcher();
-
-                authLocked = true;
-
-                localStorage.removeItem(
-                    USER_KEY
-                );
-
-                user = null;
-
-                $("#app").style.display =
-                    "none";
-
-                const gate =
-                    $("#authGate");
-
-                gate.style.display =
-                    "grid";
-
-                showAuth("login");
-
-                msg(
-                    $("#loginMsg"),
-                    data
-                        ? "Your Korona account is no longer active."
-                        : "Your Korona account no longer exists."
-                );
-
-                return false;
-            }
-
-            user =
-                accountObject(data);
-
-            localStorage.setItem(
-                USER_KEY,
-                JSON.stringify(user)
-            );
-
-            return true;
-
-        } catch (error) {
-
-            console.warn(
-                "Korona auth poll:",
-                error
-            );
-
-            return true;
-        }
-    }
-
-    function startAuthWatcher() {
-
-        stopAuthWatcher();
-
-        authWatcher =
-            setInterval(
-                checkActiveStatus,
-                5000
-            );
-    }
-
-    function stopAuthWatcher() {
-
-        if (authWatcher) {
-            clearInterval(authWatcher);
-            authWatcher = null;
-        }
-    }
-
-    function lock() {
-
-        stopAuthWatcher();
-
-        authLocked = true;
-
-        user = null;
-
-        localStorage.removeItem(
-            USER_KEY
-        );
-
-        $("#app").style.display =
-            "none";
-
-        $("#authGate").style.display =
-            "grid";
-
-        showAuth("login");
-
-        $("#loginId").value = "";
-
-        msg(
-            $("#loginMsg"),
-            ""
-        );
-    }
-
-    function unlock() {
-
-        authLocked = false;
-
-        $("#authGate").style.display =
-            "none";
-
-        $("#app").style.display =
-            "flex";
-
-        $("#userName").textContent =
-            user?.name ||
-            user?.id ||
-            "online";
-    }
-
-    function showAuth(mode) {
-
-        $("#loginBox")
-            .classList.toggle(
-                "visible",
-                mode === "login"
-            );
-
-        $("#createBox")
-            .classList.toggle(
-                "visible",
-                mode === "create"
-            );
-    }
-
-    /* =========================================================
-       LAZY SCRAMJET
-       ========================================================= */
-
-    async function loadProxyLibraries() {
-
-        if (scramjetScriptsPromise) {
-            return scramjetScriptsPromise;
-        }
-
-        scramjetScriptsPromise =
-            (async () => {
-
-                await loadScript(
-                    "/scram/scramjet.all.js"
-                );
-
-                await loadScript(
-                    "/baremux/index.js"
-                );
-
-            })();
-
-        try {
-
-            await scramjetScriptsPromise;
-
-        } catch (error) {
-
-            scramjetScriptsPromise =
-                null;
-
-            throw error;
-        }
-    }
-
-    async function ensureScram() {
-
-        if (scramReady) {
-            return true;
-        }
-
-        if (
-            !("serviceWorker" in navigator)
-        ) {
-            throw new Error(
-                "Service workers are not supported by this browser."
-            );
-        }
-
-        if (
-            location.protocol !== "https:" &&
-            location.hostname !== "localhost" &&
-            location.hostname !== "127.0.0.1"
-        ) {
-            throw new Error(
-                "Korona proxy requires HTTPS."
-            );
-        }
-
-        await loadProxyLibraries();
-
-        if (
-            typeof window.$scramjetLoadController !==
-            "function"
-        ) {
-            throw new Error(
-                "Scramjet loader is unavailable."
-            );
-        }
-
-        const loaded =
-            window.$scramjetLoadController();
-
-        const ScramjetController =
-            loaded &&
-            (
-                loaded.ScramjetController ||
-                window.ScramjetController
-            );
-
-        if (
-            typeof ScramjetController !==
-            "function"
-        ) {
-            throw new Error(
-                "ScramjetController is unavailable."
-            );
-        }
-
-        scram =
-            new ScramjetController({
-                files: {
-                    wasm:
-                        "/scram/scramjet.wasm.wasm",
-
-                    all:
-                        "/scram/scramjet.all.js",
-
-                    sync:
-                        "/scram/scramjet.sync.js"
-                }
-            });
-
-        scram.init();
-
-        let registration =
-            await navigator.serviceWorker
-                .getRegistration("/");
-
-        if (!registration) {
-
-            registration =
-                await navigator.serviceWorker.register(
-                    "/sw.js",
-                    {
-                        scope: "/"
+            scram =
+                new Controller({
+                    files:{
+                        wasm:
+                            "/scram/scramjet.wasm.wasm",
+
+                        all:
+                            "/scram/scramjet.all.js",
+
+                        sync:
+                            "/scram/scramjet.sync.js"
                     }
+                });
+
+            scram.init();
+
+            if(!("serviceWorker" in navigator)){
+                throw new Error(
+                    "Service workers are unavailable."
                 );
-        }
+            }
 
-        await navigator.serviceWorker.ready;
+            let registration =
+                await navigator.serviceWorker
+                    .getRegistration("/");
 
-        if (
-            typeof window.BareMux ===
-            "undefined" ||
-            typeof window.BareMux
-                .BareMuxConnection !==
-                "function"
-        ) {
-            throw new Error(
-                "BareMux is unavailable."
+            if(!registration){
+
+                registration =
+                    await navigator.serviceWorker
+                        .register(
+                            "/sw.js",
+                            {scope:"/"}
+                        );
+            }
+
+            await navigator.serviceWorker.ready;
+
+            if(
+                !window.BareMux ||
+                !window.BareMux.BareMuxConnection
+            ){
+                throw new Error(
+                    "BareMux was not found."
+                );
+            }
+
+            mux =
+                new window.BareMux.BareMuxConnection(
+                    "/baremux/worker.js"
+                );
+
+            const websocket =
+                (
+                    location.protocol === "https:"
+                        ? "wss://"
+                        : "ws://"
+                ) +
+                location.host +
+                "/wisp/";
+
+            await mux.setTransport(
+                "/libcurl/index.mjs",
+                [{websocket}]
             );
-        }
 
-        mux =
-            new window.BareMux.BareMuxConnection(
-                "/baremux/worker.js"
-            );
+            scramReady = true;
 
-        const websocket =
-            (
-                location.protocol === "https:"
-                    ? "wss://"
-                    : "ws://"
-            ) +
-            location.host +
-            "/wisp/";
+        })();
 
-        await mux.setTransport(
-            "/libcurl/index.mjs",
-            [
-                {
-                    websocket
-                }
-            ]
+    try{
+
+        await scramLoading;
+
+    }catch(error){
+
+        scramLoading = null;
+
+        throw error;
+    }
+}
+
+function createTab(){
+
+    const id =
+        ++tabNumber;
+
+    const frame =
+        document.createElement("iframe");
+
+    frame.className =
+        "browserFrame";
+
+    frame.dataset.tab = id;
+
+    frame.allow =
+        "fullscreen; autoplay; clipboard-read; clipboard-write";
+
+    frame.setAttribute(
+        "allowfullscreen",
+        ""
+    );
+
+    $("#browserFrames")
+        .appendChild(frame);
+
+    const tab = {
+        id,
+        frame,
+        url:"",
+        title:"New Tab"
+    };
+
+    tabs.push(tab);
+
+    activeTab = id;
+
+    renderBrowserTabs();
+
+    return tab;
+}
+
+function getActiveTab(){
+
+    return tabs.find(
+        tab => tab.id === activeTab
+    );
+}
+
+function renderBrowserTabs(){
+
+    const bar =
+        $("#browserTabs");
+
+    bar.innerHTML = "";
+
+    tabs.forEach(tab => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "browserTab" +
+            (tab.id === activeTab
+                ? " active"
+                : "");
+
+        const name =
+            document.createElement("span");
+
+        name.className =
+            "browserTabName";
+
+        name.textContent =
+            tab.title || "New Tab";
+
+        const close =
+            document.createElement("button");
+
+        close.textContent = "×";
+
+        close.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                closeTab(tab.id);
+            }
         );
 
-        scramReady = true;
+        item.addEventListener(
+            "click",
+            () => {
 
-        return true;
+                activeTab = tab.id;
+
+                renderBrowserTabs();
+                updateBrowserFrames();
+            }
+        );
+
+        item.append(
+            name,
+            close
+        );
+
+        bar.appendChild(item);
+    });
+
+    bar.appendChild(
+        $("#newTab")
+    );
+
+    updateBrowserFrames();
+
+    const tab =
+        getActiveTab();
+
+    $("#address").value =
+        tab?.url || "";
+}
+
+function updateBrowserFrames(){
+
+    tabs.forEach(tab => {
+
+        tab.frame.classList.toggle(
+            "active",
+            tab.id === activeTab
+        );
+
+    });
+
+    const hasFrame =
+        tabs.length > 0;
+
+    $("#browserStart")
+        .classList.toggle(
+            "hidden",
+            hasFrame &&
+            Boolean(getActiveTab()?.url)
+        );
+}
+
+function normalizeUrl(value){
+
+    value = value.trim();
+
+    if(!value)
+        return "";
+
+    if(
+        /^https?:\/\//i.test(value)
+    ){
+        return value;
     }
 
-    async function createScramFrame() {
+    if(
+        value.includes(".") &&
+        !value.includes(" ")
+    ){
+        return "https://" + value;
+    }
 
-        await ensureScram();
+    return (
+        "https://www.google.com/search?q=" +
+        encodeURIComponent(value)
+    );
+}
 
-        if (
-            window.koronaScramFrame
-        ) {
-            return window.koronaScramFrame;
-        }
+async function navigate(url){
+
+    const tab =
+        getActiveTab() ||
+        createTab();
+
+    url = normalizeUrl(url);
+
+    if(!url)
+        return;
+
+    $("#address").value = url;
+
+    tab.url = url;
+
+    try{
+
+        await ensureScramjet();
 
         const frame =
             scram.createFrame();
 
-        frame.frame.id =
-            "iframeWindow";
+        tab.frame.replaceWith(frame);
 
-        frame.frame.title =
-            "Korona Browser";
+        tab.frame = frame;
 
-        frame.frame.setAttribute(
-            "allow",
-            "fullscreen; autoplay; gamepad"
-        );
+        frame.className =
+            "browserFrame active";
 
-        frame.frame.setAttribute(
+        frame.dataset.tab =
+            tab.id;
+
+        frame.allow =
+            "fullscreen; autoplay; clipboard-read; clipboard-write";
+
+        frame.setAttribute(
             "allowfullscreen",
             ""
         );
 
-        frame.frame.setAttribute(
-            "loading",
-            "eager"
+        frame.go(url);
+
+        try{
+            tab.title =
+                new URL(url)
+                    .hostname
+                    .replace(/^www\./,"");
+        }catch{
+            tab.title = "Korona";
+        }
+
+        $("#browserStart")
+            .classList.add("hidden");
+
+        renderBrowserTabs();
+
+    }catch(error){
+
+        console.error(
+            "Korona browser error:",
+            error
         );
 
-        frame.frame.setAttribute(
-            "referrerpolicy",
-            "no-referrer"
+        $("#browserStart")
+            .classList.remove("hidden");
+
+        $("#browserStart").innerHTML = `
+            <div class="browserStartBox">
+                <b>!</b>
+                <strong>Browser failed to start</strong>
+                <span>${escapeHtml(error.message)}</span>
+            </div>
+        `;
+    }
+}
+
+function escapeHtml(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+function openBrowser(url,title){
+
+    openView("browser");
+
+    const tab =
+        createTab();
+
+    tab.title =
+        title || "New Tab";
+
+    navigate(url);
+}
+
+function closeTab(id){
+
+    const index =
+        tabs.findIndex(
+            tab => tab.id === id
         );
 
-        const old =
-            document.getElementById(
-                "iframeWindow"
-            );
+    if(index < 0)
+        return;
 
-        if (old) {
-            old.replaceWith(
-                frame.frame
-            );
-        } else {
-            $("#iframeContainer")
-                .appendChild(
-                    frame.frame
-                );
-        }
+    const tab =
+        tabs[index];
 
-        iframeWindow =
-            frame.frame;
+    tab.frame.remove();
 
-        window.koronaScramFrame =
-            frame;
+    tabs.splice(
+        index,
+        1
+    );
 
-        return frame;
+    if(activeTab === id){
+
+        activeTab =
+            tabs[index]?.id ||
+            tabs[index - 1]?.id ||
+            null;
     }
 
-    /* =========================================================
-       URL / PROXY
-       ========================================================= */
+    if(!tabs.length){
 
-    function normalizeUrl(value) {
+        $("#browserStart")
+            .classList.remove("hidden");
 
-        let url =
-            value.trim();
-
-        if (!url) {
-            return null;
-        }
-
-        if (
-            !/^https?:\/\//i.test(url)
-        ) {
-            url =
-                "https://" +
-                url;
-        }
-
-        try {
-            return new URL(url).href;
-        } catch {
-            return null;
-        }
+        createTab();
     }
 
-    async function openUrl(value) {
+    renderBrowserTabs();
+}
 
-        const url =
-            normalizeUrl(value);
+/* =========================================================
+   BROWSER CONTROLS
+========================================================= */
 
-        if (!url) {
+$("#goBtn").onclick =
+    () => navigate(
+        $("#address").value
+    );
 
-            alert(
-                "Enter a valid URL."
+$("#address").addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Enter")
+            navigate(
+                $("#address").value
             );
-
-            return;
-        }
-
-        try {
-
-            const frame =
-                await createScramFrame();
-
-            const overlay =
-                document.createElement(
-                    "div"
-                );
-
-            overlay.className =
-                "proxy-opening-overlay";
-
-            overlay.innerHTML =
-                '<div class="proxy-opening-text">STARTING KORONA PROXY...</div>';
-
-            $("#iframeContainer")
-                .appendChild(
-                    overlay
-                );
-
-            overlay.classList.add(
-                "show"
-            );
-
-            await frame.go(url);
-
-            setTimeout(() => {
-                overlay.remove();
-            }, 550);
-
-        } catch (error) {
-
-            console.error(
-                "Korona proxy error:",
-                error
-            );
-
-            alert(
-                "Korona proxy failed:\n\n" +
-                (
-                    error?.message ||
-                    error
-                )
-            );
-        }
     }
+);
 
-    /* =========================================================
-       THEMES
-       ========================================================= */
+$("#newTab").onclick =
+    () => {
 
-    const themes = [
-        {
-            id: "korona",
-            name: "Korona",
-            description:
-                "Original green cyberpunk interface."
-        },
-        {
-            id: "switch",
-            name: "Nintendo Switch",
-            description:
-                "Switch-inspired white and red interface."
-        }
-    ];
+        openView("browser");
 
-    function renderThemes() {
+        createTab();
+    };
 
-        const grid =
-            $("#themeGrid");
+$("#backBtn").onclick = () => {
 
-        if (!grid) return;
+    const frame =
+        getActiveTab()?.frame;
 
-        grid.innerHTML = "";
+    try{
+        frame?.contentWindow?.history.back();
+    }catch{}
+};
 
-        for (const theme of themes) {
+$("#forwardBtn").onclick = () => {
 
-            const button =
-                document.createElement(
-                    "button"
-                );
+    const frame =
+        getActiveTab()?.frame;
 
-            button.className =
-                "themeCard";
+    try{
+        frame?.contentWindow?.history.forward();
+    }catch{}
+};
 
-            button.type =
-                "button";
+$("#reloadBtn").onclick = () => {
 
-            button.innerHTML =
-                `
-                    <strong>
-                        ${theme.name}
-                    </strong>
+    const frame =
+        getActiveTab()?.frame;
 
-                    <span>
-                        ${theme.description}
-                    </span>
-                `;
+    try{
+        frame?.contentWindow?.location.reload();
+    }catch{}
+};
 
-            if (
-                selectedStyle ===
-                theme.id
-            ) {
-                button.classList.add(
-                    "selected"
-                );
-            }
+$("#browserHomeBtn").onclick = () => {
 
-            button.addEventListener(
-                "click",
-                () => {
-                    applyStyleMode(
-                        theme.id
-                    );
-                }
-            );
+    const tab =
+        getActiveTab();
 
-            grid.appendChild(
-                button
-            );
-        }
-    }
-
-    function applyStyleMode(style) {
-
-        selectedStyle =
-            style === "switch"
-                ? "switch"
-                : "korona";
-
-        document.body.classList.toggle(
-            "switchTheme",
-            selectedStyle ===
-                "switch"
+    if(tab)
+        navigate(
+            "https://www.google.com"
         );
+};
+
+$("#fullscreenBtn").onclick = () => {
+
+    const frame =
+        getActiveTab()?.frame;
+
+    if(!frame)
+        return;
+
+    if(document.fullscreenElement){
+        document.exitFullscreen();
+    }else{
+        frame.requestFullscreen?.();
+    }
+};
+
+/* =========================================================
+   SETTINGS / THEMES
+========================================================= */
+
+function applyStyle(style){
+
+    const switchMode =
+        style === "switch";
+
+    document.body.classList.toggle(
+        "switchMode",
+        switchMode
+    );
+
+    $("#styleSelect").value =
+        switchMode
+            ? "switch"
+            : "korona";
+
+    localStorage.setItem(
+        STYLE_KEY,
+        switchMode
+            ? "switch"
+            : "korona"
+    );
+
+    $("#gamesNavText").textContent =
+        switchMode
+            ? "Software"
+            : "Games";
+}
+
+function applyTheme(theme){
+
+    document.body.classList.remove(
+        "themeDark"
+    );
+
+    $$(".themeButton")
+        .forEach(button =>
+            button.classList.toggle(
+                "selected",
+                button.dataset.theme === theme
+            )
+        );
+
+    if(theme === "dark"){
+
+        document.documentElement.style.setProperty(
+            "--green",
+            "#b8b8b8"
+        );
+
+    }else{
+
+        document.documentElement.style.setProperty(
+            "--green",
+            "#18d66b"
+        );
+    }
+
+    if(theme === "switch"){
+
+        applyStyle("switch");
+
+    }else if(
+        localStorage.getItem(STYLE_KEY) !== "switch"
+    ){
+
+        applyStyle("korona");
+    }
+
+    localStorage.setItem(
+        THEME_KEY,
+        theme
+    );
+}
+
+function applyCharacter(character){
+
+    const img =
+        $("#character");
+
+    img.classList.remove("show");
+
+    if(character === "none"){
 
         localStorage.setItem(
-            "korona_style",
-            selectedStyle
+            CHARACTER_KEY,
+            "none"
         );
 
-        renderThemes();
-
-        paintParticles();
+        return;
     }
 
-    /* =========================================================
-       CHARACTER
-       ========================================================= */
+    const images = {
 
-    const characterSources = {
-        none: "",
+        /*
+         * These are deliberately loaded only after
+         * the user selects a character.
+         */
 
         miku:
-            "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1600&q=85",
+            "https://upload.wikimedia.org/wikipedia/commons/d/d8/Turbo_Miku.png",
 
         teto:
-            "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1600&q=85",
+            "https://kasaneteto.jp/assets/download/illust-logo/official_illust_teto_new.png",
 
         neru:
-            "https://images.unsplash.com/photo-1541560052-77ec1bbc09f7?auto=format&fit=crop&w=1600&q=85"
+            "https://upload.wikimedia.org/wikipedia/commons/4/4b/Akihiko_Yoshida_-_Kagamine_Neru.jpg"
     };
 
-    function applyCharacter(character) {
+    if(!images[character]){
 
-        if (
-            !characterSources[
-                character
-            ]
-        ) {
-            selectedCharacter =
-                "none";
+        $("#characterSelect").value =
+            "none";
 
-            document.body
-                .style
-                .setProperty(
-                    "--character-bg",
-                    "none"
-                );
-
-            localStorage.setItem(
-                "korona_character",
-                "none"
-            );
-
-            return;
-        }
-
-        selectedCharacter =
-            character;
-
-        localStorage.setItem(
-            "korona_character",
-            character
-        );
-
-        document.body
-            .style
-            .setProperty(
-                "--character-bg",
-                `url("${characterSources[character]}")`
-            );
+        return;
     }
 
-    /* =========================================================
-       PARTICLES
-       ========================================================= */
-
-    let particleCanvas =
-        null;
-
-    let particleCtx =
-        null;
-
-    let particles = [];
-
-    let particleMouse = {
-        x: -9999,
-        y: -9999
+    img.onload = () => {
+        img.classList.add("show");
     };
 
-    function initParticles() {
+    img.onerror = () => {
+        img.classList.remove("show");
+    };
 
-        particleCanvas =
-            $("#bgCanvas");
+    img.src =
+        images[character];
 
-        if (!particleCanvas) {
-            return;
-        }
+    localStorage.setItem(
+        CHARACTER_KEY,
+        character
+    );
+}
 
-        particleCtx =
-            particleCanvas.getContext(
-                "2d"
-            );
+$("#styleSelect").addEventListener(
+    "change",
+    event =>
+        applyStyle(
+            event.target.value
+        )
+);
 
-        resizeParticles();
+$("#characterSelect").addEventListener(
+    "change",
+    event =>
+        applyCharacter(
+            event.target.value
+        )
+);
 
-        window.addEventListener(
-            "resize",
-            resizeParticles
-        );
+$$(".themeButton").forEach(
+    button => {
 
-        window.addEventListener(
-            "mousemove",
-            event => {
-                particleMouse.x =
-                    event.clientX;
-
-                particleMouse.y =
-                    event.clientY;
-            }
-        );
-
-        particles = [];
-
-        const amount =
-            Math.min(
-                110,
-                Math.floor(
-                    window.innerWidth *
-                    window.innerHeight /
-                    15000
+        button.addEventListener(
+            "click",
+            () =>
+                applyTheme(
+                    button.dataset.theme
                 )
-            );
-
-        for (
-            let i = 0;
-            i < amount;
-            i++
-        ) {
-
-            particles.push({
-                x:
-                    Math.random() *
-                    window.innerWidth,
-
-                y:
-                    Math.random() *
-                    window.innerHeight,
-
-                vx:
-                    (Math.random() - .5) *
-                    .35,
-
-                vy:
-                    (Math.random() - .5) *
-                    .35,
-
-                size:
-                    Math.random() *
-                    1.7 +
-                    .5
-            });
-        }
-
-        requestAnimationFrame(
-            drawParticles
         );
     }
+);
 
-    function resizeParticles() {
+/* =========================================================
+   ACCOUNT
+========================================================= */
 
-        if (!particleCanvas) {
-            return;
-        }
+function renderAccount(){
 
-        particleCanvas.width =
-            window.innerWidth;
+    const card =
+        $("#accountCard");
 
-        particleCanvas.height =
-            window.innerHeight;
+    if(!currentUser){
+
+        card.textContent =
+            "Not signed in.";
+
+        return;
     }
 
-    function paintParticles() {
+    card.innerHTML = "";
 
-        if (!particleCtx || !particleCanvas) {
-            return;
-        }
-
-        particleCtx.clearRect(
-            0,
-            0,
-            particleCanvas.width,
-            particleCanvas.height
-        );
-    }
-
-    function drawParticles() {
-
-        if (
-            !particleCtx ||
-            !particleCanvas
-        ) {
-            return;
-        }
-
-        particleCtx.clearRect(
-            0,
-            0,
-            particleCanvas.width,
-            particleCanvas.height
-        );
-
-        for (const p of particles) {
-
-            const dx =
-                p.x -
-                particleMouse.x;
-
-            const dy =
-                p.y -
-                particleMouse.y;
-
-            const distance =
-                Math.sqrt(
-                    dx * dx +
-                    dy * dy
-                );
-
-            if (
-                distance < 110 &&
-                distance > 0
-            ) {
-
-                const force =
-                    (110 - distance) /
-                    110;
-
-                p.vx +=
-                    (dx / distance) *
-                    force *
-                    .025;
-
-                p.vy +=
-                    (dy / distance) *
-                    force *
-                    .025;
-            }
-
-            p.x += p.vx;
-            p.y += p.vy;
-
-            p.vx *= .995;
-            p.vy *= .995;
-
-            if (
-                p.x < -20 ||
-                p.x >
-                    window.innerWidth +
-                    20
-            ) {
-                p.x =
-                    Math.random() *
-                    window.innerWidth;
-            }
-
-            if (
-                p.y < -20 ||
-                p.y >
-                    window.innerHeight +
-                    20
-            ) {
-                p.y =
-                    Math.random() *
-                    window.innerHeight;
-            }
-
-            particleCtx.beginPath();
-
-            particleCtx.arc(
-                p.x,
-                p.y,
-                p.size,
-                0,
-                Math.PI * 2
-            );
-
-            particleCtx.fillStyle =
-                selectedStyle ===
-                "switch"
-                    ? "rgba(230,0,18,.28)"
-                    : "rgba(0,255,102,.32)";
-
-            particleCtx.fill();
-        }
-
-        requestAnimationFrame(
-            drawParticles
-        );
-    }
-
-    /* =========================================================
-       END OF PART 1
-       ========================================================= */
-</script>
-<!-- KORONA / FERN V2
-     PART 2 OF 5
-     Continue directly after PART 1.
--->
-
-<script>
-    /* =========================================================
-       GAMES
-       ========================================================= */
-
-    const games = [
-        {
-            id: "1v1-lol",
-            name: "1v1.LOL",
-            description: "Build, shoot, and fight.",
-            image: "https://www.google.com/s2/favicons?domain=1v1.lol&sz=128",
-            url: "https://1v1.lol/"
-        },
-
-        {
-            id: "slope",
-            name: "Slope",
-            description: "Roll through the neon course.",
-            image: "https://www.google.com/s2/favicons?domain=slopegame.io&sz=128",
-            url: "https://slopegame.io/"
-        },
-
-        {
-            id: "retro-bowl",
-            name: "Retro Bowl",
-            description: "Classic football management.",
-            image: "https://www.google.com/s2/favicons?domain=retrobowl.me&sz=128",
-            url: "https://retrobowl.me/"
-        },
-
-        {
-            id: "drive-mad",
-            name: "Drive Mad",
-            description: "Drive ridiculous vehicles.",
-            image: "https://www.google.com/s2/favicons?domain=drivemad.me&sz=128",
-            url: "https://drivemad.me/"
-        },
-
-        {
-            id: "ovo",
-            name: "OvO",
-            description: "Fast platforming.",
-            image: "https://www.google.com/s2/favicons?domain=ovogame.com&sz=128",
-            url: "https://ovogame.com/"
-        },
-
-        {
-            id: "drift-hunters",
-            name: "Drift Hunters",
-            description: "Tune cars and drift.",
-            image: "https://www.google.com/s2/favicons?domain=drifthunters.io&sz=128",
-            url: "https://drifthunters.io/"
-        },
-
-        {
-            id: "basket-random",
-            name: "Basket Random",
-            description: "Chaotic basketball.",
-            image: "https://www.google.com/s2/favicons?domain=basketrandom.com&sz=128",
-            url: "https://basketrandom.com/"
-        },
-
-        {
-            id: "soccer-random",
-            name: "Soccer Random",
-            description: "Randomized soccer matches.",
-            image: "https://www.google.com/s2/favicons?domain=soccerrandom.io&sz=128",
-            url: "https://soccerrandom.io/"
-        },
-
-        {
-            id: "geometry-dash",
-            name: "Geometry Dash",
-            description: "Jump, fly, and survive.",
-            image: "https://www.google.com/s2/favicons?domain=geometrydash.io&sz=128",
-            url: "https://geometrydash.io/"
-        },
-
-        {
-            id: "minecraft",
-            name: "Minecraft Classic",
-            description: "The classic browser version.",
-            image: "https://www.google.com/s2/favicons?domain=minecraft.net&sz=128",
-            url: "https://classic.minecraft.net/"
-        },
-
-        {
-            id: "shell-shockers",
-            name: "Shell Shockers",
-            description: "Egg-based multiplayer FPS.",
-            image: "https://www.google.com/s2/favicons?domain=shellshock.io&sz=128",
-            url: "https://shellshock.io/"
-        },
-
-        {
-            id: "krunker",
-            name: "Krunker",
-            description: "Fast browser FPS.",
-            image: "https://www.google.com/s2/favicons?domain=krunker.io&sz=128",
-            url: "https://krunker.io/"
-        },
-
-        {
-            id: "paper-io-2",
-            name: "Paper.io 2",
-            description: "Claim as much territory as possible.",
-            image: "https://www.google.com/s2/favicons?domain=paper-io.com&sz=128",
-            url: "https://paper-io.com/"
-        },
-
-        {
-            id: "agar-io",
-            name: "Agar.io",
-            description: "Grow bigger and survive.",
-            image: "https://www.google.com/s2/favicons?domain=agar.io&sz=128",
-            url: "https://agar.io/"
-        },
-
-        {
-            id: "slither-io",
-            name: "Slither.io",
-            description: "Become the biggest snake.",
-            image: "https://www.google.com/s2/favicons?domain=slither.io&sz=128",
-            url: "https://slither.io/"
-        },
-
-        {
-            id: "diep-io",
-            name: "Diep.io",
-            description: "Upgrade your tank and fight.",
-            image: "https://www.google.com/s2/favicons?domain=diep.io&sz=128",
-            url: "https://diep.io/"
-        },
-
-        {
-            id: "surviv-io",
-            name: "Surviv.io",
-            description: "Battle royale survival.",
-            image: "https://www.google.com/s2/favicons?domain=surviv.io&sz=128",
-            url: "https://surviv.io/"
-        },
-
-        {
-            id: "shell-shockers-2",
-            name: "Shell Shockers",
-            description: "More egg warfare.",
-            image: "https://www.google.com/s2/favicons?domain=shellshock.io&sz=128",
-            url: "https://shellshock.io/"
-        },
-
-        {
-            id: "wordle",
-            name: "Wordle",
-            description: "Guess the five-letter word.",
-            image: "https://www.google.com/s2/favicons?domain=nytimes.com&sz=128",
-            url: "https://www.nytimes.com/games/wordle/index.html"
-        },
-
-        {
-            id: "chess",
-            name: "Chess",
-            description: "Play chess in your browser.",
-            image: "https://www.google.com/s2/favicons?domain=chess.com&sz=128",
-            url: "https://www.chess.com/play/online"
-        }
+    const rows = [
+        ["Korona ID",currentUser.id],
+        ["Name",currentUser.name]
     ];
 
-    const moreGames = [
-        {
-            id: "run-3",
-            name: "Run 3",
-            description: "Run through the endless tunnel.",
-            image: "https://www.google.com/s2/favicons?domain=run3online.com&sz=128",
-            url: "https://run3online.com/"
-        },
+    rows.forEach(
+        ([label,value]) => {
 
-        {
-            id: "fireboy-watergirl",
-            name: "Fireboy & Watergirl",
-            description: "Solve puzzles together.",
-            image: "https://www.google.com/s2/favicons?domain=fireboywatergirl.com&sz=128",
-            url: "https://fireboywatergirl.com/"
-        },
+            const row =
+                document.createElement("div");
 
-        {
-            id: "duck-life",
-            name: "Duck Life",
-            description: "Train your duck.",
-            image: "https://www.google.com/s2/favicons?domain=ducklife.com&sz=128",
-            url: "https://ducklife.com/"
-        },
+            row.className =
+                "accountRow";
 
-        {
-            id: "bob-the-robber",
-            name: "Bob the Robber",
-            description: "Sneak through the levels.",
-            image: "https://www.google.com/s2/favicons?domain=bobtherobber.io&sz=128",
-            url: "https://bobtherobber.io/"
-        },
+            const a =
+                document.createElement("span");
 
-        {
-            id: "action-games",
-            name: "Action Games",
-            description: "Fast browser action.",
-            image: "https://www.google.com/s2/favicons?domain=poki.com&sz=128",
-            url: "https://poki.com/en/action"
-        },
+            a.textContent =
+                label;
 
-        {
-            id: "arcade-games",
-            name: "Arcade Games",
-            description: "Classic arcade-style games.",
-            image: "https://www.google.com/s2/favicons?domain=poki.com&sz=128",
-            url: "https://poki.com/en/arcade"
-        },
+            const b =
+                document.createElement("span");
 
-        {
-            id: "racing-games",
-            name: "Racing Games",
-            description: "Race cars and other vehicles.",
-            image: "https://www.google.com/s2/favicons?domain=poki.com&sz=128",
-            url: "https://poki.com/en/racing"
-        },
+            b.textContent =
+                value;
 
-        {
-            id: "puzzle-games",
-            name: "Puzzle Games",
-            description: "Think your way through puzzles.",
-            image: "https://www.google.com/s2/favicons?domain=poki.com&sz=128",
-            url: "https://poki.com/en/puzzle"
+            row.append(a,b);
+
+            card.appendChild(row);
         }
-    ];
-
-    /* =========================================================
-       APPS
-       ========================================================= */
-
-    const apps = [
-        {
-            id: "youtube",
-            name: "YouTube",
-            description: "Watch videos.",
-            icon:
-                "https://www.google.com/s2/favicons?domain=youtube.com&sz=128",
-            url:
-                "https://www.youtube.com/"
-        },
-
-        {
-            id: "google",
-            name: "Google",
-            description: "Search the web.",
-            icon:
-                "https://www.google.com/s2/favicons?domain=google.com&sz=128",
-            url:
-                "https://www.google.com/"
-        },
-
-        {
-            id: "github",
-            name: "GitHub",
-            description: "Code and repositories.",
-            icon:
-                "https://www.google.com/s2/favicons?domain=github.com&sz=128",
-            url:
-                "https://github.com/"
-        },
-
-        {
-            id: "discord",
-            name: "Discord",
-            description: "Communities and chat.",
-            icon:
-                "https://www.google.com/s2/favicons?domain=discord.com&sz=128",
-            url:
-                "https://discord.com/app"
-        },
-
-        {
-            id: "reddit",
-            name: "Reddit",
-            description: "Communities and discussions.",
-            icon:
-                "https://www.google.com/s2/favicons?domain=reddit.com&sz=128",
-            url:
-                "https://www.reddit.com/"
-        },
-
-        {
-            id: "twitch",
-            name: "Twitch",
-            description: "Live streams.",
-            icon:
-                "https://www.google.com/s2/favicons?domain=twitch.tv&sz=128",
-            url:
-                "https://www.twitch.tv/"
-        }
-    ];
-
-    /* =========================================================
-       GAME CARD CREATION
-       ========================================================= */
-
-    function createGameCard(game) {
-
-        const card =
-            document.createElement("article");
-
-        card.className =
-            "gameCard";
-
-        card.dataset.game =
-            game.id;
-
-        card.dataset.name =
-            game.name.toLowerCase();
-
-        const image =
-            document.createElement("img");
-
-        image.className =
-            "gameIcon";
-
-        image.alt =
-            "";
-
-        image.loading =
-            "lazy";
-
-        image.src =
-            game.image || "";
-
-        image.onerror =
-            () => {
-                image.style.display =
-                    "none";
-            };
-
-        const content =
-            document.createElement("div");
-
-        content.className =
-            "gameCardContent";
-
-        const name =
-            document.createElement("div");
-
-        name.className =
-            "gameName";
-
-        name.textContent =
-            game.name;
-
-        const description =
-            document.createElement("div");
-
-        description.className =
-            "gameDescription";
-
-        description.textContent =
-            game.description || "";
-
-        content.appendChild(name);
-        content.appendChild(description);
-
-        card.appendChild(image);
-        card.appendChild(content);
-
-        card.addEventListener(
-            "click",
-            () => {
-                openUrl(game.url);
-            }
-        );
-
-        return card;
-    }
-
-    function renderGames() {
-
-        const grid =
-            $("#gamesGrid");
-
-        if (!grid) return;
-
-        grid.innerHTML = "";
-
-        for (const game of games) {
-            grid.appendChild(
-                createGameCard(game)
-            );
-        }
-    }
-
-    function renderMoreGames() {
-
-        const grid =
-            $("#moreGamesGrid");
-
-        if (!grid) return;
-
-        grid.innerHTML = "";
-
-        for (const game of moreGames) {
-            grid.appendChild(
-                createGameCard(game)
-            );
-        }
-    }
-
-    function renderFeatured() {
-
-        const grid =
-            $("#featuredGames");
-
-        if (!grid) return;
-
-        grid.innerHTML = "";
-
-        for (
-            const game of games.slice(0, 6)
-        ) {
-            grid.appendChild(
-                createGameCard(game)
-            );
-        }
-    }
-
-    function renderSwitchFeatured() {
-
-        const grid =
-            $("#switchFeatured");
-
-        if (!grid) return;
-
-        grid.innerHTML = "";
-
-        const featured =
-            games.slice(0, 6);
-
-        for (const game of featured) {
-
-            const tile =
-                document.createElement("article");
-
-            tile.className =
-                "switchTile";
-
-            tile.innerHTML = `
-                <strong>
-                    ${game.name}
-                </strong>
-
-                <span>
-                    ${game.description || ""}
-                </span>
-            `;
-
-            tile.addEventListener(
-                "click",
-                () => {
-                    openUrl(game.url);
-                }
-            );
-
-            grid.appendChild(tile);
-        }
-    }
-
-    /* =========================================================
-       GAME SEARCH
-       ========================================================= */
-
-    function filterGames(value) {
-
-        const query =
-            value
-                .trim()
-                .toLowerCase();
-
-        $$("#gamesGrid .gameCard")
-            .forEach(card => {
-
-                const name =
-                    card.dataset.name ||
-                    "";
-
-                card.style.display =
-                    !query ||
-                    name.includes(query)
-                        ? ""
-                        : "none";
-            });
-    }
-
-    /* =========================================================
-       APPS
-       ========================================================= */
-
-    function createAppCard(app) {
-
-        const card =
-            document.createElement("article");
-
-        card.className =
-            "appCard";
-
-        const icon =
-            document.createElement("img");
-
-        icon.src =
-            app.icon || "";
-
-        icon.alt =
-            "";
-
-        icon.loading =
-            "lazy";
-
-        icon.style.width =
-            "34px";
-
-        icon.style.height =
-            "34px";
-
-        icon.style.objectFit =
-            "contain";
-
-        icon.style.marginBottom =
-            "12px";
-
-        icon.onerror =
-            () => {
-                icon.style.display =
-                    "none";
-            };
-
-        const title =
-            document.createElement("h3");
-
-        title.textContent =
-            app.name;
-
-        const description =
-            document.createElement("p");
-
-        description.textContent =
-            app.description || "";
-
-        card.appendChild(icon);
-        card.appendChild(title);
-        card.appendChild(description);
-
-        card.addEventListener(
-            "click",
-            () => {
-                openUrl(app.url);
-            }
-        );
-
-        return card;
-    }
-
-    function renderApps() {
-
-        const grid =
-            $("#appsGrid");
-
-        if (!grid) return;
-
-        grid.innerHTML = "";
-
-        for (const app of apps) {
-            grid.appendChild(
-                createAppCard(app)
-            );
-        }
-    }
-
-    /* =========================================================
-       NAVIGATION
-       ========================================================= */
-
-    function showPage(pageId) {
-
-        $$(".page")
-            .forEach(page => {
-                page.classList.toggle(
-                    "active",
-                    page.id === pageId
-                );
-            });
-
-        $$(".navBtn")
-            .forEach(button => {
-                button.classList.toggle(
-                    "active",
-                    button.dataset.page ===
-                        pageId
-                );
-            });
-
-        const content =
-            $(".content");
-
-        if (content) {
-            content.scrollTop = 0;
-        }
-    }
-
-    function setupNavigation() {
-
-        $$(".navBtn")
-            .forEach(button => {
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        showPage(
-                            button.dataset.page
-                        );
-                    }
-                );
-            });
-    }
-
-    /* =========================================================
-       FULLSCREEN
-       ========================================================= */
-
-    async function toggleFullscreen() {
-
-        const container =
-            $("#iframeContainer");
-
-        if (!container) return;
-
-        try {
-
-            if (
-                !document.fullscreenElement
-            ) {
-
-                await container
-                    .requestFullscreen();
-
-            } else {
-
-                await document
-                    .exitFullscreen();
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "Fullscreen error:",
-                error
-            );
-        }
-    }
-
-    /* =========================================================
-       IFRAME CONTROLS
-       ========================================================= */
-
-    async function iframeBack() {
-
-        try {
-
-            if (
-                window.koronaScramFrame &&
-                typeof
-                    window.koronaScramFrame.back ===
-                    "function"
-            ) {
-                await window
-                    .koronaScramFrame
-                    .back();
-
-                return;
-            }
-
-            if (
-                iframeWindow &&
-                iframeWindow.contentWindow
-            ) {
-                iframeWindow
-                    .contentWindow
-                    .history
-                    .back();
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "Back failed:",
-                error
-            );
-        }
-    }
-
-    async function iframeForward() {
-
-        try {
-
-            if (
-                window.koronaScramFrame &&
-                typeof
-                    window.koronaScramFrame.forward ===
-                    "function"
-            ) {
-                await window
-                    .koronaScramFrame
-                    .forward();
-
-                return;
-            }
-
-            if (
-                iframeWindow &&
-                iframeWindow.contentWindow
-            ) {
-                iframeWindow
-                    .contentWindow
-                    .history
-                    .forward();
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "Forward failed:",
-                error
-            );
-        }
-    }
-
-    async function iframeReload() {
-
-        try {
-
-            if (
-                window.koronaScramFrame &&
-                typeof
-                    window.koronaScramFrame.reload ===
-                    "function"
-            ) {
-                await window
-                    .koronaScramFrame
-                    .reload();
-
-                return;
-            }
-
-            if (
-                iframeWindow
-            ) {
-                iframeWindow.src =
-                    iframeWindow.src;
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "Reload failed:",
-                error
-            );
-        }
-    }
-
-    /* =========================================================
-       CHARACTER UI
-       ========================================================= */
-
-    function setupCharacterSelect() {
-
-        const select =
-            $("#characterSelect");
-
-        if (!select) return;
-
-        select.value =
-            selectedCharacter;
-
-        select.addEventListener(
-            "change",
-            () => {
-
-                applyCharacter(
-                    select.value
-                );
-            }
-        );
-    }
-
-    /* =========================================================
-       BUTTON EVENTS
-       ========================================================= */
-
-    function setupEvents() {
-
-        $("#loginBtn")
-            ?.addEventListener(
-                "click",
-                login
-            );
-
-        $("#createBtn")
-            ?.addEventListener(
-                "click",
-                createAccount
-            );
-
-        $("#showCreateBtn")
-            ?.addEventListener(
-                "click",
-                () => {
-                    msg(
-                        $("#loginMsg"),
-                        ""
-                    );
-
-                    msg(
-                        $("#createMsg"),
-                        ""
-                    );
-
-                    showAuth("create");
-                }
-            );
-
-        $("#showLoginBtn")
-            ?.addEventListener(
-                "click",
-                () => {
-                    msg(
-                        $("#loginMsg"),
-                        ""
-                    );
-
-                    msg(
-                        $("#createMsg"),
-                        ""
-                    );
-
-                    showAuth("login");
-                }
-            );
-
-        $("#lockBtn")
-            ?.addEventListener(
-                "click",
-                lock
-            );
-
-        $("#searchButton")
-            ?.addEventListener(
-                "click",
-                () => {
-                    openUrl(
-                        $("#urlInput").value
-                    );
-                }
-            );
-
-        $("#urlInput")
-            ?.addEventListener(
-                "keydown",
-                event => {
-
-                    if (
-                        event.key ===
-                        "Enter"
-                    ) {
-                        event.preventDefault();
-
-                        openUrl(
-                            event.target.value
-                        );
-                    }
-                }
-            );
-
-        $("#backBtn")
-            ?.addEventListener(
-                "click",
-                iframeBack
-            );
-
-        $("#forwardBtn")
-            ?.addEventListener(
-                "click",
-                iframeForward
-            );
-
-        $("#reloadBtn")
-            ?.addEventListener(
-                "click",
-                iframeReload
-            );
-
-        $("#fullscreenBtn")
-            ?.addEventListener(
-                "click",
-                toggleFullscreen
-            );
-
-        $("#gameSearch")
-            ?.addEventListener(
-                "input",
-                event => {
-                    filterGames(
-                        event.target.value
-                    );
-                }
-            );
-
-        $("#clearGameSearch")
-            ?.addEventListener(
-                "click",
-                () => {
-
-                    const input =
-                        $("#gameSearch");
-
-                    if (!input) return;
-
-                    input.value = "";
-
-                    filterGames("");
-                    input.focus();
-                }
-            );
-
-        setupCharacterSelect();
-    }
-
-    /* =========================================================
-       KEYBOARD SHORTCUTS
-       ========================================================= */
-
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key === "Escape" &&
-                document.fullscreenElement
-            ) {
-                document
-                    .exitFullscreen()
-                    .catch(() => {});
-            }
-
-            if (
-                event.ctrlKey &&
-                event.key.toLowerCase() === "l"
-            ) {
-                const browserPage =
-                    $("#browserPage");
-
-                if (
-                    browserPage &&
-                    browserPage.classList.contains(
-                        "active"
+    );
+}
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function performHomeSearch(){
+
+    const value =
+        $("#homeSearch")
+            .value
+            .trim();
+
+    if(!value)
+        return;
+
+    const found =
+        games.find(
+            game =>
+                game[0]
+                    .toLowerCase()
+                    .includes(
+                        value.toLowerCase()
                     )
-                ) {
-                    event.preventDefault();
+        );
 
-                    $("#urlInput")
-                        ?.focus();
-                }
-            }
-        }
-    );
+    if(found){
 
-    /* =========================================================
-       STARTUP
-       ========================================================= */
+        openBrowser(
+            found[1],
+            found[0]
+        );
 
-    async function boot() {
-
-        try {
-
-            /*
-             * Render the interface FIRST.
-             *
-             * Nothing related to Scramjet or Supabase
-             * should prevent the homepage/auth screen
-             * from appearing.
-             */
-
-            renderThemes();
-
-            renderGames();
-
-            renderMoreGames();
-
-            renderFeatured();
-
-            renderApps();
-
-            renderSwitchFeatured();
-
-            applyStyleMode(
-                selectedStyle
-            );
-
-            applyCharacter(
-                selectedCharacter
-            );
-
-            initParticles();
-
-            setupNavigation();
-
-            setupEvents();
-
-            $("#app").style.display =
-                "none";
-
-            $("#authGate").style.display =
-                "grid";
-
-            const saved =
-                loadUser();
-
-            if (saved) {
-
-                $("#loginId").value =
-                    saved.id;
-
-                /*
-                 * Supabase is loaded only if there
-                 * is actually a saved account to check.
-                 */
-
-                try {
-
-                    await ensureSupabase();
-
-                    const active =
-                        await checkActiveStatus();
-
-                    if (
-                        active &&
-                        !authLocked
-                    ) {
-
-                        unlock();
-
-                        startAuthWatcher();
-                    }
-
-                } catch (error) {
-
-                    /*
-                     * A Supabase loading failure should
-                     * NOT make the entire site disappear.
-                     */
-
-                    console.warn(
-                        "Saved account check failed:",
-                        error
-                    );
-
-                    $("#authGate")
-                        .style.display =
-                        "grid";
-                }
-            }
-
-        } catch (error) {
-
-            console.error(
-                "Korona boot error:",
-                error
-            );
-
-            const box =
-                $("#koronaBootError");
-
-            if (box) {
-
-                box.style.display =
-                    "block";
-
-                box.innerHTML =
-                    `
-                        <h1>
-                            Korona failed to start
-                        </h1>
-
-                        <p>
-                            The page loaded, but a startup
-                            script failed.
-                        </p>
-
-                        <pre></pre>
-                    `;
-
-                box.querySelector(
-                    "pre"
-                ).textContent =
-                    error?.stack ||
-                    String(error);
-            }
-        }
+        return;
     }
 
-    /* =========================================================
-       RUNTIME ERROR REPORTING
-       ========================================================= */
+    openBrowser(
+        "https://www.google.com/search?q=" +
+        encodeURIComponent(value),
+        "Search"
+    );
+}
 
-    window.addEventListener(
-        "error",
-        event => {
+$("#homeSearchBtn").onclick =
+    performHomeSearch;
 
-            console.error(
-                "Korona runtime error:",
-                event.error ||
-                event.message
-            );
-        }
+$("#homeSearch").addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Enter")
+            performHomeSearch();
+    }
+);
+
+$("#gameSearch").addEventListener(
+    "input",
+    filterGames
+);
+
+$("#moreSearch").addEventListener(
+    "input",
+    filterMore
+);
+
+/* =========================================================
+   AUTH EVENTS
+========================================================= */
+
+$("#loginBtn").addEventListener(
+    "click",
+    login
+);
+
+$("#createBtn").addEventListener(
+    "click",
+    createAccount
+);
+
+$("#showCreate").addEventListener(
+    "click",
+    () => showAuth("create")
+);
+
+$("#showLogin").addEventListener(
+    "click",
+    () => showAuth("login")
+);
+
+$("#logoutBtn").addEventListener(
+    "click",
+    logout
+);
+
+$("#loginId").addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Enter")
+            login();
+    }
+);
+
+$("#firstName").addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Enter")
+            createAccount();
+    }
+);
+
+$("#lastName").addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Enter")
+            createAccount();
+    }
+);
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+function startup(){
+
+    renderAllGames();
+
+    renderApps();
+
+    const saved =
+        loadSavedUser();
+
+    if(saved){
+
+        currentUser = saved;
+
+        showApp();
+
+        startAuthWatcher();
+
+    }else{
+
+        showGate();
+    }
+
+    const savedStyle =
+        localStorage.getItem(
+            STYLE_KEY
+        ) || "korona";
+
+    const savedTheme =
+        localStorage.getItem(
+            THEME_KEY
+        ) || "green";
+
+    const savedCharacter =
+        localStorage.getItem(
+            CHARACTER_KEY
+        ) || "none";
+
+    applyStyle(savedStyle);
+
+    if(savedTheme !== "switch"){
+        applyTheme(savedTheme);
+    }
+
+    $("#characterSelect").value =
+        savedCharacter;
+
+    applyCharacter(
+        savedCharacter
     );
 
-    window.addEventListener(
-        "unhandledrejection",
-        event => {
+    /*
+     * Create one browser tab in the background
+     * without starting Scramjet yet.
+     */
 
-            console.error(
-                "Korona promise error:",
-                event.reason
-            );
-        }
-    );
+    createTab();
+}
 
-    /* =========================================================
-       START
-       ========================================================= */
-
-    boot();
-
+startup();
 </script>
 
-<!-- =========================================================
-     PART 2 ENDS HERE
-     ========================================================= -->
+</body>
+</html>
