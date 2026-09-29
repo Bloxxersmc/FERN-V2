@@ -5725,5 +5725,457 @@ randomJoke();
 })();
 </script>
 
+<!-- =========================================================
+     KORONA CUSTOMIZATION LAYER (characters, theme mixer,
+     nav layouts, rearrangeable buttons) — additive only.
+     Does not touch auth, Supabase, Scramjet or page logic.
+     ========================================================= -->
+<style id="korona-customization-layer">
+/* ---------- nav layout: TOP / BOTTOM ---------- */
+body[data-nav-layout="top"] .korona-sidebar,
+body[data-nav-layout="bottom"] .korona-sidebar{
+  position:fixed!important;left:0!important;right:0!important;width:100%!important;
+  height:auto!important;flex-direction:row!important;align-items:center!important;
+  gap:14px!important;padding:8px 14px!important;
+  border-right:0!important;box-sizing:border-box!important;
+}
+body[data-nav-layout="top"] .korona-sidebar{top:0!important;bottom:auto!important;border-bottom:1px solid var(--border,#5b4813)!important;}
+body[data-nav-layout="bottom"] .korona-sidebar{bottom:0!important;top:auto!important;border-top:1px solid var(--border,#5b4813)!important;}
+body[data-nav-layout="top"] .sidebar-brand,
+body[data-nav-layout="bottom"] .sidebar-brand{padding:0 12px 0 4px!important;flex:0 0 auto!important;}
+body[data-nav-layout="top"] .sidebar-nav,
+body[data-nav-layout="bottom"] .sidebar-nav{
+  flex-direction:row!important;flex:1 1 auto!important;overflow-x:auto!important;gap:4px!important;
+}
+body[data-nav-layout="top"] .korona-sidebar .nav-button,
+body[data-nav-layout="bottom"] .korona-sidebar .nav-button{
+  width:auto!important;min-height:42px!important;padding:0 14px!important;white-space:nowrap!important;
+}
+body[data-nav-layout="top"] .korona-sidebar .nav-button.active,
+body[data-nav-layout="bottom"] .korona-sidebar .nav-button.active{box-shadow:inset 0 -3px 0 var(--border-bright,#f1d55f)!important;}
+body[data-nav-layout="top"] .sidebar-bottom,
+body[data-nav-layout="bottom"] .sidebar-bottom{margin-top:0!important;border-top:0!important;padding:0 6px!important;flex:0 0 auto!important;}
+body[data-nav-layout="top"] .sidebar-version,
+body[data-nav-layout="bottom"] .sidebar-version{display:none!important;}
+body[data-nav-layout="top"] .content{margin-left:0!important;width:100%!important;padding-top:64px!important;}
+body[data-nav-layout="bottom"] .content{margin-left:0!important;width:100%!important;padding-bottom:70px!important;}
+
+/* ---------- edit layout mode ---------- */
+body.korona-edit-layout .korona-sidebar .nav-button{cursor:grab!important;outline:1px dashed var(--border-bright,#d6b541)!important;outline-offset:-2px;}
+body.korona-edit-layout .korona-sidebar .nav-button.korona-dragging{opacity:.45!important;}
+
+/* ---------- character badge ---------- */
+.korona-character-badge{
+  display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:8px 10px;
+  border:1px solid var(--border,#5b4813);background:color-mix(in srgb,var(--panel,#211b0b) 70%,transparent);
+}
+.korona-char-mark{
+  width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;font-weight:900;font-size:15px;
+  color:#0a0a0a;border-radius:50%;
+  background:linear-gradient(135deg,var(--k-char-1,#39ccd6),var(--k-char-2,#c7f5ff));
+  box-shadow:0 0 14px var(--k-char-1,#39ccd6);
+}
+.korona-char-name{font-size:12px;font-weight:700;color:var(--text,#f1e7c7);line-height:1.2}
+.korona-char-tag{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted,#958657)}
+body[data-nav-layout="top"] .korona-character-badge,
+body[data-nav-layout="bottom"] .korona-character-badge{margin:0 8px 0 0;flex:0 0 auto;}
+
+/* ---------- editor UI ---------- */
+.korona-editor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:16px}
+.korona-field{display:flex;flex-direction:column;gap:6px}
+.korona-field label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted,#958657)}
+.korona-field input[type="color"]{width:100%;height:34px;padding:0;border:1px solid var(--border,#5b4813);background:transparent;cursor:pointer}
+.korona-field select{height:34px;background:var(--bg-light,#191508);color:var(--text,#f2e9c9);border:1px solid var(--border,#5b4813);padding:0 8px}
+.korona-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.korona-actions button{min-height:36px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;
+  color:var(--text,#f2e9c9);background:var(--bg-light,#211b0b);border:1px solid var(--border-bright,#b18b27)}
+.korona-actions button:hover{background:var(--panel-hover,#2d250d)}
+.korona-char-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:16px}
+.korona-char-card{display:flex;align-items:center;gap:9px;padding:7px 9px;cursor:pointer;text-align:left;
+  color:var(--text,#e8ddbb);background:var(--bg-light,#211b0b);border:1px solid var(--border,#5b4815)}
+.korona-char-card:hover,.korona-char-card.active{border-color:var(--border-bright,#b18b27);background:var(--panel-hover,#2d250d)}
+.korona-char-swatch{width:20px;height:20px;flex:0 0 20px;border-radius:50%}
+.korona-saved-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.korona-saved-chip{display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:12px;
+  color:var(--text,#e8ddbb);background:var(--bg-light,#211b0b);border:1px solid var(--border,#5b4815);cursor:pointer}
+.korona-saved-chip b{font-weight:700}
+.korona-saved-chip i{font-style:normal;color:var(--muted,#958657);cursor:pointer}
+.korona-hint{font-size:10px;color:var(--muted,#958657);margin-top:10px}
+</style>
+
+<script id="korona-customization-script">
+(function () {
+  "use strict";
+
+  var KEY = "korona.custom.v2";
+  var CHARACTERS = [
+    { id: "none",  name: "None",  tag: "no character", c1: "#8a8a8a", c2: "#d6d6d6" },
+    { id: "miku",  name: "Miku",  tag: "vocal 01", c1: "#39ccd6", c2: "#0bd3c8" },
+    { id: "teto",  name: "Teto",  tag: "utau",    c1: "#e8455f", c2: "#ff8aa0" },
+    { id: "neru",  name: "Neru",  tag: "append",  c1: "#e8c547", c2: "#fff0a8" },
+    { id: "luka",  name: "Luka",  tag: "vocal 03", c1: "#ff9ec4", c2: "#ffd2e4" },
+    { id: "rin",   name: "Rin",   tag: "vocal 02", c1: "#ffb23f", c2: "#ffe0a0" },
+    { id: "len",   name: "Len",   tag: "vocal 02", c1: "#f2e14c", c2: "#fff9b0" },
+    { id: "kaito", name: "Kaito", tag: "vocal 00", c1: "#3f7bff", c2: "#a9c6ff" },
+    { id: "meiko", name: "Meiko", tag: "vocal 00", c1: "#d8384a", c2: "#ff9aa2" }
+  ];
+  var FIELDS = [
+    { id: "bg",      label: "Background", def: "#0b0906" },
+    { id: "primary", label: "Primary",    def: "#d9b64c" },
+    { id: "accent",  label: "Accent",     def: "#f1d55f" },
+    { id: "text",    label: "Text",       def: "#f2e9c9" },
+    { id: "panel",   label: "Panels",     def: "#211b0b" },
+    { id: "glow",    label: "Glow",       def: "#f1d55f" }
+  ];
+
+  var state = {
+    character: "none",
+    layout: "side",
+    navOrder: [],
+    colors: {},
+    enabled: {},
+    saved: {}
+  };
+
+  function read() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var p = JSON.parse(raw);
+        if (p && typeof p === "object") {
+          state.character = p.character || "none";
+          state.layout = p.layout || "side";
+          state.navOrder = Array.isArray(p.navOrder) ? p.navOrder : [];
+          state.colors = p.colors || {};
+          state.enabled = p.enabled || {};
+          state.saved = p.saved || {};
+        }
+      }
+    } catch (_) {}
+  }
+  function write() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} }
+
+  function hexToRgb(hex) {
+    var h = String(hex || "").replace("#", "");
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    if (isNaN(n)) return [0, 0, 0];
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function rgba(hex, a) { var c = hexToRgb(hex); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
+  function shift(hex, amount) {
+    var c = hexToRgb(hex).map(function (v) { return Math.max(0, Math.min(255, Math.round(v + amount))); });
+    return "#" + c.map(function (v) { return ("0" + v.toString(16)).slice(-2); }).join("");
+  }
+
+  /* ---------- colour overrides (win over the theme engine) ---------- */
+  function varStyleEl() {
+    var el = document.getElementById("korona-custom-vars");
+    if (!el) { el = document.createElement("style"); el.id = "korona-custom-vars"; document.head.appendChild(el); }
+    return el;
+  }
+
+  function applyColors() {
+    var c = state.colors, on = state.enabled, rules = [];
+    function push(name, value) { rules.push("--" + name + ":" + value + " !important;"); }
+
+    if (on.bg && c.bg) {
+      push("bg", c.bg);
+      rules.push("background-color:" + c.bg + " !important;");
+    }
+    if (on.panel && c.panel) {
+      push("panel", rgba(c.panel, 0.86));
+      push("bg-light", c.panel);
+      push("panel-hover", shift(c.panel, 18));
+      push("k-sidebar", c.panel);
+    }
+    if (on.primary && c.primary) {
+      push("green", c.primary);
+      push("green-dark", shift(c.primary, -34));
+      push("k-gold", c.primary);
+    }
+    if (on.accent && c.accent) {
+      push("green-soft", c.accent);
+      push("mist1", rgba(c.accent, 0.18));
+    }
+    if (on.text && c.text) {
+      push("text", c.text);
+      push("muted", rgba(c.text, 0.55));
+    }
+    if (on.glow && c.glow) {
+      push("border", rgba(c.glow, 0.22));
+      push("border-bright", rgba(c.glow, 0.7));
+      push("k-glow", c.glow);
+      push("mist2", rgba(c.glow, 0.16));
+    }
+
+    var css = "";
+    if (rules.length) {
+      css += "html,body{" + rules.join("") + "}";
+      if (on.bg && c.bg) css += "body{background:" + c.bg + " !important;}";
+      if (on.text && c.text) css += "body,.page,.content{color:" + c.text + " !important;}";
+      if (on.panel && c.panel) {
+        css += ".korona-sidebar,.settings-section,.game-card,.theme-card,.hero,.panel,.browser-window,.iframe-container{" +
+               "background-color:" + rgba(c.panel, 0.92) + " !important;}";
+      }
+      if (on.glow && c.glow) {
+        css += ".korona-sidebar .nav-button.active{box-shadow:inset 3px 0 0 " + c.glow + ",0 0 18px " + rgba(c.glow, 0.35) + " !important;}";
+      }
+    }
+    varStyleEl().textContent = css;
+  }
+
+  /* ---------- character ---------- */
+  function charById(id) {
+    for (var i = 0; i < CHARACTERS.length; i++) if (CHARACTERS[i].id === id) return CHARACTERS[i];
+    return CHARACTERS[0];
+  }
+
+  function applyCharacter() {
+    var ch = charById(state.character);
+    document.body.setAttribute("data-character", ch.id);
+    document.documentElement.style.setProperty("--k-char-1", ch.c1);
+    document.documentElement.style.setProperty("--k-char-2", ch.c2);
+
+    var sidebar = document.getElementById("koronaSidebar");
+    if (!sidebar) return;
+    var badge = document.getElementById("koronaCharacterBadge");
+    if (ch.id === "none") { if (badge) badge.remove(); return; }
+    if (!badge) {
+      badge = document.createElement("div");
+      badge.id = "koronaCharacterBadge";
+      badge.className = "korona-character-badge";
+      var nav = sidebar.querySelector(".sidebar-nav");
+      sidebar.insertBefore(badge, nav);
+    }
+    badge.innerHTML =
+      '<span class="korona-char-mark">' + ch.name.charAt(0) + "</span>" +
+      '<span><span class="korona-char-name">' + ch.name + "</span>" +
+      '<span class="korona-char-tag">' + ch.tag + "</span></span>";
+  }
+
+  function useCharacterColors() {
+    var ch = charById(state.character);
+    if (ch.id === "none") return;
+    state.colors.primary = ch.c1;
+    state.colors.accent = ch.c2;
+    state.colors.glow = ch.c1;
+    state.enabled.primary = state.enabled.accent = state.enabled.glow = true;
+    applyColors(); syncEditor(); write();
+  }
+
+  /* ---------- layout + nav order ---------- */
+  function applyLayout() {
+    document.body.setAttribute("data-nav-layout", state.layout || "side");
+  }
+
+  function applyNavOrder() {
+    var nav = document.querySelector("#koronaSidebar .sidebar-nav");
+    if (!nav || !state.navOrder.length) return;
+    state.navOrder.forEach(function (page) {
+      var btn = nav.querySelector('.nav-button[data-page="' + page + '"]');
+      if (btn) nav.appendChild(btn);
+    });
+  }
+
+  function currentOrder() {
+    return Array.prototype.map.call(
+      document.querySelectorAll("#koronaSidebar .sidebar-nav .nav-button"),
+      function (b) { return b.dataset.page; }
+    );
+  }
+
+  function setupDragging() {
+    var nav = document.querySelector("#koronaSidebar .sidebar-nav");
+    if (!nav || nav.dataset.koronaDrag) return;
+    nav.dataset.koronaDrag = "1";
+    var dragged = null;
+
+    nav.addEventListener("dragstart", function (e) {
+      if (!document.body.classList.contains("korona-edit-layout")) return;
+      dragged = e.target.closest(".nav-button");
+      if (dragged) { dragged.classList.add("korona-dragging"); try { e.dataTransfer.setData("text/plain", ""); } catch (_) {} }
+    });
+    nav.addEventListener("dragover", function (e) {
+      if (!dragged) return;
+      e.preventDefault();
+      var over = e.target.closest(".nav-button");
+      if (!over || over === dragged) return;
+      var box = over.getBoundingClientRect();
+      var horizontal = state.layout !== "side";
+      var after = horizontal ? (e.clientX - box.left) > box.width / 2 : (e.clientY - box.top) > box.height / 2;
+      nav.insertBefore(dragged, after ? over.nextSibling : over);
+    });
+    nav.addEventListener("dragend", function () {
+      if (!dragged) return;
+      dragged.classList.remove("korona-dragging");
+      dragged = null;
+      state.navOrder = currentOrder();
+      write();
+    });
+  }
+
+  function setEditMode(on) {
+    document.body.classList.toggle("korona-edit-layout", !!on);
+    document.querySelectorAll("#koronaSidebar .sidebar-nav .nav-button").forEach(function (b) {
+      b.draggable = !!on;
+    });
+    var btn = document.getElementById("koronaEditLayoutBtn");
+    if (btn) btn.textContent = on ? "DONE EDITING" : "EDIT LAYOUT";
+  }
+
+  /* ---------- settings UI ---------- */
+  function buildUI() {
+    var panel = document.querySelector("#settingsPage .settings-panel");
+    if (!panel || document.getElementById("koronaThemeEditor")) return;
+
+    var section = document.createElement("div");
+    section.className = "settings-section";
+    section.id = "koronaThemeEditor";
+
+    var charCards = CHARACTERS.map(function (c) {
+      return '<button type="button" class="korona-char-card" data-char="' + c.id + '">' +
+        '<span class="korona-char-swatch" style="background:linear-gradient(135deg,' + c.c1 + ',' + c.c2 + ')"></span>' +
+        "<span>" + c.name + "</span></button>";
+    }).join("");
+
+    var fields = FIELDS.map(function (f) {
+      return '<div class="korona-field"><label>' + f.label +
+        ' <input type="checkbox" data-use="' + f.id + '"></label>' +
+        '<input type="color" data-color="' + f.id + '" value="' + f.def + '"></div>';
+    }).join("");
+
+    section.innerHTML =
+      "<div><h3>Character</h3><p>Pick a character. This is independent of the color theme and is remembered after refresh.</p></div>" +
+      '<div class="korona-char-grid" id="koronaCharGrid">' + charCards + "</div>" +
+      '<div class="korona-actions"><button type="button" id="koronaUseCharColors">USE CHARACTER COLORS</button></div>' +
+
+      '<div style="margin-top:26px"><h3>Theme Editor</h3><p>Mix your own theme. Tick a slot to override just that part of the current theme.</p></div>' +
+      '<div class="korona-editor-grid">' + fields +
+        '<div class="korona-field"><label>Nav layout</label><select id="koronaLayoutSelect">' +
+          '<option value="side">Side</option><option value="top">Top</option><option value="bottom">Bottom</option>' +
+        "</select></div>" +
+      "</div>" +
+      '<div class="korona-actions">' +
+        '<button type="button" id="koronaSaveTheme">SAVE CUSTOM THEME</button>' +
+        '<button type="button" id="koronaResetTheme">RESET</button>' +
+        '<button type="button" id="koronaEditLayoutBtn">EDIT LAYOUT</button>' +
+        '<button type="button" id="koronaResetOrder">RESET ORDER</button>' +
+      "</div>" +
+      '<div class="korona-saved-list" id="koronaSavedList"></div>' +
+      '<p class="korona-hint">In Edit Layout mode you can drag the navigation buttons into any order. Everything here is saved locally.</p>';
+
+    panel.insertBefore(section, panel.firstChild);
+
+    section.querySelectorAll(".korona-char-card").forEach(function (card) {
+      card.addEventListener("click", function () {
+        state.character = card.dataset.char;
+        applyCharacter(); syncEditor(); write();
+      });
+    });
+    section.querySelectorAll("input[type=color]").forEach(function (input) {
+      input.addEventListener("input", function () {
+        state.colors[input.dataset.color] = input.value;
+        state.enabled[input.dataset.color] = true;
+        var cb = section.querySelector('input[data-use="' + input.dataset.color + '"]');
+        if (cb) cb.checked = true;
+        applyColors(); write();
+      });
+    });
+    section.querySelectorAll("input[data-use]").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var id = cb.dataset.use;
+        state.enabled[id] = cb.checked;
+        if (cb.checked && !state.colors[id]) {
+          var picker = section.querySelector('input[data-color="' + id + '"]');
+          state.colors[id] = picker ? picker.value : "#ffffff";
+        }
+        applyColors(); write();
+      });
+    });
+    document.getElementById("koronaUseCharColors").addEventListener("click", useCharacterColors);
+    document.getElementById("koronaLayoutSelect").addEventListener("change", function (e) {
+      state.layout = e.target.value; applyLayout(); write();
+    });
+    document.getElementById("koronaSaveTheme").addEventListener("click", function () {
+      var name = window.prompt("Name this theme:", "My theme");
+      if (!name) return;
+      state.saved[name] = { colors: JSON.parse(JSON.stringify(state.colors)), enabled: JSON.parse(JSON.stringify(state.enabled)), character: state.character };
+      write(); renderSaved();
+    });
+    document.getElementById("koronaResetTheme").addEventListener("click", function () {
+      state.colors = {}; state.enabled = {};
+      applyColors(); syncEditor(); write();
+    });
+    document.getElementById("koronaEditLayoutBtn").addEventListener("click", function () {
+      setEditMode(!document.body.classList.contains("korona-edit-layout"));
+    });
+    document.getElementById("koronaResetOrder").addEventListener("click", function () {
+      state.navOrder = []; write(); window.location.reload();
+    });
+
+    renderSaved();
+    syncEditor();
+  }
+
+  function renderSaved() {
+    var list = document.getElementById("koronaSavedList");
+    if (!list) return;
+    var names = Object.keys(state.saved);
+    list.innerHTML = names.length
+      ? names.map(function (n) {
+          return '<span class="korona-saved-chip" data-load="' + n + '"><b>' + n + "</b><i data-del=\"" + n + '">✕</i></span>';
+        }).join("")
+      : '<span class="korona-hint">No custom themes saved yet.</span>';
+
+    list.querySelectorAll("[data-load]").forEach(function (chip) {
+      chip.addEventListener("click", function (e) {
+        if (e.target.dataset.del) {
+          delete state.saved[e.target.dataset.del];
+          write(); renderSaved();
+          return;
+        }
+        var preset = state.saved[chip.dataset.load];
+        if (!preset) return;
+        state.colors = JSON.parse(JSON.stringify(preset.colors || {}));
+        state.enabled = JSON.parse(JSON.stringify(preset.enabled || {}));
+        if (preset.character) state.character = preset.character;
+        applyColors(); applyCharacter(); syncEditor(); write();
+      });
+    });
+  }
+
+  function syncEditor() {
+    var section = document.getElementById("koronaThemeEditor");
+    if (!section) return;
+    section.querySelectorAll(".korona-char-card").forEach(function (card) {
+      card.classList.toggle("active", card.dataset.char === state.character);
+    });
+    FIELDS.forEach(function (f) {
+      var picker = section.querySelector('input[data-color="' + f.id + '"]');
+      var cb = section.querySelector('input[data-use="' + f.id + '"]');
+      if (picker) picker.value = state.colors[f.id] || f.def;
+      if (cb) cb.checked = !!state.enabled[f.id];
+    });
+    var sel = document.getElementById("koronaLayoutSelect");
+    if (sel) sel.value = state.layout || "side";
+  }
+
+  function boot() {
+    read();
+    applyLayout();
+    applyNavOrder();
+    applyCharacter();
+    applyColors();
+    setupDragging();
+    buildUI();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+  window.addEventListener("load", function () { applyColors(); applyCharacter(); });
+})();
+</script>
+
 </body>
 </html>
