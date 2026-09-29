@@ -2279,229 +2279,333 @@ body.switch-mode #character{
 
   async function setupAuth(){
 
-    const savedId =
+  const savedId =
+    localStorage.getItem(USER_KEY);
+
+  /*
+   * If this browser has never been registered,
+   * the user must create an account first.
+   *
+   * If it HAS been registered, we still require
+   * the authentication code.
+   *
+   * The ID is never displayed or entered on login.
+   */
+
+  if(!savedId){
+
+    $("#loginMsg").textContent =
+      "This browser has no Korona ID. Create one first.";
+
+  }
+
+
+  /* =====================================================
+     LOGIN
+  ===================================================== */
+
+  $("#loginBtn").onclick = async () => {
+
+    const code =
+      $("#loginCode").value.trim();
+
+    const storedId =
       localStorage.getItem(USER_KEY);
 
-
-    /*
-     * Existing installation.
-     *
-     * Check the saved ID against Supabase.
-     */
-    if(savedId){
-
-      try{
-
-        const {
-          data,
-          error
-        } = await supabase
-
-          .from("korona_users")
-
-          .select(
-            "id,name,active"
-          )
-
-          .eq(
-            "id",
-            savedId
-          )
-
-          .eq(
-            "active",
-            true
-          )
-
-          .maybeSingle();
+    $("#loginMsg").textContent = "";
 
 
-        if(!error && data){
+    if(!storedId){
 
-          unlockApp(data);
+      $("#loginMsg").textContent =
+        "This browser is not registered with Korona.";
 
-        }
-
-      }catch(error){
-
-        console.error(
-          "Korona automatic authentication failed:",
-          error
-        );
-
-      }
+      return;
 
     }
 
 
-    /* =====================================================
-       LOGIN
-    ===================================================== */
+    if(!code){
 
-    $("#loginBtn").onclick = async () => {
+      $("#loginMsg").textContent =
+        "Please enter your authentication code.";
 
-      const code =
-        $("#loginCode").value.trim();
+      return;
+
+    }
+
+
+    $("#loginBtn").disabled = true;
+
+    $("#loginBtn").textContent =
+      "checking...";
+
+
+    try{
+
+      const {
+        data,
+        error
+      } = await supabase
+
+        .from("korona_users")
+
+        .select(
+          "id,name,auth_code,active"
+        )
+
+        .eq(
+          "id",
+          storedId
+        )
+
+        .eq(
+          "active",
+          true
+        )
+
+        .maybeSingle();
+
+
+      if(error){
+
+        console.error(
+          "Supabase login error:",
+          error
+        );
+
+        $("#loginMsg").textContent =
+          "Authentication server error.";
+
+        return;
+
+      }
+
+
+      if(!data){
+
+        $("#loginMsg").textContent =
+          "This Korona ID is inactive or no longer exists.";
+
+        return;
+
+      }
+
+
+      if(data.auth_code !== code){
+
+        $("#loginMsg").textContent =
+          "Incorrect authentication code.";
+
+        return;
+
+      }
+
 
       /*
-       * THIS is the hidden ID.
+       * Code is correct.
        *
-       * There is no ID input field.
+       * Keep the ID stored locally.
        */
-      const storedId =
-        localStorage.getItem(USER_KEY);
+      localStorage.setItem(
+        USER_KEY,
+        data.id
+      );
 
 
-      $("#loginMsg").textContent = "";
+      $("#loginCode").value = "";
+
+      unlockApp(data);
 
 
-      if(!storedId){
+    }catch(error){
 
-        $("#loginMsg").textContent =
-          "This browser is not registered with Korona.";
+      console.error(
+        "Korona login error:",
+        error
+      );
 
-        return;
+      $("#loginMsg").textContent =
+        "Could not contact the authentication server.";
 
-      }
+    }finally{
 
-
-      if(!code){
-
-        $("#loginMsg").textContent =
-          "Please enter your authentication code.";
-
-        return;
-
-      }
-
-
-      $("#loginBtn").disabled = true;
+      $("#loginBtn").disabled = false;
 
       $("#loginBtn").textContent =
-        "checking...";
+        "unlock korona";
+
+    }
+
+  };
 
 
-      try{
+  /* =====================================================
+     CREATE ACCOUNT
+  ===================================================== */
 
-        const {
-          data,
+  $("#createBtn").onclick = async () => {
+
+    const fn =
+      $("#firstName").value.trim();
+
+    const ln =
+      $("#lastName").value.trim();
+
+
+    $("#createMsg").textContent = "";
+
+
+    if(!fn || !ln){
+
+      $("#createMsg").textContent =
+        "First and last name required.";
+
+      return;
+
+    }
+
+
+    /*
+     * Generate the Korona ID.
+     *
+     * John Smith -> john.smith
+     */
+    const id =
+      `${fn}.${ln}`
+        .toLowerCase()
+        .replace(/[^a-z0-9.]/g,"");
+
+
+    if(
+      !id ||
+      !id.includes(".")
+    ){
+
+      $("#createMsg").textContent =
+        "Please enter a valid name.";
+
+      return;
+
+    }
+
+
+    $("#createBtn").disabled = true;
+
+    $("#createBtn").textContent =
+      "checking...";
+
+
+    try{
+
+      /*
+       * Check if the ID already exists.
+       */
+      const {
+        data: existing,
+        error: checkError
+      } = await supabase
+
+        .from("korona_users")
+
+        .select("id")
+
+        .eq(
+          "id",
+          id
+        )
+
+        .maybeSingle();
+
+
+      if(checkError){
+
+        console.error(
+          "Supabase ID check error:",
+          checkError
+        );
+
+        $("#createMsg").textContent =
+          "Could not check ID availability.";
+
+        return;
+
+      }
+
+
+      if(existing){
+
+        $("#createMsg").textContent =
+          `"${id}" is already taken. Please choose another name.`;
+
+        return;
+
+      }
+
+
+      /*
+       * Generate the authentication code.
+       */
+      const authCode =
+        crypto.randomUUID()
+          .replace(/-/g,"")
+          .slice(0,12)
+          .toUpperCase();
+
+
+      /*
+       * Insert the new account.
+       */
+      const {
+        data,
+        error
+      } = await supabase
+
+        .from("korona_users")
+
+        .insert({
+
+          id:id,
+
+          name:`${fn} ${ln}`,
+
+          auth_code:authCode,
+
+          active:true
+
+        })
+
+        .select(
+          "id,name,auth_code,active"
+        )
+
+        .single();
+
+
+      if(error){
+
+        console.error(
+          "Supabase account creation error:",
           error
-        } = await supabase
-
-          .from("korona_users")
-
-          .select(
-            "id,name,auth_code,active"
-          )
-
-          .eq(
-            "id",
-            storedId
-          )
-
-          .eq(
-            "active",
-            true
-          )
-
-          .maybeSingle();
-
-
-        if(error){
-
-          console.error(error);
-
-          $("#loginMsg").textContent =
-            "Authentication server error.";
-
-          return;
-
-        }
-
-
-        if(!data){
-
-          /*
-           * The saved ID is no longer valid.
-           */
-          localStorage.removeItem(USER_KEY);
-
-          $("#loginMsg").textContent =
-            "This Korona installation is not registered.";
-
-          return;
-
-        }
-
-
-        /*
-         * Check the authentication code
-         * against the silently retrieved ID.
-         */
-        if(data.auth_code !== code){
-
-          $("#loginMsg").textContent =
-            "Incorrect authentication code.";
-
-          return;
-
-        }
-
-
-        /*
-         * Keep the ID saved.
-         *
-         * The user never needs to type it.
-         */
-        localStorage.setItem(
-          USER_KEY,
-          data.id
         );
 
 
-        unlockApp(data);
+        if(
+          error.code === "23505" ||
+          error.message
+            ?.toLowerCase()
+            .includes("duplicate")
+        ){
 
-        $("#loginCode").value = "";
+          $("#createMsg").textContent =
+            `"${id}" is already taken.`;
 
-      }catch(error){
+        }else{
 
-        console.error(error);
+          $("#createMsg").textContent =
+            `Supabase error: ${error.message}`;
 
-        $("#loginMsg").textContent =
-          "Could not contact the authentication server.";
-
-      }finally{
-
-        $("#loginBtn").disabled = false;
-
-        $("#loginBtn").textContent =
-          "unlock korona";
-
-      }
-
-    };
-
-
-    /* =====================================================
-       CREATE ACCOUNT
-    ===================================================== */
-
-    $("#createBtn").onclick = async () => {
-
-      const fn =
-        $("#firstName").value.trim();
-
-      const ln =
-        $("#lastName").value.trim();
-
-
-      $("#createMsg").textContent = "";
-
-
-      if(!fn || !ln){
-
-        $("#createMsg").textContent =
-          "First and last name required.";
+        }
 
         return;
 
@@ -2509,411 +2613,167 @@ body.switch-mode #character{
 
 
       /*
-       * Name becomes Korona ID.
+       * Save ONLY the ID locally.
        *
-       * Example:
-       *
-       * John + Smith
-       *       ↓
-       * john.smith
+       * The authentication code remains in Supabase.
        */
-      const id =
-        `${fn}.${ln}`
-          .toLowerCase()
-          .replace(/[^a-z0-9.]/g,"");
+      localStorage.setItem(
+        USER_KEY,
+        data.id
+      );
 
 
-      if(
-        !id ||
-        !id.includes(".")
-      ){
+      /*
+       * Show the authentication code once.
+       */
+      $("#createMsg").innerHTML = `
 
-        $("#createMsg").textContent =
-          "Please enter a valid name.";
+        <span style="color:var(--accent)">
+          Korona account created.
+        </span>
 
-        return;
+        <br><br>
 
-      }
+        <span style="color:var(--text)">
+          Authentication code:
+          <strong>${escapeHtml(data.auth_code)}</strong>
+        </span>
+
+        <br><br>
+
+        <span style="color:var(--muted)">
+          Save this code. You will need it to unlock Korona.
+        </span>
+
+      `;
 
 
       $("#createBtn").disabled = true;
 
       $("#createBtn").textContent =
-        "checking...";
+        "created";
 
 
-      try{
+      /*
+       * Return to login after showing the code.
+       */
+      setTimeout(() => {
 
-        /*
-         * Check whether the ID is already taken.
-         */
-        const {
-          data: existing,
-          error: checkError
-        } = await supabase
+        $("#createBox")
+          .classList
+          .remove("visible");
 
-          .from("korona_users")
+        $("#loginBox")
+          .classList
+          .add("visible");
 
-          .select("id")
+        $("#authLead").textContent =
+          "enter your authentication code to unlock korona.";
 
-          .eq(
-            "id",
-            id
-          )
-
-          .maybeSingle();
-
-
-        if(checkError){
-
-          console.error(checkError);
-
-          $("#createMsg").textContent =
-            "Could not check ID availability.";
-
-          return;
-
-        }
-
-
-        /*
-         * ID ALREADY EXISTS.
-         */
-        if(existing){
-
-          $("#createMsg").textContent =
-            `"${id}" is already taken. Please choose another name.`;
-
-          return;
-
-        }
-
-
-        /*
-         * Generate the authentication code.
-         *
-         * It is shown during account creation.
-         */
-        const authCode =
-          crypto.randomUUID()
-            .replace(/-/g,"")
-            .slice(0,12)
-            .toUpperCase();
-
-
-        /*
-         * Create the account in Supabase.
-         */
-        const {
-          data,
-          error
-        } = await supabase
-
-          .from("korona_users")
-
-          .insert({
-
-            id:id,
-
-            name:`${fn} ${ln}`,
-
-            auth_code:authCode,
-
-            active:true
-
-          })
-
-          .select(
-            "id,name,auth_code,active"
-          )
-
-          .single();
-
-
-        if(error){
-
-          console.error(error);
-
-          /*
-           * Database-level duplicate protection.
-           */
-          if(
-            error.code === "23505" ||
-            error.message
-              ?.toLowerCase()
-              .includes("duplicate")
-          ){
-
-            $("#createMsg").textContent =
-              `"${id}" was taken while creating the account.`;
-
-          }else{
-
-            $("#createMsg").textContent =
-              "Could not create the Korona account.";
-
-          }
-
-          return;
-
-        }
-
-
-        /*
-         * SAVE THE ID IN THE BACKGROUND.
-         *
-         * This is the important part.
-         *
-         * The login screen will never ask for this ID.
-         */
-        localStorage.setItem(
-          USER_KEY,
-          data.id
-        );
-
-
-        /*
-         * Show the code ONCE.
-         */
-        $("#createMsg").innerHTML = `
-
-          <span style="color:var(--accent)">
-            Korona account created.
-          </span>
-
-          <br><br>
-
-          <span style="color:var(--text)">
-            Authentication code:
-            <strong>${escapeHtml(data.auth_code)}</strong>
-          </span>
-
-          <br><br>
-
-          <span style="color:var(--muted)">
-            Save this authentication code.
-            It will not be displayed again.
-          </span>
-
-        `;
-
-
-        $("#createBtn").disabled = true;
-
-        $("#createBtn").textContent =
-          "created";
-
-
-        /*
-         * Give them time to see the code,
-         * then return to the login screen.
-         */
-        setTimeout(() => {
-
-          $("#createBox")
-            .classList
-            .remove("visible");
-
-          $("#loginBox")
-            .classList
-            .add("visible");
-
-          $("#authLead").textContent =
-            "enter your authentication code to unlock korona.";
-
-          $("#loginMsg").textContent =
-            "Account created. Enter your authentication code.";
-
-          $("#createBtn").disabled = false;
-
-          $("#createBtn").textContent =
-            "create korona id";
-
-        },3500);
-
-
-      }catch(error){
-
-        console.error(error);
-
-        $("#createMsg").textContent =
-          "Could not create the Korona account.";
+        $("#loginMsg").textContent =
+          "Account created. Enter your authentication code.";
 
         $("#createBtn").disabled = false;
 
         $("#createBtn").textContent =
           "create korona id";
 
-      }
-
-    };
+      },3500);
 
 
-    /* =====================================================
-       AUTH SCREEN SWITCHING
-    ===================================================== */
+    }catch(error){
 
-    $("#showCreate").onclick = () => {
+      console.error(
+        "Korona account creation error:",
+        error
+      );
 
-      $("#loginBox")
-        .classList
-        .remove("visible");
+      $("#createMsg").textContent =
+        "Could not create the Korona account.";
 
-      $("#createBox")
-        .classList
-        .add("visible");
+      $("#createBtn").disabled = false;
 
-      $("#authLead").textContent =
-        "create your Korona identity.";
+      $("#createBtn").textContent =
+        "create korona id";
 
-    };
+    }
 
-
-    $("#showLogin").onclick = () => {
-
-      $("#createBox")
-        .classList
-        .remove("visible");
-
-      $("#loginBox")
-        .classList
-        .add("visible");
-
-      $("#authLead").textContent =
-        "authenticate to enter the browser.";
-
-    };
+  };
 
 
-    /* =====================================================
-       LOCK
-       
-       IMPORTANT:
-       
-       We DON'T remove USER_KEY.
-       
-       The computer remains associated with
-       the Korona ID.
-    ===================================================== */
+  /* =====================================================
+     AUTH SCREEN SWITCHING
+  ===================================================== */
 
-    $("#logoutBtn").onclick = () => {
+  $("#showCreate").onclick = () => {
 
-      $("#app").hidden = true;
+    $("#loginBox")
+      .classList
+      .remove("visible");
 
-      $("#authGate").style.display =
-        "grid";
+    $("#createBox")
+      .classList
+      .add("visible");
 
-      $("#loginCode").value = "";
+    $("#authLead").textContent =
+      "create your Korona identity.";
 
-      $("#loginMsg").textContent =
-        "";
+    $("#loginMsg").textContent =
+      "";
 
-      $("#authLead").textContent =
-        "authenticate to enter the browser.";
-
-    };
-
-  }
+  };
 
 
-  /* =========================================================
-     UNLOCK APP
-  ========================================================= */
+  $("#showLogin").onclick = () => {
 
-  function unlockApp(user){
+    $("#createBox")
+      .classList
+      .remove("visible");
+
+    $("#loginBox")
+      .classList
+      .add("visible");
+
+    $("#authLead").textContent =
+      "authenticate to enter the browser.";
+
+    $("#createMsg").textContent =
+      "";
+
+  };
+
+
+  /* =====================================================
+     LOCK / LOGOUT
+  ===================================================== */
+
+  $("#logoutBtn").onclick = () => {
+
+    /*
+     * IMPORTANT:
+     *
+     * Do NOT remove USER_KEY.
+     *
+     * This keeps this browser associated with
+     * its Korona ID.
+     */
+    $("#app").hidden = true;
 
     $("#authGate").style.display =
-      "none";
+      "grid";
 
-    $("#app").hidden =
-      false;
+    $("#loginCode").value =
+      "";
 
-    renderAccountCard(user);
+    $("#loginMsg").textContent =
+      "";
 
-  }
+    $("#authLead").textContent =
+      "authenticate to enter the browser.";
 
+  };
 
-  /* =========================================================
-     ESCAPE HTML
-  ========================================================= */
-
-  function escapeHtml(value){
-
-    return String(value)
-
-      .replace(/&/g,"&amp;")
-
-      .replace(/</g,"&lt;")
-
-      .replace(/>/g,"&gt;")
-
-      .replace(/"/g,"&quot;")
-
-      .replace(/'/g,"&#039;");
-
-  }
-
-
-  /* =========================================================
-     ACCOUNT CARD
-  ========================================================= */
-
-  function renderAccountCard(user){
-
-    $("#accountCard").innerHTML = `
-
-      <div class="kv">
-
-        <span>
-          Korona ID
-        </span>
-
-        <span>
-          ${escapeHtml(user.id)}
-        </span>
-
-      </div>
-
-      <div class="kv">
-
-        <span>
-          User Name
-        </span>
-
-        <span>
-          ${escapeHtml(user.name || "User")}
-        </span>
-
-      </div>
-
-      <div class="kv">
-
-        <span>
-          Status
-        </span>
-
-        <span>
-          Active Workspace
-        </span>
-
-      </div>
-
-      <div class="kv">
-
-        <span>
-          Device
-        </span>
-
-        <span>
-          Registered browser
-        </span>
-
-      </div>
-
-    `;
-
-  }
-
+}
 
   /* =========================================================
      VIEWS
