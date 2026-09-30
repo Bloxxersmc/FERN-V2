@@ -6493,13 +6493,12 @@ body[data-character="none"] #koronaCharacterArt{opacity:0!important}
     if(art.src && art.src!==lastCharacterSrc){lastCharacterSrc=art.src;art.decoding="async";art.loading="eager";art.fetchPriority="low";}
   }
 
-  /* Observe existing UI because the original customization layer builds its editor dynamically. */
-  var observer=new MutationObserver(function(){
-    enhance();optimizeCharacter();revealActiveTab();
-  });
+  /* Bounded initialization: do not observe the entire document.
+     Korona already performs its own dynamic DOM updates; a global MutationObserver
+     here can react to those updates while this layer is also updating styles/UI,
+     causing initialization loops and preventing the app from becoming usable. */
   function boot(){
     enhance();sizeBrowser();optimizeCharacter();
-    observer.observe(document.body,{childList:true,subtree:true});
     setTimeout(function(){enhance();sizeBrowser();revealActiveTab();},250);
     setTimeout(function(){enhance();sizeBrowser();},1000);
   }
