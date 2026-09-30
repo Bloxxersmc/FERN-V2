@@ -3732,6 +3732,27 @@ body.korona-auth-unlocked #app {
   overflow: hidden !important;
 }
 </style>
+<style id="korona-ui-patch-2">
+/* KORONA UI PATCH 2 — isolated, CSS-first */
+#koronaApp, #app { min-height:0; }
+#app { height:100dvh; overflow:hidden; }
+.page { min-height:0; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
+#settingsPage, #homePage, #gamesPage, #appsPage, #accountPage, #aboutPage { height:100%; min-height:0; overflow:auto; overscroll-behavior:contain; }
+#settingsPage > *, #settingsPage .settings-container, #settingsPage .settings-content { box-sizing:border-box; }
+#settingsPage .settings-header, #settingsPage .page-header { position:sticky; top:0; z-index:20; }
+#browserTabs { overflow-x:auto; overflow-y:hidden; white-space:nowrap; scrollbar-width:thin; }
+#browserFrames { min-height:0; height:calc(100% - 0px); overflow:hidden; }
+#proxyPage { min-height:0; height:100%; overflow:hidden; }
+#proxyPage .browser-toolbar, #proxyPage .browser-controls, #proxyPage .browser-addressbar { position:sticky; top:0; z-index:30; }
+#proxyPage iframe { display:block; width:100%; height:100%; border:0; }
+#koronaCharacterArt { opacity:var(--korona-character-opacity, .75); transition:opacity .15s ease; }
+body.no-animations #koronaCharacterArt { transition:none; }
+@media (max-width:700px){
+  #settingsPage, #homePage, #gamesPage, #appsPage, #accountPage, #aboutPage { -webkit-overflow-scrolling:touch; }
+  #browserTabs { touch-action:pan-x; }
+}
+@media (prefers-reduced-motion:reduce){#koronaCharacterArt{transition:none!important}}
+</style>
 </head>
 
 
@@ -4621,7 +4642,6 @@ function createBrowserTab(initialURL=""){
 function switchBrowserTab(id){
   if(!koronaTabs.has(id))return;
   activeTabId=id;
-  if(window.__koronaHideBrowserError)window.__koronaHideBrowserError();
   koronaTabs.forEach(tab=>{if(tab.frame?.frame)tab.frame.frame.style.display=tab.id===id?"block":"none";});
   const tab=getActiveTab();iframeWindow=tab?.frame?.frame||null;
   if(browserNewTab) browserNewTab.style.display = tab?.url ? "none" : "grid";
@@ -4664,8 +4684,7 @@ async function launchURL(targetURL=null,targetTabId=activeTabId){
   }catch(error){
     console.error("Korona Scramjet launch failed:",error);
     if(proxyOpeningOverlay)proxyOpeningOverlay.classList.add("show");
-    if(window.__koronaShowBrowserError)window.__koronaShowBrowserError("The page could not be opened by the browser engine. You can retry the current address or choose another URL.");
-  }finally{setTabLoading(false);renderTabButtons();if(window.__koronaRevealActiveTab)window.__koronaRevealActiveTab();}
+  }finally{setTabLoading(false);renderTabButtons();}
 }
 function openBrowserTab(targetURL){
   const tab=createBrowserTab();
@@ -6251,258 +6270,56 @@ html,body{background:var(--bg)!important}
 })();
 </script>
 
-
-<!-- ============================================================
-     KORONA UI FIX + POLISH LAYER v2.2
-     Additive only: preserves existing auth, themes, character
-     editor, games, Scramjet/BareMux browser and navigation logic.
-     ============================================================ -->
-<style id="korona-ui-fix-v22">
-/* 1-3: Reliable page scrolling + sticky settings header */
-html,body{height:100%;min-height:100%;overflow:hidden!important;overscroll-behavior:none!important}
-#app{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important}
-.content{height:100dvh!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;scroll-behavior:smooth!important;-webkit-overflow-scrolling:touch!important}
-.content>.page{min-height:calc(100dvh - 1px)!important;height:auto!important;overflow:visible!important;overscroll-behavior:contain!important}
-#homePage,#settingsPage{overflow:visible!important}
-#settingsPage .section-header{position:sticky!important;top:0!important;z-index:80!important;background:color-mix(in srgb,var(--bg) 92%,transparent)!important;backdrop-filter:blur(12px)!important;padding-top:18px!important;margin-top:-18px!important}
-#settingsPage .settings-panel{padding-bottom:80px!important}
-
-/* 4: Character opacity is controlled by --korona-character-opacity. */
-#koronaCharacterArt{opacity:var(--korona-character-opacity,.75)!important;will-change:opacity,transform!important;contain:layout paint!important}
-body[data-character="none"] #koronaCharacterArt{opacity:0!important}
-
-/* 5: Character appearance controls */
-#koronaCharacterOpacitySection .korona-opacity-row{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:12px;align-items:center;margin-top:14px}
-#koronaCharacterOpacitySection input[type="range"]{width:100%;accent-color:var(--green);cursor:pointer}
-#koronaCharacterOpacityValue{font:700 12px/1 monospace;color:var(--text);text-align:right}
-#koronaCharacterOpacityReset{margin-top:12px;padding:9px 12px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer;border-radius:4px}
-#koronaCharacterOpacityReset:hover{background:var(--panel-hover)}
-
-/* 6-8: Browser gets a true fixed chrome / flexible viewport layout. */
-#proxyPage{height:100%!important;min-height:100%!important;box-sizing:border-box!important;overflow:hidden!important}
-#proxyPage .browser-page{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
-#proxyPage .browser-topline{flex:0 0 auto!important}
-#proxyPage .browser-window{height:auto!important;min-height:0!important;flex:1 1 auto!important;display:flex!important;flex-direction:column!important;position:relative!important;overflow:hidden!important}
-#proxyPage .browser-tabs{position:relative!important;top:auto!important;flex:0 0 45px!important;height:45px!important;min-height:45px!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin!important;overscroll-behavior-x:contain!important}
-#proxyPage .browser-toolbar{position:relative!important;top:auto!important;flex:0 0 48px!important;height:48px!important;min-height:48px!important;z-index:40!important;overflow:hidden!important}
-#proxyPage .iframe-container{position:relative!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;width:100%!important;max-width:none!important;overflow:hidden!important}
-#proxyPage .browser-frames{position:relative!important;inset:auto!important;flex:1 1 auto!important;width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;overscroll-behavior:contain!important}
-#proxyPage .korona-browser-frame{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border:0!important}
-#proxyPage .browser-newtab{position:absolute!important;inset:0!important;overflow:auto!important;overscroll-behavior:contain!important}
-
-/* 9-10: Better tab bar behavior and active-tab visibility */
-#proxyPage .browser-tabs{scroll-snap-type:x proximity}
-#proxyPage .browser-tab{scroll-snap-align:start;flex-shrink:0!important}
-#proxyPage .browser-tab.active{scroll-margin-inline:8px}
-#proxyPage .browser-tab.loading .tab-favicon{animation:korona-tab-spin .8s linear infinite}
-@keyframes korona-tab-spin{to{transform:rotate(360deg)}}
-
-/* 11-13: Empty/loading/error browser states */
-#koronaBrowserError{position:absolute;inset:0;z-index:35;display:none;place-items:center;padding:24px;background:color-mix(in srgb,var(--bg) 94%,transparent);text-align:center}
-#koronaBrowserError.show{display:grid}
-#koronaBrowserError .k-error-box{max-width:520px;padding:24px;border:1px solid var(--border);background:var(--panel)}
-#koronaBrowserError h3{margin:0 0 8px;color:var(--text)}
-#koronaBrowserError p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
-#koronaBrowserError button{margin-top:14px;padding:9px 14px;border:1px solid var(--border-bright);background:var(--panel-hover);color:var(--text);cursor:pointer}
-#proxyOpeningOverlay.show{display:grid!important}
-
-/* 14: Focus management */
-#proxyPage .browser-address:focus-within{border-color:var(--border-bright)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--green) 12%,transparent)!important}
-#proxyPage button:focus-visible,#settingsPage button:focus-visible,#settingsPage input:focus-visible,#settingsPage select:focus-visible{outline:2px solid var(--border-bright)!important;outline-offset:2px!important}
-
-/* 16: Scrollbar polish */
-.content::-webkit-scrollbar,.browser-tabs::-webkit-scrollbar,#settingsPage *::-webkit-scrollbar{width:9px;height:9px}
-.content::-webkit-scrollbar-track,.browser-tabs::-webkit-scrollbar-track,#settingsPage *::-webkit-scrollbar-track{background:transparent}
-.content::-webkit-scrollbar-thumb,.browser-tabs::-webkit-scrollbar-thumb,#settingsPage *::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--green) 28%,transparent);border:2px solid transparent;background-clip:padding-box}
-.content::-webkit-scrollbar-thumb:hover,.browser-tabs::-webkit-scrollbar-thumb:hover,#settingsPage *::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--green) 48%,transparent);background-clip:padding-box}
-
-/* 17: Prevent scroll chaining where Korona owns the scroll area. */
-#settingsPage .theme-grid,#settingsPage .settings-panel,#homePage .quick-launch-panel{overscroll-behavior:contain}
-
-/* 18: Reduce layout shift */
-#koronaCharacterArt{aspect-ratio:auto;content-visibility:auto}
-#koronaCharacterBadge{min-height:46px}
-#proxyPage .browser-tabs,#proxyPage .browser-toolbar{contain:layout paint}
-
-/* 19-20: Character rendering + responsive positioning */
-@media(max-width:800px){#koronaCharacterArt{width:min(52vw,300px)!important;height:50vh!important}}
-@media(max-width:520px){#koronaCharacterArt{width:58vw!important;height:42vh!important;right:-7vw!important}}
-@media(prefers-reduced-motion:reduce){#koronaCharacterArt{transition:none!important}.content{scroll-behavior:auto!important}}
-
-/* Browser mobile controls */
-@media(max-width:650px){
-  #proxyPage .browser-toolbar{height:44px!important;min-height:44px!important;flex-basis:44px!important;padding:4px!important;gap:2px!important}
-  #proxyPage .browser-nav-button{width:30px!important;height:34px!important;flex-basis:30px!important}
-  #proxyPage .browser-address{height:34px!important}
-  #proxyPage .browser-address input{font-size:11px!important;padding:0 7px!important}
-  #proxyPage .browser-tabs{height:42px!important;min-height:42px!important;flex-basis:42px!important}
-  #proxyPage .browser-tab{height:36px!important;min-width:125px!important;flex-basis:125px!important}
-  #settingsPage .section-header{padding-top:12px!important;margin-top:-12px!important}
-}
-</style>
-
-<script id="korona-ui-fix-v22-script">
+<script id="korona-ui-patch-2-script">
 (function(){
   "use strict";
-  var OPACITY_KEY="korona.character.opacity.v1";
-  var DEFAULT_OPACITY=75;
-
-  function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
-  function getOpacity(){
-    var n=Number(localStorage.getItem(OPACITY_KEY));
-    return Number.isFinite(n)?clamp(n,0,100):DEFAULT_OPACITY;
+  var OPACITY_KEY="korona.character.opacity.v2";
+  function safeGet(k){try{return window.localStorage.getItem(k)}catch(e){return null}}
+  function safeSet(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}
+  function clamp(v){v=Math.round(Number(v));return isFinite(v)?Math.max(0,Math.min(100,v)):75}
+  function setOpacity(v,save){
+    v=clamp(v); document.documentElement.style.setProperty("--korona-character-opacity",String(v/100));
+    var art=document.getElementById("koronaCharacterArt"); if(art) art.style.opacity=String(v/100);
+    if(save!==false)safeSet(OPACITY_KEY,String(v));
   }
-  function setOpacity(value,save){
-    value=clamp(Number(value)||0,0,100);
-    document.documentElement.style.setProperty("--korona-character-opacity",String(value/100));
-    var art=document.getElementById("koronaCharacterArt");
-    if(art)art.style.setProperty("--korona-character-opacity",String(value/100));
-    var slider=document.getElementById("koronaCharacterOpacity");
-    var out=document.getElementById("koronaCharacterOpacityValue");
-    if(slider)slider.value=String(value);
-    if(out)out.textContent=Math.round(value)+"%";
-    if(save)try{localStorage.setItem(OPACITY_KEY,String(value));}catch(_){ }
+  function addOpacityControl(){
+    try{
+      if(document.getElementById("koronaCharacterOpacityControl"))return;
+      var settings=document.getElementById("settingsPage"); if(!settings)return;
+      var host=settings.querySelector(".settings-content,.settings-container,main")||settings;
+      var box=document.createElement("section"); box.id="koronaCharacterOpacityControl";
+      box.className="settings-section";
+      box.innerHTML='<div class="settings-section-title">Character</div><div class="settings-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><label for="koronaCharacterOpacity" style="min-width:120px">Opacity</label><input id="koronaCharacterOpacity" type="range" min="0" max="100" step="1" style="flex:1;min-width:160px"><output id="koronaCharacterOpacityValue" style="min-width:48px;text-align:right">75%</output><button id="koronaCharacterOpacityReset" type="button">Reset</button></div>';
+      host.appendChild(box);
+      var slider=box.querySelector("#koronaCharacterOpacity"),out=box.querySelector("#koronaCharacterOpacityValue");
+      var saved=safeGet(OPACITY_KEY); var initial=saved===null?75:clamp(saved); slider.value=initial; out.value=initial+"%"; setOpacity(initial,false);
+      slider.addEventListener("input",function(){var v=clamp(this.value);out.value=v+"%";setOpacity(v,true)});
+      box.querySelector("#koronaCharacterOpacityReset").addEventListener("click",function(){slider.value=75;out.value="75%";setOpacity(75,true)});
+    }catch(e){}
   }
-
-  function ensureCharacterOpacity(){
-    var panel=document.querySelector("#settingsPage .settings-panel");
-    if(!panel || document.getElementById("koronaCharacterOpacitySection"))return;
-    var section=document.createElement("div");
-    section.className="settings-section";
-    section.id="koronaCharacterOpacitySection";
-    section.innerHTML='<div><h3>Character Opacity</h3><p>Adjust how visible the selected character artwork is. Changes apply immediately.</p></div>'+
-      '<div class="korona-opacity-row"><input id="koronaCharacterOpacity" type="range" min="0" max="100" step="1" value="'+getOpacity()+'" aria-label="Character opacity"><output id="koronaCharacterOpacityValue">'+getOpacity()+'%</output></div>'+
-      '<button id="koronaCharacterOpacityReset" type="button">Reset to 75%</button>';
-    var editor=document.getElementById("koronaThemeEditor");
-    if(editor && editor.parentNode===panel)panel.insertBefore(section,editor.nextSibling);else panel.appendChild(section);
-    document.getElementById("koronaCharacterOpacity").addEventListener("input",function(){setOpacity(this.value,true);});
-    document.getElementById("koronaCharacterOpacityReset").addEventListener("click",function(){setOpacity(DEFAULT_OPACITY,true);});
-    setOpacity(getOpacity(),false);
+  function bindShortcuts(){
+    document.addEventListener("keydown",function(e){
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){
+        var a=document.querySelector("#proxyPage input[type='text'],#proxyPage input:not([type]),#proxyPage .address-input,#proxyPage #urlInput");
+        if(a){e.preventDefault();a.focus();if(a.select)a.select();}
+      }
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="r" && document.body.classList.contains("korona-browser-active")){e.preventDefault();try{var f=document.querySelector("#browserFrames iframe:not([style*='display: none'])");if(f&&f.contentWindow)f.contentWindow.location.reload()}catch(x){}}
+    },true);
   }
-
-  function ensureBrowserError(){
-    var host=document.getElementById("iframeContainer");
-    if(!host || document.getElementById("koronaBrowserError"))return;
-    var box=document.createElement("div");
-    box.id="koronaBrowserError";
-    box.innerHTML='<div class="k-error-box"><h3>Korona could not open this page</h3><p id="koronaBrowserErrorText">The browser engine reported an error while opening the page.</p><button type="button" id="koronaBrowserErrorRetry">Try again</button></div>';
-    host.appendChild(box);
-    document.getElementById("koronaBrowserErrorRetry").addEventListener("click",function(){
-      box.classList.remove("show");
-      if(typeof window.__koronaRetryActiveTab==="function")window.__koronaRetryActiveTab();
-    });
+  function resizeBrowser(){
+    try{
+      var p=document.getElementById("proxyPage"),frames=document.getElementById("browserFrames"); if(!p||!frames)return;
+      var rect=p.getBoundingClientRect(); frames.style.maxHeight=Math.max(180,Math.floor(rect.height))+"px";
+    }catch(e){}
   }
-  function showBrowserError(message){
-    ensureBrowserError();
-    var box=document.getElementById("koronaBrowserError");
-    var text=document.getElementById("koronaBrowserErrorText");
-    if(text)text.textContent=message||"The browser engine reported an error while opening the page.";
-    if(box)box.classList.add("show");
+  function init(){
+    try{setOpacity(clamp(safeGet(OPACITY_KEY)===null?75:safeGet(OPACITY_KEY)),false)}catch(e){}
+    addOpacityControl(); bindShortcuts(); resizeBrowser();
+    window.addEventListener("resize",resizeBrowser,{passive:true});
+    window.addEventListener("orientationchange",resizeBrowser,{passive:true});
+    setTimeout(function(){try{addOpacityControl();resizeBrowser()}catch(e){}},500);
   }
-  function hideBrowserError(){var box=document.getElementById("koronaBrowserError");if(box)box.classList.remove("show");}
-
-  /* 1: Restore useful scroll positions between page switches. */
-  var scrollKey="korona.page.scroll.v1";
-  function activePageId(){return document.querySelector(".content>.page.active")?.id||"homePage";}
-  function savePageScroll(){
-    try{var o=JSON.parse(localStorage.getItem(scrollKey)||"{}");o[activePageId()]=document.querySelector(".content")?.scrollTop||0;localStorage.setItem(scrollKey,JSON.stringify(o));}catch(_){ }
-  }
-  function restorePageScroll(id){
-    try{var o=JSON.parse(localStorage.getItem(scrollKey)||"{}");var y=Number(o[id]||0);requestAnimationFrame(function(){var c=document.querySelector(".content");if(c)c.scrollTop=y;});}catch(_){ }
-  }
-  document.addEventListener("click",function(e){
-    var nav=e.target.closest(".nav-button,[data-page-jump]");
-    if(!nav)return;
-    savePageScroll();
-    var id=nav.dataset.page||nav.dataset.pageJump;
-    if(id)restorePageScroll(id+"Page");
-  },true);
-  window.addEventListener("beforeunload",savePageScroll);
-
-  /* 2: Section anchoring / quick jump support for long settings. */
-  function addSettingsAnchors(){
-    var page=document.getElementById("settingsPage");
-    if(!page||document.getElementById("koronaSettingsJump"))return;
-    var sections=Array.from(page.querySelectorAll(".settings-section"));
-    if(sections.length<3)return;
-    var select=document.createElement("select");select.id="koronaSettingsJump";select.setAttribute("aria-label","Jump to settings section");
-    sections.forEach(function(sec,i){
-      if(!sec.id)sec.id="koronaSettingsSection"+i;
-      var h=sec.querySelector("h3");var o=document.createElement("option");o.value=sec.id;o.textContent=h?h.textContent:"Section "+(i+1);select.appendChild(o);
-    });
-    var header=page.querySelector(".section-header");
-    if(header){var wrap=document.createElement("div");wrap.style.cssText="margin-top:10px;display:flex;justify-content:flex-end";wrap.appendChild(select);header.appendChild(wrap);}
-    select.addEventListener("change",function(){document.getElementById(this.value)?.scrollIntoView({behavior:"smooth",block:"start"});});
-  }
-
-  /* 3 + 5: Add opacity controls after the existing customization editor. */
-  function enhance(){ensureCharacterOpacity();ensureBrowserError();addSettingsAnchors();setOpacity(getOpacity(),false);}
-
-  /* 6-7: Keep browser chrome dimensions correct after resize/orientation changes. */
-  function sizeBrowser(){
-    var page=document.getElementById("proxyPage"),win=document.getElementById("browserWindow");
-    if(!page||!win)return;
-    page.style.setProperty("--korona-vh",window.innerHeight+"px");
-    win.style.setProperty("--korona-browser-height",Math.max(300,window.innerHeight-(page.getBoundingClientRect().top||0)-16)+"px");
-  }
-  window.addEventListener("resize",sizeBrowser,{passive:true});
-  window.addEventListener("orientationchange",function(){setTimeout(sizeBrowser,80);},{passive:true});
-
-  /* 10: Always reveal the active tab. */
-  function revealActiveTab(){
-    var active=document.querySelector("#browserTabs .browser-tab.active");
-    if(active)active.scrollIntoView({behavior:"smooth",block:"nearest",inline:"nearest"});
-  }
-  window.__koronaRevealActiveTab=revealActiveTab;
-
-  /* 12-13: Decorate existing loading/error behavior without replacing Scramjet. */
-  window.__koronaShowBrowserError=showBrowserError;
-  window.__koronaHideBrowserError=hideBrowserError;
-  window.__koronaRetryActiveTab=function(){
-    var input=document.getElementById("urlInput");
-    if(input && input.value && typeof window.launchURL==="function")window.launchURL(input.value);
-  };
-
-  /* 14-15: Focus management + browser keyboard shortcuts. */
-  document.addEventListener("keydown",function(e){
-    if(e.ctrlKey && e.key.toLowerCase()==="l"){
-      var input=document.getElementById("urlInput");
-      if(document.getElementById("proxyPage")?.classList.contains("active")&&input){e.preventDefault();input.focus();input.select();}
-    }
-    if(e.ctrlKey && e.key.toLowerCase()==="t" && document.getElementById("proxyPage")?.classList.contains("active")){
-      var btn=document.getElementById("newTabButton");if(btn){e.preventDefault();btn.click();}
-    }
-    if(e.ctrlKey && e.key.toLowerCase()==="w" && document.getElementById("proxyPage")?.classList.contains("active")){
-      var active=document.querySelector("#browserTabs .browser-tab.active");var close=active?.querySelector(".tab-close");if(close){e.preventDefault();close.click();}
-    }
-    if(e.ctrlKey && e.key.toLowerCase()==="r" && document.getElementById("proxyPage")?.classList.contains("active")){
-      var r=document.getElementById("browserRefresh");if(r){e.preventDefault();r.click();}
-    }
-  });
-
-  /* 16-18: Avoid accidental page scroll when interacting with browser chrome. */
-  document.addEventListener("wheel",function(e){
-    if(e.target.closest("#browserTabs,#browserToolbar,.browser-toolbar,.browser-address"))e.stopPropagation();
-  },{passive:true});
-
-  /* 19: Avoid re-decoding/repositioning character art unnecessarily. */
-  var lastCharacterSrc="";
-  function optimizeCharacter(){
-    var art=document.getElementById("koronaCharacterArt");
-    if(!art)return;
-    if(art.src && art.src!==lastCharacterSrc){lastCharacterSrc=art.src;art.decoding="async";art.loading="eager";art.fetchPriority="low";}
-  }
-
-  /* Bounded initialization: do not observe the entire document.
-     Korona already performs its own dynamic DOM updates; a global MutationObserver
-     here can react to those updates while this layer is also updating styles/UI,
-     causing initialization loops and preventing the app from becoming usable. */
-  function boot(){
-    enhance();sizeBrowser();optimizeCharacter();
-    setTimeout(function(){enhance();sizeBrowser();revealActiveTab();},250);
-    setTimeout(function(){enhance();sizeBrowser();},1000);
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
 </script>
 
