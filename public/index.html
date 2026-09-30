@@ -3732,27 +3732,65 @@ body.korona-auth-unlocked #app {
   overflow: hidden !important;
 }
 </style>
-<style id="korona-ui-patch-2">
-/* KORONA UI PATCH 2 — isolated, CSS-first */
-#koronaApp, #app { min-height:0; }
-#app { height:100dvh; overflow:hidden; }
-.page { min-height:0; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
-#settingsPage, #homePage, #gamesPage, #appsPage, #accountPage, #aboutPage { height:100%; min-height:0; overflow:auto; overscroll-behavior:contain; }
-#settingsPage > *, #settingsPage .settings-container, #settingsPage .settings-content { box-sizing:border-box; }
-#settingsPage .settings-header, #settingsPage .page-header { position:sticky; top:0; z-index:20; }
-#browserTabs { overflow-x:auto; overflow-y:hidden; white-space:nowrap; scrollbar-width:thin; }
-#browserFrames { min-height:0; height:calc(100% - 0px); overflow:hidden; }
-#proxyPage { min-height:0; height:100%; overflow:hidden; }
-#proxyPage .browser-toolbar, #proxyPage .browser-controls, #proxyPage .browser-addressbar { position:sticky; top:0; z-index:30; }
-#proxyPage iframe { display:block; width:100%; height:100%; border:0; }
-#koronaCharacterArt { opacity:var(--korona-character-opacity, .75); transition:opacity .15s ease; }
-body.no-animations #koronaCharacterArt { transition:none; }
-@media (max-width:700px){
-  #settingsPage, #homePage, #gamesPage, #appsPage, #accountPage, #aboutPage { -webkit-overflow-scrolling:touch; }
-  #browserTabs { touch-action:pan-x; }
+<style id="korona-v24-browser-character-css">
+/* Character: persistent semi-transparent overlay. Never hide it merely because the browser is active. */
+#koronaCharacterArt{
+  position:fixed !important;
+  right:clamp(10px,3vw,46px) !important;
+  bottom:0 !important;
+  z-index:2147483000 !important;
+  width:min(31vw,390px) !important;
+  height:min(72vh,700px) !important;
+  pointer-events:none !important;
+  opacity:var(--korona-character-opacity,.42) !important;
+  visibility:visible !important;
+  display:block !important;
+  object-fit:contain !important;
+  object-position:right bottom !important;
+  transition:opacity .18s ease,transform .18s ease !important;
 }
-@media (prefers-reduced-motion:reduce){#koronaCharacterArt{transition:none!important}}
+body[data-character="none"] #koronaCharacterArt{display:none !important;opacity:0 !important}
+body.fern-proxy-active #koronaCharacterArt{display:block !important;visibility:visible !important}
+#iframeContainer:fullscreen #koronaCharacterArt,
+#iframeContainer:-webkit-full-screen #koronaCharacterArt{
+  position:absolute !important;
+  right:clamp(10px,3vw,46px) !important;
+  bottom:0 !important;
+  z-index:2147483000 !important;
+}
+
+/* Browser rework */
+#proxyPage{height:100% !important;min-height:0 !important;overflow:hidden !important}
+#proxyPage .browser-page{height:100% !important;min-height:0 !important;display:flex !important;flex-direction:column !important}
+#proxyPage .browser-topline{flex:0 0 auto !important}
+#proxyPage .browser-window{flex:1 1 auto !important;min-height:0 !important;display:flex !important;flex-direction:column !important;overflow:hidden !important}
+#proxyPage .browser-tabs{flex:0 0 42px !important;display:flex !important;align-items:stretch !important;overflow-x:auto !important;overflow-y:hidden !important;scrollbar-width:thin !important}
+#proxyPage .browser-toolbar{flex:0 0 auto !important;display:flex !important;align-items:center !important;min-height:48px !important;z-index:50 !important}
+#proxyPage .iframe-container{position:relative !important;flex:1 1 auto !important;min-height:0 !important;height:auto !important;overflow:hidden !important;background:#050806 !important}
+#proxyPage .browser-frames{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;overflow:hidden !important}
+#proxyPage .korona-browser-frame{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;display:block !important;border:0 !important;background:#050806 !important}
+#proxyPage .browser-newtab{position:absolute !important;inset:0 !important;display:grid !important;place-content:center !important;text-align:center !important}
+#proxyPage .browser-newtab[style*="display: none"]{display:none !important}
+#proxyPage .iframe-toolbar{position:absolute !important;right:12px !important;bottom:12px !important;z-index:2147482990 !important;display:flex !important;gap:6px !important}
+#proxyPage .iframe-toolbar button{width:38px !important;height:38px !important}
+#proxyPage .proxy-opening-overlay{position:absolute !important;inset:0 !important;z-index:2147482980 !important;display:none !important;place-items:center !important;background:rgba(3,6,3,.72) !important}
+#proxyPage .proxy-opening-overlay.show{display:grid !important}
+.korona-browser-error{position:absolute;inset:0;z-index:2147482995;display:none;place-items:center;text-align:center;padding:32px;background:rgba(3,6,3,.96)}
+.korona-browser-error.show{display:grid}
+.korona-browser-error h3{margin:0;font-size:22px}.korona-browser-error p{max-width:560px;color:var(--muted);line-height:1.5}
+.browser-error-icon{width:48px;height:48px;border:1px solid var(--border-bright);display:grid;place-items:center;color:var(--green);font-weight:900;font-size:24px}
+.browser-error-actions{display:flex;gap:8px}.browser-error-actions button{padding:10px 16px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer}
+.browser-tab.loading .tab-favicon{animation:korona-tab-spin .8s linear infinite}
+.browser-tab.error{border-color:var(--red,#ff526f)!important}
+@keyframes korona-tab-spin{to{transform:rotate(360deg)}}
+#koronaCharacterOpacityValue{font-variant-numeric:tabular-nums}
+.korona-v24-tool-section{border-top:1px solid var(--border);margin-top:18px;padding-top:18px}
+.korona-v24-tool-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.korona-v24-tool-row button{padding:10px 14px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer}
+.korona-v24-tool-row small{color:var(--muted);max-width:600px;line-height:1.5}
+@media(max-width:700px){#koronaCharacterArt{width:54vw !important;height:48vh !important;right:-3vw !important;opacity:var(--korona-character-opacity,.36) !important}}
 </style>
+
 </head>
 
 
@@ -4124,6 +4162,34 @@ body.no-animations #koronaCharacterArt { transition:none; }
                             style="margin-top:12px;padding:10px 14px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer;border-radius:10px;">
                         Run diagnostics again
                     </button>
+                </div>
+
+                <div class="settings-section" id="koronaBrowserSettingsSection">
+                    <div>
+                        <h3>Browser &amp; Presentation</h3>
+                        <p>Control how Korona displays character artwork and the browser window.</p>
+                    </div>
+                    <div class="korona-v24-tool-section">
+                        <div class="korona-v24-tool-row">
+                            <div>
+                                <strong>Character opacity</strong><br>
+                                <small>Adjust the character overlay without changing the selected character.</small>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;min-width:220px;flex:1;max-width:360px;">
+                                <input id="koronaCharacterOpacity" type="range" min="0" max="100" value="42" step="1" style="width:100%;">
+                                <strong id="koronaCharacterOpacityValue">42%</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="korona-v24-tool-section">
+                        <div class="korona-v24-tool-row">
+                            <div>
+                                <strong>About:blank presentation</strong><br>
+                                <small>Open the current Korona page inside a new about:blank tab. Popup blocking may prevent it from opening.</small>
+                            </div>
+                            <button type="button" id="koronaAboutBlankButton">OPEN ABOUT:BLANK</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="settings-section settings-about">
@@ -4579,7 +4645,7 @@ document.querySelectorAll("[data-page-jump]").forEach(button=>{
 });
 
 /* ============================================================
-   KORONA TABBED BROWSER
+   KORONA BROWSER REWORK v2.4
    ============================================================ */
 
 const urlInput = document.getElementById("urlInput");
@@ -4593,400 +4659,400 @@ const homeTabButton = document.getElementById("browserHome");
 const backButton = document.getElementById("browserBack");
 const forwardButton = document.getElementById("browserForward");
 const refreshButton = document.getElementById("browserRefresh");
+const fullscreenButton = document.getElementById("fullscreenButton");
+const reloadButton = document.getElementById("reloadButton");
+const browserFullscreen = document.getElementById("browserFullscreen");
 
 let iframeWindow = null;
 let tabCounter = 1;
 let activeTabId = "tab-1";
+let browserRequestSerial = 0;
+let browserFullscreenHeld = false;
+let characterOriginalParent = null;
+let characterOriginalNextSibling = null;
 
-const koronaTabs = new Map([["tab-1",{id:"tab-1",title:"New Tab",url:"",frame:null}]]);
+const koronaTabs = new Map([
+  ["tab-1", { id:"tab-1", title:"New Tab", url:"", frame:null, loading:false, error:null }]
+]);
 
-function getActiveTab(){return koronaTabs.get(activeTabId);}
+function getActiveTab(){ return koronaTabs.get(activeTabId); }
+
 function normalizeURL(value){
-  let url=String(value||"").trim();
-  if(!url)return "";
-  if(!/^https?:\/\//i.test(url)){
-    if(/^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(url)) url="https://"+url;
-    else url="https://www.google.com/search?q="+encodeURIComponent(url);
-  }
-  return url;
+  let url = String(value || "").trim();
+  if (!url) return "";
+  if (/^(about:blank|https?:\/\/)/i.test(url)) return url;
+  if (/^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(url)) return "https://" + url;
+  return "https://www.google.com/search?q=" + encodeURIComponent(url);
 }
-function getSiteTitle(url){try{return new URL(url).hostname.replace(/^www\./,"")||"New Tab";}catch{return"New Tab";}}
-function getSiteIcon(url){try{return new URL(url).hostname.replace(/^www\./,"").slice(0,1).toUpperCase()||"K";}catch{return"K";}}
-function updateHomeTabCount(){const el=document.getElementById("homeTabCount");if(el)el.textContent=String(koronaTabs.size);}
+
+function getSiteTitle(url){
+  try { return new URL(url).hostname.replace(/^www\./, "") || "New Tab"; }
+  catch (_) { return "New Tab"; }
+}
+
+function getSiteIcon(url){
+  try { return (new URL(url).hostname.replace(/^www\./, "")[0] || "K").toUpperCase(); }
+  catch (_) { return "K"; }
+}
+
+function updateHomeTabCount(){
+  const el = document.getElementById("homeTabCount");
+  if (el) el.textContent = String(koronaTabs.size);
+}
+
+function browserStatus(text, type){
+  const status = document.querySelector("#proxyPage .browser-status");
+  if (!status) return;
+  status.classList.remove("browser-status-loading","browser-status-error");
+  if (type === "loading") status.classList.add("browser-status-loading");
+  if (type === "error") status.classList.add("browser-status-error");
+  const dot = status.querySelector("span");
+  if (dot) dot.textContent = "";
+  const label = Array.from(status.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+  if (label) label.textContent = " " + (text || "secure session");
+}
+
 function renderTabButtons(){
-  browserTabs?.querySelectorAll(".browser-tab").forEach(button=>{
-    const tab=koronaTabs.get(button.dataset.tabId);
-    if(!tab){button.remove();return;}
-    button.classList.toggle("active",tab.id===activeTabId);
-    const title=button.querySelector(".tab-title"),icon=button.querySelector(".tab-favicon");
-    if(title)title.textContent=tab.title||"New Tab";
-    if(icon)icon.textContent=tab.url?getSiteIcon(tab.url):"K";
+  browserTabs?.querySelectorAll(".browser-tab").forEach(button => {
+    const tab = koronaTabs.get(button.dataset.tabId);
+    if (!tab) { button.remove(); return; }
+    button.classList.toggle("active", tab.id === activeTabId);
+    button.classList.toggle("loading", !!tab.loading);
+    button.classList.toggle("error", !!tab.error);
+    const title = button.querySelector(".tab-title");
+    const icon = button.querySelector(".tab-favicon");
+    if (title) title.textContent = tab.title || "New Tab";
+    if (icon) icon.textContent = tab.url ? getSiteIcon(tab.url) : "K";
   });
   updateHomeTabCount();
 }
+
 function createTabButton(tab){
-  const button=document.createElement("button");
-  button.className="browser-tab";button.dataset.tabId=tab.id;button.type="button";
-  button.innerHTML='<span class="tab-favicon">K</span><span class="tab-title">New Tab</span><span class="tab-close" title="Close tab">×</span>';
-  button.addEventListener("click",event=>{
-    if(event.target.closest(".tab-close")){closeBrowserTab(tab.id);return;}
-    switchBrowserTab(tab.id);
+  if (!browserTabs || !newTabButton) return;
+  const button = document.createElement("button");
+  button.className = "browser-tab";
+  button.dataset.tabId = tab.id;
+  button.type = "button";
+  button.innerHTML = '<span class="tab-favicon">K</span><span class="tab-title">New Tab</span><span class="tab-close" title="Close tab">×</span>';
+  button.addEventListener("click", event => {
+    if (event.target.closest(".tab-close")) closeBrowserTab(tab.id);
+    else switchBrowserTab(tab.id);
   });
-  browserTabs.insertBefore(button,newTabButton);renderTabButtons();
+  browserTabs.insertBefore(button, newTabButton);
+  renderTabButtons();
 }
-function createBrowserTab(initialURL=""){
-  const id="tab-"+(++tabCounter),tab={id,title:"New Tab",url:"",frame:null};
-  koronaTabs.set(id,tab);createTabButton(tab);switchBrowserTab(id);
-  if(initialURL)launchURL(initialURL,id);return tab;
-}
-function switchBrowserTab(id){
-  if(!koronaTabs.has(id))return;
-  activeTabId=id;
-  koronaTabs.forEach(tab=>{if(tab.frame?.frame)tab.frame.frame.style.display=tab.id===id?"block":"none";});
-  const tab=getActiveTab();iframeWindow=tab?.frame?.frame||null;
-  if(browserNewTab) browserNewTab.style.display = tab?.url ? "none" : "grid";
-  if(urlInput)urlInput.value=tab?.url||"";
-  renderTabButtons();setProxyFrameVisible(!!tab?.url);
-}
-function closeBrowserTab(id){
-  const tab=koronaTabs.get(id);if(!tab)return;
-  if(tab.frame?.frame)tab.frame.frame.remove();koronaTabs.delete(id);
-  if(!koronaTabs.size){
-    const replacement={id:"tab-1",title:"New Tab",url:"",frame:null};
-    koronaTabs.set(replacement.id,replacement);activeTabId=replacement.id;tabCounter=Math.max(tabCounter,1);
-    createTabButton(replacement);switchBrowserTab(replacement.id);return;
-  }
-  if(activeTabId===id)switchBrowserTab(Array.from(koronaTabs.keys()).pop());else renderTabButtons();
-}
+
 function setProxyFrameVisible(visible){
-  if(!iframeContainer)return;
-  iframeContainer.classList.toggle("fern-visible",!!visible);
-  document.body.classList.toggle("fern-proxy-active",!!visible);
+  if (iframeContainer) iframeContainer.classList.toggle("fern-visible", !!visible);
+  document.body.classList.toggle("fern-proxy-active", !!visible);
+  updateCharacterPresentation();
 }
-function setTabLoading(loading){
-  const tab=getActiveTab();if(!tab)return;
-  browserTabs?.querySelector(`[data-tab-id="${tab.id}"]`)?.classList.toggle("loading",loading);
+
+function setTabLoading(tab, loading){
+  if (!tab) return;
+  tab.loading = !!loading;
+  renderTabButtons();
+  if (loading) browserStatus("opening", "loading");
+  else if (!tab.error) browserStatus("secure session", "ok");
 }
-async function launchURL(targetURL=null,targetTabId=activeTabId){
-  const tab=koronaTabs.get(targetTabId);if(!tab)return;
-  const raw=targetURL===null||targetURL===undefined?(urlInput?.value||""):targetURL;
-  const url=normalizeURL(raw);if(!url)return;
-  activeTabId=targetTabId;tab.url=url;tab.title=getSiteTitle(url);
-  if(urlInput)urlInput.value=url;
-  if(browserNewTab) browserNewTab.style.display="none";
-  setProxyFrameVisible(true);setTabLoading(true);
-  if(proxyOpeningOverlay)proxyOpeningOverlay.classList.remove("show");
-  try{
-    if(!tab.frame)tab.frame=await createFernScramjetFrame(tab.id,browserFrames);
-    iframeWindow=tab.frame.frame;
-    koronaTabs.forEach(other=>{if(other.frame?.frame)other.frame.frame.style.display=other.id===tab.id?"block":"none";});
-    await tab.frame.go(url);tab.title=getSiteTitle(url);renderTabButtons();
-  }catch(error){
-    console.error("Korona Scramjet launch failed:",error);
-    if(proxyOpeningOverlay)proxyOpeningOverlay.classList.add("show");
-  }finally{setTabLoading(false);renderTabButtons();}
+
+function browserErrorBox(){
+  if (!iframeContainer) return null;
+  let box = document.getElementById("koronaBrowserError");
+  if (!box){
+    box = document.createElement("div");
+    box.id = "koronaBrowserError";
+    box.className = "korona-browser-error";
+    box.innerHTML = '<div class="browser-error-icon">!</div><h3>Korona could not open this page</h3><p class="browser-error-message">The browser transport or the destination did not respond.</p><div class="browser-error-actions"><button type="button" id="koronaBrowserRetry">Retry</button><button type="button" id="koronaBrowserNew">New Tab</button></div>';
+    iframeContainer.appendChild(box);
+    box.querySelector("#koronaBrowserRetry")?.addEventListener("click", () => {
+      const tab = getActiveTab();
+      if (tab?.url) launchURL(tab.url, tab.id, true);
+    });
+    box.querySelector("#koronaBrowserNew")?.addEventListener("click", () => createBrowserTab());
+  }
+  return box;
 }
+
+function showBrowserError(tab, error){
+  if (!tab) return;
+  tab.error = error || "Unable to open page";
+  const box = browserErrorBox();
+  if (box){
+    const msg = box.querySelector(".browser-error-message");
+    if (msg) msg.textContent = String(error?.message || error || "The browser transport or destination did not respond.");
+    box.classList.add("show");
+  }
+  browserStatus("page error", "error");
+  renderTabButtons();
+}
+
+function hideBrowserError(){
+  document.getElementById("koronaBrowserError")?.classList.remove("show");
+}
+
+function sizeBrowserFrames(){
+  if (!browserFrames || !iframeContainer) return;
+  const rect = iframeContainer.getBoundingClientRect();
+  const toolbar = iframeContainer.querySelector(".iframe-toolbar");
+  const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 0;
+  browserFrames.style.height = Math.max(120, Math.floor(rect.height - toolbarH)) + "px";
+}
+
+function createBrowserTab(initialURL=""){
+  const id = "tab-" + (++tabCounter);
+  const tab = { id, title:"New Tab", url:"", frame:null, loading:false, error:null };
+  koronaTabs.set(id, tab);
+  createTabButton(tab);
+  switchBrowserTab(id);
+  if (initialURL) launchURL(initialURL, id);
+  return tab;
+}
+
+function switchBrowserTab(id){
+  if (!koronaTabs.has(id)) return;
+  activeTabId = id;
+  const tab = getActiveTab();
+  koronaTabs.forEach(other => {
+    const frame = other.frame?.frame;
+    if (frame) frame.style.display = other.id === id ? "block" : "none";
+  });
+  iframeWindow = tab?.frame?.frame || null;
+  if (browserNewTab) browserNewTab.style.display = tab?.url ? "none" : "grid";
+  if (urlInput) urlInput.value = tab?.url || "";
+  if (tab?.error) showBrowserError(tab, tab.error); else hideBrowserError();
+  setProxyFrameVisible(!!tab?.url);
+  renderTabButtons();
+  requestAnimationFrame(sizeBrowserFrames);
+}
+
+function closeBrowserTab(id){
+  const tab = koronaTabs.get(id);
+  if (!tab) return;
+  try { tab.frame?.frame?.remove(); } catch (_) {}
+  koronaTabs.delete(id);
+  if (!koronaTabs.size){
+    const replacement = { id:"tab-1", title:"New Tab", url:"", frame:null, loading:false, error:null };
+    koronaTabs.set(replacement.id, replacement);
+    activeTabId = replacement.id;
+    tabCounter = Math.max(tabCounter, 1);
+    createTabButton(replacement);
+  }
+  if (activeTabId === id) switchBrowserTab(Array.from(koronaTabs.keys()).pop());
+  else renderTabButtons();
+}
+
+async function launchURL(targetURL=null, targetTabId=activeTabId, forceReload=false){
+  const tab = koronaTabs.get(targetTabId);
+  if (!tab) return false;
+  const raw = targetURL == null ? (urlInput?.value || "") : targetURL;
+  const url = normalizeURL(raw);
+  if (!url) return false;
+
+  const requestId = ++browserRequestSerial;
+  activeTabId = targetTabId;
+  tab.url = url;
+  tab.title = getSiteTitle(url);
+  tab.error = null;
+  if (urlInput) urlInput.value = url;
+  if (browserNewTab) browserNewTab.style.display = "none";
+  hideBrowserError();
+  setProxyFrameVisible(true);
+  setTabLoading(tab, true);
+  if (proxyOpeningOverlay) proxyOpeningOverlay.classList.add("show");
+  renderTabButtons();
+
+  try {
+    if (!tab.frame || !tab.frame.frame?.isConnected){
+      tab.frame = await createFernScramjetFrame(tab.id, browserFrames);
+      const frameElement = tab.frame.frame;
+      frameElement.addEventListener("load", () => {
+        if (tab.id !== activeTabId) return;
+        if (proxyOpeningOverlay) proxyOpeningOverlay.classList.remove("show");
+        setTabLoading(tab, false);
+      });
+      frameElement.addEventListener("error", event => {
+        console.warn("Korona browser frame error", event);
+        showBrowserError(tab, "The embedded page reported a loading error.");
+        setTabLoading(tab, false);
+        if (proxyOpeningOverlay) proxyOpeningOverlay.classList.remove("show");
+      });
+    }
+
+    koronaTabs.forEach(other => {
+      if (other.frame?.frame) other.frame.frame.style.display = other.id === tab.id ? "block" : "none";
+    });
+    iframeWindow = tab.frame.frame;
+    await tab.frame.go(url);
+
+    if (requestId !== browserRequestSerial || activeTabId !== tab.id) return true;
+    tab.title = getSiteTitle(url);
+    tab.error = null;
+    if (forceReload && tab.frame.frame) tab.frame.frame.focus();
+    if (proxyOpeningOverlay) proxyOpeningOverlay.classList.remove("show");
+    setTabLoading(tab, false);
+    renderTabButtons();
+    updateCharacterPresentation();
+    requestAnimationFrame(sizeBrowserFrames);
+    return true;
+  } catch (error){
+    console.error("Korona browser launch failed:", error);
+    if (requestId !== browserRequestSerial) return false;
+    if (proxyOpeningOverlay) proxyOpeningOverlay.classList.remove("show");
+    setTabLoading(tab, false);
+    showBrowserError(tab, error);
+    return false;
+  }
+}
+
 function openBrowserTab(targetURL){
-  const tab=createBrowserTab();
+  const tab = createBrowserTab();
   document.querySelector('.nav-button[data-page="proxy"]')?.click();
-  if(targetURL)launchURL(targetURL,tab.id);return tab;
+  if (targetURL) launchURL(targetURL, tab.id);
+  return tab;
 }
-function openInProxy(targetURL){return openBrowserTab(targetURL);}
-newTabButton?.addEventListener("click",()=>createBrowserTab());
-urlInput?.addEventListener("keydown",event=>{if(event.key==="Enter")launchURL();});
-document.getElementById("searchButton")?.addEventListener("click",()=>launchURL());
-refreshButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.location.reload();}catch(_){}});
-backButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.history.back();}catch(_){}});
-forwardButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.history.forward();}catch(_){}});
-homeTabButton?.addEventListener("click",()=>{
-  const tab=getActiveTab();if(!tab)return;
-  if(tab.frame?.frame)tab.frame.frame.remove();tab.frame=null;tab.url="";tab.title="New Tab";
-  if(urlInput)urlInput.value="";
-  if(browserNewTab) browserNewTab.style.display="grid";
-  setProxyFrameVisible(true);renderTabButtons();
+
+function openInProxy(targetURL){ return openBrowserTab(targetURL); }
+
+function reloadActiveTab(){
+  const tab = getActiveTab();
+  if (!tab?.url) return;
+  launchURL(tab.url, tab.id, true);
+}
+
+function browserHistory(direction){
+  try {
+    const win = getActiveTab()?.frame?.frame?.contentWindow;
+    if (!win) return;
+    if (direction === "back") win.history.back();
+    else win.history.forward();
+  } catch (error) {
+    console.warn("Browser history unavailable:", error);
+  }
+}
+
+function openHomeTab(){
+  const tab = getActiveTab();
+  if (!tab) return;
+  try { tab.frame?.frame?.remove(); } catch (_) {}
+  tab.frame = null;
+  tab.url = "";
+  tab.title = "New Tab";
+  tab.error = null;
+  if (urlInput) urlInput.value = "";
+  if (browserNewTab) browserNewTab.style.display = "grid";
+  hideBrowserError();
+  setProxyFrameVisible(false);
+  renderTabButtons();
+}
+
+newTabButton?.addEventListener("click", () => createBrowserTab());
+urlInput?.addEventListener("keydown", event => {
+  if (event.key === "Enter") { event.preventDefault(); launchURL(); }
 });
-document.getElementById("browserFullscreen")?.addEventListener("click",()=>{
-  if(iframeContainer?.requestFullscreen&&!document.fullscreenElement)iframeContainer.requestFullscreen().catch(()=>{});
+document.getElementById("searchButton")?.addEventListener("click", () => launchURL());
+refreshButton?.addEventListener("click", reloadActiveTab);
+reloadButton?.addEventListener("click", reloadActiveTab);
+backButton?.addEventListener("click", () => browserHistory("back"));
+forwardButton?.addEventListener("click", () => browserHistory("forward"));
+homeTabButton?.addEventListener("click", openHomeTab);
+
+document.addEventListener("click", event => {
+  const launcher = event.target.closest?.(".quick-site,.app-tile");
+  if (launcher?.dataset.url) openBrowserTab(launcher.dataset.url);
 });
-document.addEventListener("click",event=>{
-  const launcher=event.target.closest(".quick-site,.app-tile");if(!launcher)return;openBrowserTab(launcher.dataset.url);
+
+/* Fullscreen is one browser container, so the page being viewed and its controls
+   stay together instead of fullscreening an arbitrary iframe. */
+function fullscreenIsActive(){ return document.fullscreenElement === iframeContainer; }
+
+function moveCharacterForFullscreen(){
+  const art = document.getElementById("koronaCharacterArt");
+  if (!art || !iframeContainer) return;
+  if (art.parentElement !== iframeContainer){
+    characterOriginalParent = art.parentElement;
+    characterOriginalNextSibling = art.nextSibling;
+    iframeContainer.appendChild(art);
+  }
+  art.classList.add("korona-character-in-browser");
+}
+
+function restoreCharacterAfterFullscreen(){
+  const art = document.getElementById("koronaCharacterArt");
+  if (!art) return;
+  if (characterOriginalParent && art.parentElement === iframeContainer){
+    characterOriginalParent.insertBefore(art, characterOriginalNextSibling);
+  } else if (art.parentElement === iframeContainer){
+    document.body.appendChild(art);
+  }
+  characterOriginalParent = null;
+  characterOriginalNextSibling = null;
+  art.classList.remove("korona-character-in-browser");
+}
+
+function updateFullscreenUI(){
+  const active = fullscreenIsActive();
+  [fullscreenButton, browserFullscreen].forEach(btn => {
+    if (!btn) return;
+    btn.textContent = active ? "✕" : "⛶";
+    btn.title = active ? "Exit fullscreen" : "Fullscreen browser";
+  });
+}
+
+async function enterBrowserFullscreen(){
+  if (!iframeContainer || fullscreenIsActive()) return;
+  if (!document.fullscreenEnabled || !iframeContainer.requestFullscreen) return;
+  try {
+    moveCharacterForFullscreen();
+    await iframeContainer.requestFullscreen({navigationUI:"hide"});
+  } catch (error){
+    restoreCharacterAfterFullscreen();
+    console.warn("Korona fullscreen unavailable:", error);
+  }
+  updateFullscreenUI();
+}
+
+async function exitBrowserFullscreen(){
+  if (!document.fullscreenElement) return;
+  try { await document.exitFullscreen(); } catch (_) {}
+}
+
+[fullscreenButton, browserFullscreen].forEach(button => {
+  button?.addEventListener("click", event => {
+    event.preventDefault();
+    if (fullscreenIsActive()) exitBrowserFullscreen();
+    else enterBrowserFullscreen();
+  });
 });
-createTabButton(koronaTabs.get("tab-1"));switchBrowserTab("tab-1");
 
-/* ============================================================
-   FULLSCREEN — PRESS AND HOLD + KEYBOARD LOCK
-   ============================================================ */
+document.addEventListener("fullscreenchange", () => {
+  if (fullscreenIsActive()) moveCharacterForFullscreen();
+  else restoreCharacterAfterFullscreen();
+  updateFullscreenUI();
+  requestAnimationFrame(sizeBrowserFrames);
+});
 
-const fullscreenButton =
-    document.getElementById("fullscreenButton");
-
-const fullscreenContainer =
-    document.getElementById("iframeContainer");
-
-let fullscreenMouseHeld = false;
-let fullscreenTouchHeld = false;
-let fullscreenRequestPending = false;
-let fullscreenKeyboardLocked = false;
-
-function fullscreenIsActive() {
-    return document.fullscreenElement === fullscreenContainer;
+/* Keep the character as a real overlay, including while a game/site is open. */
+function updateCharacterPresentation(){
+  const art = document.getElementById("koronaCharacterArt");
+  if (!art) return;
+  art.style.opacity = getComputedStyle(document.documentElement).getPropertyValue("--korona-character-opacity") || ".42";
+  art.style.display = document.body.dataset.character === "none" ? "none" : "block";
 }
 
-function updateFullscreenUI() {
-    if (!fullscreenButton) return;
+window.addEventListener("resize", () => requestAnimationFrame(sizeBrowserFrames));
+window.addEventListener("orientationchange", () => setTimeout(sizeBrowserFrames, 80));
 
-    const active = fullscreenIsActive();
-    const held = fullscreenMouseHeld || fullscreenTouchHeld;
-
-    fullscreenButton.textContent = active ? "✕" : "⛶";
-    fullscreenButton.title = active
-        ? "Fullscreen active — hold Esc to exit"
-        : "Press and hold for fullscreen";
-
-    fullscreenButton.setAttribute(
-        "aria-label",
-        active
-            ? "Fullscreen active — hold Escape to exit"
-            : "Press and hold for fullscreen"
-    );
-
-    fullscreenButton.classList.toggle("holding", held);
-}
-
-async function lockFullscreenKeyboard() {
-    if (
-        !navigator.keyboard ||
-        typeof navigator.keyboard.lock !== "function"
-    ) {
-        return false;
-    }
-
-    try {
-        await navigator.keyboard.lock(["Escape"]);
-        fullscreenKeyboardLocked = true;
-        return true;
-    } catch (error) {
-        fullscreenKeyboardLocked = false;
-        console.warn("Fern keyboard lock unavailable:", error);
-        return false;
-    }
-}
-
-function unlockFullscreenKeyboard() {
-    if (
-        fullscreenKeyboardLocked &&
-        navigator.keyboard &&
-        typeof navigator.keyboard.unlock === "function"
-    ) {
-        try {
-            navigator.keyboard.unlock();
-        } catch (_) {}
-    }
-
-    fullscreenKeyboardLocked = false;
-}
-
-function enterFernFullscreen() {
-    if (!fullscreenContainer) return;
-    if (fullscreenIsActive()) return;
-    if (document.fullscreenElement) return;
-
-    if (
-        !document.fullscreenEnabled ||
-        typeof fullscreenContainer.requestFullscreen !== "function"
-    ) {
-        console.warn("Fullscreen is not available.");
-        return;
-    }
-
-    fullscreenRequestPending = true;
-
-    fullscreenContainer
-        .requestFullscreen({
-            navigationUI: "hide",
-            keyboardLock: "browser"
-        })
-        .then(async () => {
-            fullscreenRequestPending = false;
-
-            await lockFullscreenKeyboard();
-
-            if (
-                !fullscreenMouseHeld &&
-                !fullscreenTouchHeld &&
-                fullscreenIsActive()
-            ) {
-                await document.exitFullscreen().catch(() => {});
-            }
-
-            updateFullscreenUI();
-        })
-        .catch(error => {
-            fullscreenRequestPending = false;
-
-            console.warn(
-                "Fern fullscreen request failed:",
-                error
-            );
-
-            updateFullscreenUI();
-        });
-}
-
-function leaveFernFullscreen() {
-    fullscreenMouseHeld = false;
-    fullscreenTouchHeld = false;
-
-    unlockFullscreenKeyboard();
-
-    if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-    }
-
-    updateFullscreenUI();
-}
-
-if (fullscreenButton) {
-    fullscreenButton.addEventListener(
-        "mousedown",
-        event => {
-            if (event.button !== 0) return;
-
-            fullscreenMouseHeld = true;
-            updateFullscreenUI();
-
-            enterFernFullscreen();
-        }
-    );
-
-    fullscreenButton.addEventListener(
-        "click",
-        event => {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-    );
-
-    window.addEventListener(
-        "mouseup",
-        () => {
-            if (!fullscreenMouseHeld) return;
-
-            fullscreenMouseHeld = false;
-            updateFullscreenUI();
-
-            if (fullscreenRequestPending) {
-                return;
-            }
-
-            if (fullscreenIsActive()) {
-                document.exitFullscreen().catch(() => {});
-            }
-        }
-    );
-
-    window.addEventListener(
-        "blur",
-        () => {
-            fullscreenMouseHeld = false;
-            fullscreenTouchHeld = false;
-            updateFullscreenUI();
-        }
-    );
-
-    fullscreenButton.addEventListener(
-        "touchstart",
-        () => {
-            fullscreenTouchHeld = true;
-            updateFullscreenUI();
-            enterFernFullscreen();
-        },
-        { passive: true }
-    );
-
-    fullscreenButton.addEventListener(
-        "touchend",
-        event => {
-            event.preventDefault();
-            fullscreenTouchHeld = false;
-            updateFullscreenUI();
-
-            if (fullscreenIsActive()) {
-                document.exitFullscreen().catch(() => {});
-            }
-        },
-        { passive: false }
-    );
-
-    fullscreenButton.addEventListener(
-        "touchcancel",
-        () => {
-            fullscreenTouchHeld = false;
-            updateFullscreenUI();
-
-            if (fullscreenIsActive()) {
-                document.exitFullscreen().catch(() => {});
-            }
-        },
-        { passive: true }
-    );
-}
-
-document.addEventListener(
-    "keydown",
-    event => {
-        if (
-            fullscreenIsActive() &&
-            event.key === "Escape" &&
-            fullscreenKeyboardLocked
-        ) {
-            event.preventDefault();
-        }
-    },
-    true
-);
-
-document.addEventListener(
-    "fullscreenchange",
-    () => {
-        if (!fullscreenIsActive()) {
-            unlockFullscreenKeyboard();
-            fullscreenMouseHeld = false;
-            fullscreenTouchHeld = false;
-        }
-
-        updateFullscreenUI();
-    }
-);
-
-document.addEventListener(
-    "fullscreenerror",
-    event => {
-        fullscreenRequestPending = false;
-        unlockFullscreenKeyboard();
-
-        console.warn(
-            "Fern fullscreen error:",
-            event
-        );
-
-        updateFullscreenUI();
-    }
-);
-
+createTabButton(koronaTabs.get("tab-1"));
+switchBrowserTab("tab-1");
 updateFullscreenUI();
 
-
-/* ============================================================
-   GAME LAUNCHER
-   ============================================================ */
-
-function openGame(targetURL) {
-    openBrowserTab(targetURL);
-    const container=document.getElementById("iframeContainer");
-    if(container && document.fullscreenElement!==container && container.requestFullscreen) container.requestFullscreen().catch(()=>{});
+/* Game launchers use the same browser manager, but fullscreen is opt-in so a
+   game cannot unexpectedly steal the entire page. */
+function openGame(targetURL){
+  const tab = openBrowserTab(targetURL);
+  return tab;
 }
-
 
 /* ============================================================
    GAMES DATA
@@ -6248,6 +6314,73 @@ body::before,body::after{display:none!important;content:none!important}
 html,body{background:var(--bg)!important}
 #koronaNetwork{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
 </style>
+<script id="korona-v24-settings-script">
+(function(){
+  "use strict";
+  var OPACITY_KEY="korona.character.opacity.v2";
+  var DEFAULT_OPACITY=42;
+
+  function readOpacity(){
+    try{
+      var n=Number(localStorage.getItem(OPACITY_KEY));
+      return Number.isFinite(n) ? Math.max(0,Math.min(100,n)) : DEFAULT_OPACITY;
+    }catch(_){ return DEFAULT_OPACITY; }
+  }
+  function applyOpacity(value,save){
+    var n=Math.max(0,Math.min(100,Number(value)||0));
+    document.documentElement.style.setProperty("--korona-character-opacity",String(n/100));
+    var slider=document.getElementById("koronaCharacterOpacity");
+    var label=document.getElementById("koronaCharacterOpacityValue");
+    if(slider)slider.value=String(n);
+    if(label)label.textContent=n+"%";
+    var art=document.getElementById("koronaCharacterArt");
+    if(art)art.style.opacity=String(n/100);
+    if(save){try{localStorage.setItem(OPACITY_KEY,String(n));}catch(_) {}}
+  }
+
+  function setupOpacity(){
+    var slider=document.getElementById("koronaCharacterOpacity");
+    if(!slider)return;
+    applyOpacity(readOpacity(),false);
+    slider.addEventListener("input",function(){applyOpacity(slider.value,true);});
+    slider.addEventListener("change",function(){applyOpacity(slider.value,true);});
+  }
+
+  function setupAboutBlank(){
+    var button=document.getElementById("koronaAboutBlankButton");
+    if(!button)return;
+    button.addEventListener("click",function(){
+      var popup=window.open("about:blank","_blank");
+      if(!popup){alert("Your browser blocked the new tab. Allow popups for Korona and try again.");return;}
+      var target=location.href;
+      try{
+        popup.document.open();
+        popup.document.write('<!doctype html><html><head><title>Korona</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;overflow:hidden;background:#000"><iframe src="'+target.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'" style="position:fixed;inset:0;width:100%;height:100%;border:0" allow="fullscreen;autoplay;gamepad" allowfullscreen></iframe></body></html>');
+        popup.document.close();
+      }catch(error){
+        try{popup.location.href=target;}catch(_){}
+      }
+    });
+  }
+
+  function makeCharacterPersist(){
+    var art=document.getElementById("koronaCharacterArt");
+    if(!art)return;
+    var opacity=getComputedStyle(document.documentElement).getPropertyValue("--korona-character-opacity").trim() || String(readOpacity()/100);
+    art.style.opacity=opacity;
+    art.style.display=document.body.dataset.character === "none" ? "none" : "block";
+  }
+
+  function boot(){
+    setupOpacity();
+    setupAboutBlank();
+    makeCharacterPersist();
+    window.addEventListener("resize",makeCharacterPersist,{passive:true});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
+})();
+</script>
+
 <canvas id="koronaNetwork" aria-hidden="true"></canvas>
 <script>
 (function(){
@@ -6269,59 +6402,5 @@ html,body{background:var(--bg)!important}
   addEventListener("resize",size);size();frame();
 })();
 </script>
-
-<script id="korona-ui-patch-2-script">
-(function(){
-  "use strict";
-  var OPACITY_KEY="korona.character.opacity.v2";
-  function safeGet(k){try{return window.localStorage.getItem(k)}catch(e){return null}}
-  function safeSet(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}
-  function clamp(v){v=Math.round(Number(v));return isFinite(v)?Math.max(0,Math.min(100,v)):75}
-  function setOpacity(v,save){
-    v=clamp(v); document.documentElement.style.setProperty("--korona-character-opacity",String(v/100));
-    var art=document.getElementById("koronaCharacterArt"); if(art) art.style.opacity=String(v/100);
-    if(save!==false)safeSet(OPACITY_KEY,String(v));
-  }
-  function addOpacityControl(){
-    try{
-      if(document.getElementById("koronaCharacterOpacityControl"))return;
-      var settings=document.getElementById("settingsPage"); if(!settings)return;
-      var host=settings.querySelector(".settings-content,.settings-container,main")||settings;
-      var box=document.createElement("section"); box.id="koronaCharacterOpacityControl";
-      box.className="settings-section";
-      box.innerHTML='<div class="settings-section-title">Character</div><div class="settings-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><label for="koronaCharacterOpacity" style="min-width:120px">Opacity</label><input id="koronaCharacterOpacity" type="range" min="0" max="100" step="1" style="flex:1;min-width:160px"><output id="koronaCharacterOpacityValue" style="min-width:48px;text-align:right">75%</output><button id="koronaCharacterOpacityReset" type="button">Reset</button></div>';
-      host.appendChild(box);
-      var slider=box.querySelector("#koronaCharacterOpacity"),out=box.querySelector("#koronaCharacterOpacityValue");
-      var saved=safeGet(OPACITY_KEY); var initial=saved===null?75:clamp(saved); slider.value=initial; out.value=initial+"%"; setOpacity(initial,false);
-      slider.addEventListener("input",function(){var v=clamp(this.value);out.value=v+"%";setOpacity(v,true)});
-      box.querySelector("#koronaCharacterOpacityReset").addEventListener("click",function(){slider.value=75;out.value="75%";setOpacity(75,true)});
-    }catch(e){}
-  }
-  function bindShortcuts(){
-    document.addEventListener("keydown",function(e){
-      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){
-        var a=document.querySelector("#proxyPage input[type='text'],#proxyPage input:not([type]),#proxyPage .address-input,#proxyPage #urlInput");
-        if(a){e.preventDefault();a.focus();if(a.select)a.select();}
-      }
-      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="r" && document.body.classList.contains("korona-browser-active")){e.preventDefault();try{var f=document.querySelector("#browserFrames iframe:not([style*='display: none'])");if(f&&f.contentWindow)f.contentWindow.location.reload()}catch(x){}}
-    },true);
-  }
-  function resizeBrowser(){
-    try{
-      var p=document.getElementById("proxyPage"),frames=document.getElementById("browserFrames"); if(!p||!frames)return;
-      var rect=p.getBoundingClientRect(); frames.style.maxHeight=Math.max(180,Math.floor(rect.height))+"px";
-    }catch(e){}
-  }
-  function init(){
-    try{setOpacity(clamp(safeGet(OPACITY_KEY)===null?75:safeGet(OPACITY_KEY)),false)}catch(e){}
-    addOpacityControl(); bindShortcuts(); resizeBrowser();
-    window.addEventListener("resize",resizeBrowser,{passive:true});
-    window.addEventListener("orientationchange",resizeBrowser,{passive:true});
-    setTimeout(function(){try{addOpacityControl();resizeBrowser()}catch(e){}},500);
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
-})();
-</script>
-
 </body>
 </html>
