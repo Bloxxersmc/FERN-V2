@@ -10,7 +10,7 @@
 
     <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
     <script>
-        window.KORONA_GROQ_API_KEY = "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";
+        window.KORONA_GROQ_API_KEY = "PASTE_YOUR_LOCAL_GROQ_KEY_HERE";
     </script>
 
     <!-- Scramjet -->
@@ -3276,7 +3276,7 @@ body::before {
 
 
 <style id="fern-optimization-v1-2-19">
-/* Fern v1.2.19 — conservative performance pass */
+/* Fern v1.2.19 �� conservative performance pass */
 html {
     text-rendering: optimizeSpeed;
 }
@@ -4739,22 +4739,9 @@ function updateFullscreenUI() {
 }
 
 async function lockFullscreenKeyboard() {
-    if (
-        !navigator.keyboard ||
-        typeof navigator.keyboard.lock !== "function"
-    ) {
-        return false;
-    }
-
-    try {
-        await navigator.keyboard.lock(["Escape"]);
-        fullscreenKeyboardLocked = true;
-        return true;
-    } catch (error) {
-        fullscreenKeyboardLocked = false;
-        console.warn("Fern keyboard lock unavailable:", error);
-        return false;
-    }
+    // Fullscreen must never capture the browser keyboard; users can keep typing in tabs.
+    fullscreenKeyboardLocked = false;
+    return false;
 }
 
 function unlockFullscreenKeyboard() {
@@ -7373,6 +7360,73 @@ body.no-animations #koronaNetwork { opacity:0.35!important; }
     if (colorButton && !colorButton.dataset.fixed) { colorButton.dataset.fixed = 'true'; colorButton.addEventListener('click', () => { set('--green', 'var(--k-char-1)'); set('--green-soft', 'var(--k-char-2)'); }); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
+})();
+</script>
+<!-- KORONA CUSTOM STUDIO + BROWSER OVERHAUL -->
+<style id="korona-custom-browser-overhaul">
+  :root{--k-accent:#a9ff68;--k-accent-2:#8b7cff;--k-ink:#f5f7ff;--k-muted:#9aa3b8;--k-surface:#101522;--k-surface-2:#151c2c;--k-line:rgba(255,255,255,.1)}
+  body{background:#080b13!important;color:var(--k-ink)!important;overflow:hidden}
+  body::before,body::after,#fernMistTexture,#fernSkyDecor,#fernWebGLAurora{display:none!important}
+  .topbar{background:#0d111c!important;border:1px solid var(--k-line)!important;border-radius:14px!important;box-shadow:0 14px 40px rgba(0,0,0,.3)!important}
+  .nav{background:#111827!important;border:1px solid var(--k-line)!important;border-radius:10px!important}
+  .nav button{border-radius:7px!important;color:var(--k-muted)!important}
+  .nav button.active{background:var(--k-accent)!important;color:#10150d!important;box-shadow:none!important}
+  main{height:calc(100vh - 94px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding-bottom:50px!important}
+  .page{max-width:1400px!important;margin:0 auto!important}
+  .page.active{display:block!important}
+  .hero,.settings-section,.joke-card,.bookmarks-panel,.about-card,.account-card,.game-card{border-radius:12px!important;background:var(--k-surface)!important;border:1px solid var(--k-line)!important;box-shadow:0 10px 30px rgba(0,0,0,.2)!important;backdrop-filter:none!important}
+  .game-card:hover{transform:translateY(-3px)!important;border-color:var(--k-accent)!important}
+  .iframe-container{border-radius:12px!important;background:#090c13!important;border:1px solid var(--k-line)!important}
+  .browser-shell{background:#0b0f18!important;border:1px solid var(--k-line)!important;border-radius:16px!important;box-shadow:0 20px 60px rgba(0,0,0,.35)!important;overflow:hidden}
+  .browser-chrome{background:#111827!important;border-bottom:1px solid var(--k-line)!important}
+  .browser-tab{background:#182238!important;border:1px solid transparent!important;border-radius:8px 8px 0 0!important;color:var(--k-muted)!important}
+  .browser-tab.active{background:#0b0f18!important;color:var(--k-ink)!important;border-color:var(--k-line)!important;border-bottom-color:#0b0f18!important}
+  .browser-toolbar{background:#0d1320!important;padding:10px!important;gap:8px!important}
+  .browser-nav-button,.new-tab-button{background:#182238!important;border:1px solid var(--k-line)!important;border-radius:8px!important;color:var(--k-ink)!important}
+  .browser-address{background:#080b13!important;border:1px solid var(--k-line)!important;border-radius:9px!important}
+  .browser-address input{color:var(--k-ink)!important}
+  .browser-newtab{background:radial-gradient(circle at 75% 20%,rgba(169,255,104,.12),transparent 28%),#080b13!important}
+  .browser-newtab .newtab-k{background:var(--k-accent)!important;color:#10150d!important;border-radius:12px!important}
+  #koronaAiPage{display:none;padding:28px 4vw 80px;min-height:100%}
+  #koronaAiPage.active{display:block!important}
+  .studio-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}
+  .studio-kicker{color:var(--k-accent);font:700 11px/1.2 ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase}
+  .studio-head h2{margin:8px 0 5px;font-size:clamp(32px,5vw,58px);letter-spacing:-.05em}
+  .studio-head p{color:var(--k-muted);margin:0;max-width:620px}
+  .studio-badge{padding:9px 12px;border:1px solid rgba(169,255,104,.3);border-radius:999px;color:var(--k-accent);font-size:12px;white-space:nowrap}
+  .studio-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:16px}
+  .studio-card{background:var(--k-surface);border:1px solid var(--k-line);border-radius:14px;padding:18px;min-width:0}
+  .studio-card h3{margin:0 0 6px;font-size:16px}.studio-card>p{color:var(--k-muted);font-size:13px;margin:0 0 16px}
+  .studio-drop{min-height:250px;border:1px dashed rgba(169,255,104,.45);border-radius:11px;display:grid;place-items:center;text-align:center;padding:22px;cursor:pointer;background:rgba(169,255,104,.025)}
+  .studio-drop.dragging,.studio-drop:hover{background:rgba(169,255,104,.08);border-color:var(--k-accent)}
+  .studio-drop strong{display:block;font-size:18px;margin-bottom:8px}.studio-drop span{color:var(--k-muted);font-size:12px}
+  .studio-preview{max-width:100%;max-height:245px;border-radius:8px;display:none;margin:auto}.studio-preview.ready{display:block}.studio-drop.has-image .upload-copy{display:none}
+  .studio-input{width:100%;min-height:125px;resize:vertical;background:#080b13;color:var(--k-ink);border:1px solid var(--k-line);border-radius:10px;padding:13px;font:inherit;outline:none}
+  .studio-input:focus{border-color:var(--k-accent)}.studio-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .studio-button{border:1px solid var(--k-line);background:#182238;color:var(--k-ink);border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:700}.studio-button.primary{background:var(--k-accent);color:#10150d;border-color:var(--k-accent)}
+  .studio-output{min-height:184px;white-space:pre-wrap;line-height:1.6;color:#dce3f4;background:#080b13;border:1px solid var(--k-line);border-radius:10px;padding:14px;font-size:14px;overflow:auto}.studio-output.empty{color:var(--k-muted)}
+  @media(max-width:800px){.studio-grid{grid-template-columns:1fr}.studio-head{display:block}.studio-badge{display:inline-block;margin-top:15px}}
+</style>
+<script>
+(function(){
+  const nav=document.querySelector('.nav');
+  const anchor=nav?.querySelector('[data-page="settings"],.nav-button:last-child');
+  if(nav&&!document.querySelector('[data-page="ai"]')){
+    const b=document.createElement('button');b.className='nav-button';b.dataset.page='ai';b.type='button';b.textContent='AI Studio';b.setAttribute('aria-label','AI Studio');
+    nav.appendChild(b);
+  }
+  const main=document.querySelector('main'); if(!main||document.getElementById('koronaAiPage')) return;
+  const page=document.createElement('section');page.className='page';page.id='koronaAiPage';page.innerHTML=`
+    <div class="studio-head"><div><div class="studio-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Upload a screenshot or photo and ask for help with math, English, homework, or anything visible. Add text alone when there is no image.</p></div><span class="studio-badge">IMAGE + TEXT READER</span></div>
+    <div class="studio-grid"><div class="studio-card"><h3>Give Korona something to read</h3><p>Images are sent to the configured vision model only when you press Analyze.</p><label class="studio-drop" id="studioDrop" for="studioFile"><div class="upload-copy"><strong>Drop an image here</strong><span>or click to choose a PNG, JPG, or WEBP</span></div><img class="studio-preview" id="studioPreview" alt="Selected image preview"></label><input id="studioFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><textarea class="studio-input" id="studioPrompt" placeholder="Ask a question, or leave blank for a general explanation..."></textarea><div class="studio-actions"><button class="studio-button primary" id="studioAnalyze" type="button">Analyze image</button><button class="studio-button" id="studioClear" type="button">Clear</button></div></div><div class="studio-card"><h3>Korona's answer</h3><p>Responses appear here and stay on this page while you work.</p><div class="studio-output empty" id="studioOutput">Your answer will appear here.</div></div></div>`;
+  main.appendChild(page);
+  const style=document.createElement('style');style.textContent='.nav-button[data-page="ai"]{color:var(--k-accent)!important}';document.head.appendChild(style);
+  const file=document.getElementById('studioFile'),drop=document.getElementById('studioDrop'),preview=document.getElementById('studioPreview'),prompt=document.getElementById('studioPrompt'),out=document.getElementById('studioOutput');let imageData='';
+  function choose(f){if(!f||!f.type.startsWith('image/'))return;const r=new FileReader();r.onload=()=>{imageData=r.result;preview.src=imageData;preview.classList.add('ready');drop.classList.add('has-image')};r.readAsDataURL(f)}
+  file.onchange=()=>choose(file.files[0]);['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('dragging')}));['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('dragging')}));drop.addEventListener('drop',e=>choose(e.dataTransfer.files[0]));
+  document.getElementById('studioClear').onclick=()=>{imageData='';file.value='';preview.src='';preview.classList.remove('ready');drop.classList.remove('has-image');prompt.value='';out.textContent='Your answer will appear here.';out.classList.add('empty')};
+  document.getElementById('studioAnalyze').onclick=async()=>{const question=prompt.value.trim()||'Read this image carefully and explain what it contains. Solve any visible problem step by step.';if(!imageData&&!question){return}out.classList.remove('empty');out.textContent='Reading image and thinking...';try{const key=window.KORONA_GROQ_API_KEY||'';if(!key||key.includes('PASTE_'))throw new Error('Add your local Groq key to window.KORONA_GROQ_API_KEY near the top of this HTML file.');const content=[{type:'text',text:question}];if(imageData)content.push({type:'image_url',image_url:{url:imageData}});const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'meta-llama/llama-4-scout-17b-16e-instruct',messages:[{role:'user',content}],temperature:.2,max_tokens:1200})});const data=await res.json();if(!res.ok)throw new Error(data.error?.message||'Groq request failed');out.textContent=data.choices?.[0]?.message?.content||'No answer returned.'}catch(e){out.textContent='AI Studio error: '+e.message}}
+  document.addEventListener('click',e=>{const b=e.target.closest('.nav-button[data-page="ai"]');if(!b)return;document.querySelectorAll('.nav-button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('main>.page').forEach(x=>x.classList.remove('active'));page.classList.add('active');main.scrollTop=0});
 })();
 </script>
 </body>
