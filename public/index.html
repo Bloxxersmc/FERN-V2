@@ -3276,7 +3276,7 @@ body::before {
 
 
 <style id="fern-optimization-v1-2-19">
-/* Fern v1.2.19 �� conservative performance pass */
+/* Fern v1.2.19 — conservative performance pass */
 html {
     text-rendering: optimizeSpeed;
 }
@@ -7444,5 +7444,55 @@ body.no-animations #koronaNetwork { opacity:0.35!important; }
   #koronaAiPage { overflow: visible !important; }
   @media (max-width: 700px) { #proxyPage .iframe-container { height: calc(100vh - 330px) !important; min-height: 360px !important; } }
 </style>
+<style id="korona-repair-overhaul">
+/* Final repair pass: keep auth/proxy logic intact while giving the shell its own layout. */
+:root{--korona-accent:var(--green,#e63994);--korona-scale:1}
+html,body{min-height:100%;background:#070912!important;color:var(--text,#eef4ff)!important}
+body{overflow:hidden!important}
+#app{height:100dvh!important;min-height:0!important}
+.content{height:calc(100dvh - 58px)!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:28px clamp(18px,3vw,48px) 64px!important;scrollbar-gutter:stable}
+.page{min-height:100%!important;height:auto!important}
+#settingsPage .settings-panel,#settingsPage .settings-section{overflow:visible!important}
+#settingsPage{overflow:visible!important}
+#proxyPage{display:flex!important;flex-direction:column!important;min-height:100%!important}
+#proxyPage .hero{flex:0 0 auto!important}
+#proxyPage .iframe-container{width:100%!important;max-width:none!important;height:clamp(520px,calc(100dvh - 300px),calc(100dvh - 180px))!important;min-height:520px!important;flex:1 1 auto!important}
+#proxyPage .iframe-container iframe,.korona-browser-frame,#iframeWindow{display:block!important;width:100%!important;height:100%!important;min-height:100%!important;max-width:none!important}
+#urlInput{min-height:46px!important;width:100%!important;border-radius:12px!important;padding-inline:16px!important}
+.proxy-controls{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:12px!important;align-items:center!important}
+#aiPage{min-height:100%!important}
+.korona-ai-shell{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;max-width:1180px;margin:auto}
+.korona-ai-card{background:#101524;border:1px solid #273249;border-radius:18px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.korona-ai-card h2{margin:0 0 6px;color:#fff}.korona-ai-card p{color:#98a5ba}
+.korona-ai-input{width:100%;min-height:130px;resize:vertical;background:#080c16!important;border:1px solid #303c56!important;color:#fff!important;border-radius:12px!important;padding:14px!important}
+.korona-ai-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.korona-ai-actions button,.korona-ai-upload{border:1px solid #354665;background:#18243b;color:#dce8ff;border-radius:10px;padding:10px 14px;cursor:pointer}.korona-ai-actions button.primary{background:var(--korona-accent);color:#fff;border-color:transparent}.korona-ai-preview{max-width:100%;max-height:180px;border-radius:10px;margin-top:12px;display:none}.korona-ai-answer{white-space:pre-wrap;line-height:1.65;color:#ecf2ff;background:#080c16;border:1px solid #273249;border-radius:12px;padding:16px;min-height:130px;margin-top:16px}
+@media(max-width:800px){.korona-ai-shell{grid-template-columns:1fr}.content{padding-inline:14px!important}.proxy-controls{grid-template-columns:1fr!important}}
+</style>
+<script>
+(function(){
+  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  function addAiTab(){
+    const nav=$('.nav,.sidebar-nav'); if(!nav||$('#koronaAiNav')) return;
+    const b=document.createElement('button'); b.id='koronaAiNav'; b.className='nav-button'; b.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>'; nav.appendChild(b);
+    const main=$('.content')||$('#app'); if(!main||$('#aiPage')) return;
+    const page=document.createElement('section'); page.id='aiPage'; page.className='page'; page.hidden=true;
+    page.innerHTML='<div class="section-header"><div><div class="eyebrow">KORONA LABS</div><h2>AI Studio</h2><p>Ask questions, solve problems, or send an image for reading.</p></div></div><div class="korona-ai-shell"><div class="korona-ai-card"><h2>Ask Korona</h2><p>Text and image questions are handled in one conversation.</p><textarea id="koronaAiPrompt" class="korona-ai-input" placeholder="Type a question, paste an exercise, or describe what you need..."></textarea><div class="korona-ai-actions"><label class="korona-ai-upload" for="koronaAiFile">Upload image</label><input id="koronaAiFile" type="file" accept="image/*" hidden><button id="koronaAiSend" class="primary">Ask AI</button><button id="koronaAiClear">Clear</button></div><img id="koronaAiPreview" class="korona-ai-preview" alt="Selected image preview"><div id="koronaAiAnswer" class="korona-ai-answer">Your answer will appear here.</div></div><aside class="korona-ai-card"><h2>How it works</h2><p>Images are sent as visual context when your Groq account exposes a vision model. Text-only questions use a fast general model.</p><p id="koronaAiStatus">Ready</p></aside></div>';
+    main.appendChild(page);
+    const show=()=>{ $$('.page').forEach(p=>{p.hidden=p!==page;p.classList.toggle('active',p===page)}); $$('.nav-button').forEach(x=>x.classList.remove('active')); b.classList.add('active') };
+    b.addEventListener('click',show);
+    let imageData=''; const file=$('#koronaAiFile'); const preview=$('#koronaAiPreview');
+    file.addEventListener('change',()=>{const f=file.files&&file.files[0]; if(!f)return; const reader=new FileReader(); reader.onload=()=>{imageData=reader.result;preview.src=imageData;preview.style.display='block'};reader.readAsDataURL(f)});
+    $('#koronaAiClear').onclick=()=>{$('#koronaAiPrompt').value='';$('#koronaAiAnswer').textContent='Your answer will appear here.';imageData='';preview.removeAttribute('src');preview.style.display='none'};
+    $('#koronaAiSend').onclick=async()=>{const prompt=$('#koronaAiPrompt').value.trim()||'Read this image and explain what it shows.';const answer=$('#koronaAiAnswer'),status=$('#koronaAiStatus');answer.textContent='Thinking…';status.textContent='Connecting to Groq…';const key=window.KORONA_GROQ_API_KEY;if(!key||key.includes('PASTE_')){answer.textContent='Add your local Groq key to window.KORONA_GROQ_API_KEY near the top of this HTML file.';status.textContent='Local key not configured';return}try{let model='llama-3.3-70b-versatile';if(imageData){try{const mr=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+key}});const md=await mr.json();const vision=(md.data||[]).map(x=>x.id).find(id=>/vision|scout/i.test(id));if(vision)model=vision}catch(_){}}const content=imageData?[{type:'text',text:prompt},{type:'image_url',image_url:{url:imageData}}]:prompt;const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({model,messages:[{role:'user',content}],temperature:.2,max_tokens:1200})});const data=await res.json();if(!res.ok)throw new Error(data.error?.message||'Groq request failed');answer.textContent=data.choices?.[0]?.message?.content||'No answer returned.';status.textContent='Complete · '+model}catch(e){answer.textContent='AI Studio error: '+e.message;status.textContent='Request failed'}};
+  }
+  function repair(){
+    addAiTab();
+    const settings=$('#settingsPage'); if(settings){settings.style.overflow='visible';const panel=$('.settings-panel',settings);if(panel){panel.style.maxHeight='none';panel.style.overflow='visible'}}
+    $$('input[type=range]').forEach(input=>{if(input.dataset.koronaBound)return;input.dataset.koronaBound='1';input.addEventListener('input',()=>{document.documentElement.style.setProperty('--korona-scale',input.value||1)})});
+    document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,[contenteditable=true]'))return},true);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair);else repair();
+})();
+</script>
 </body>
 </html>
