@@ -8,6 +8,11 @@
 
     <meta name="fern-version" content="2.1.0">
 
+    <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
+    <script>
+        window.KORONA_GROQ_API_KEY = "PASTE_YOUR_LOCAL_GROQ_KEY_HERE";
+    </script>
+
     <!-- Scramjet -->
     <script src="/scram/scramjet.all.js"></script>
     <script src="/baremux/index.js"></script>
@@ -4196,9 +4201,13 @@ const SUPABASE_URL = "https://wlzvcbisyueopwxcgwiv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_S4F7YPq8ySSXNm5BL6tiaA_cuZXLud6";
 
 const { createClient } = supabase;
-const koronaDB = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const koronaDB = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const KORONA_TABLE = "korona_users";
+  // Optional Groq configuration placeholder.
+  // Do not paste a real secret here: this HTML is client-visible. Use a server-side proxy for production.
+  const GROQ_API_KEY = "";
+  
+  const KORONA_TABLE = "korona_users";
 const KORONA_LOCAL_USER = "korona_user";
 
 const jokes = [
@@ -5963,7 +5972,8 @@ body.korona-edit-layout .korona-nav-arrow {
   width: min(31vw, 390px);
   height: min(72vh, 700px);
   pointer-events: none;
-  opacity: .42;
+  /* Keep artwork visible while allowing the settings control to update it. */
+  opacity: var(--korona-character-opacity, .42);
   transition: opacity .25s ease, transform .25s ease;
   filter: drop-shadow(0 0 24px color-mix(in srgb, var(--k-char-1, #39ccd6) 28%, transparent));
   object-fit: contain;
@@ -7245,5 +7255,52 @@ body.no-animations #koronaNetwork { opacity:0.35!important; }
 })();
 </script>
 
+<style id="korona-premium-overhaul">
+/* Premium single-file layer: preserves the existing auth and Scramjet systems. */
+.content{height:calc(100vh - 100px)!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:var(--green) transparent;padding-bottom:90px!important}
+#settingsPage,#aiPage{min-height:max-content!important;padding-bottom:120px!important}
+#koronaAiPage{display:none}
+.ai-shell{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:18px;max-width:1180px}
+.ai-card{padding:24px;border:1px solid var(--border);background:color-mix(in srgb,var(--panel) 88%,transparent);border-radius:18px;box-shadow:0 18px 55px rgba(0,0,0,.2)}
+.ai-card h3{margin:0 0 7px;color:var(--text)}
+.ai-card p{color:var(--muted);font-size:13px;line-height:1.55}
+.ai-input,.ai-upload{width:100%;margin-top:14px;padding:14px;color:var(--text);background:color-mix(in srgb,var(--bg) 86%,transparent);border:1px solid var(--border);border-radius:11px;font:inherit}
+.ai-input{min-height:125px;resize:vertical}
+.ai-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.ai-button{padding:11px 15px;color:var(--text);background:color-mix(in srgb,var(--green) 12%,transparent);border:1px solid var(--border-bright);border-radius:10px;cursor:pointer;font-weight:800}
+.ai-button:hover{background:color-mix(in srgb,var(--green) 22%,transparent)}
+.ai-preview{min-height:180px;margin-top:14px;display:grid;place-items:center;border:1px dashed var(--border-bright);border-radius:12px;color:var(--muted);overflow:hidden}
+.ai-preview img{display:block;max-width:100%;max-height:280px;object-fit:contain}
+.ai-note{font-size:11px!important;color:var(--muted)!important}
+.settings-enhanced{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+.settings-control{padding:14px;border:1px solid var(--border);border-radius:12px;background:color-mix(in srgb,var(--bg) 70%,transparent)}
+.settings-control label{display:flex;justify-content:space-between;gap:12px;color:var(--text);font-size:12px;font-weight:800}
+.settings-control input[type=range]{width:100%;accent-color:var(--green);margin-top:12px}
+.settings-control select,.settings-control input[type=color]{width:100%;margin-top:10px;color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px}
+.korona-character-dock{position:fixed;right:18px;bottom:18px;z-index:8;display:flex;gap:8px;align-items:end;pointer-events:none}
+.korona-character{pointer-events:auto;min-width:74px;padding:10px 9px;color:var(--text);background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--border);border-radius:12px;text-align:center;font-size:11px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.korona-character .avatar{display:grid;place-items:center;width:38px;height:38px;margin:0 auto 6px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));color:var(--bg);font-size:16px}
+@media(max-width:720px){.ai-shell{grid-template-columns:1fr}.korona-character-dock{right:10px;bottom:10px;transform:scale(.86);transform-origin:bottom right}}
+</style>
+<script id="korona-premium-overhaul-script">
+(()=>{
+  const boot=()=>{
+    const nav=document.querySelector('.nav');
+    if(nav&&!nav.querySelector('[data-korona-ai]')){
+      const b=document.createElement('button'); b.type='button'; b.dataset.koronaAi=''; b.innerHTML='<span class="nav-symbol">✦</span>AI'; nav.appendChild(b);
+      b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('koronaAiPage').style.display='block';});
+    }
+    const app=document.getElementById('app')||document.body;
+    if(!document.getElementById('koronaAiPage')){
+      const page=document.createElement('main'); page.id='koronaAiPage'; page.className='page'; page.innerHTML=`<div class="section-header"><div><div class="eyebrow">PRIVATE CREATIVE DESK</div><h2>AI studio</h2><p>Describe an image, or upload one for free image-to-text analysis.</p></div></div><div class="ai-shell"><section class="ai-card"><h3>Image understanding</h3><p>Upload a reference image. This HTML-only build previews it locally and prepares it for a secure server route.</p><input class="ai-upload" id="koronaImageUpload" type="file" accept="image/*"><div class="ai-preview" id="koronaImagePreview">No image selected</div></section><section class="ai-card"><h3>Prompt workspace</h3><p>Write a prompt for your Groq-backed server endpoint. Your API key is never placed in this file.</p><textarea class="ai-input" id="koronaAiPrompt" placeholder="Describe what you want to understand or create..."></textarea><div class="ai-actions"><button class="ai-button" id="koronaAiRun" type="button">Prepare request</button><button class="ai-button" id="koronaAiClear" type="button">Clear</button></div><p class="ai-note" id="koronaAiStatus">Endpoint status: waiting for a secure server route.</p></section></div>`; app.appendChild(page);
+      document.getElementById('koronaImageUpload').addEventListener('change',e=>{const file=e.target.files[0],preview=document.getElementById('koronaImagePreview');if(!file)return;const url=URL.createObjectURL(file);preview.innerHTML='<img alt="Selected image preview" src="'+url+'">';});
+      document.getElementById('koronaAiClear').addEventListener('click',()=>{document.getElementById('koronaAiPrompt').value='';document.getElementById('koronaAiStatus').textContent='Endpoint status: waiting for a secure server route.';});
+      document.getElementById('koronaAiRun').addEventListener('click',()=>document.getElementById('koronaAiStatus').textContent='Ready: connect this button to a server route that reads GROQ_API_KEY from environment variables.');
+    }
+    const settings=document.querySelector('#settingsPage .settings-panel');
+    if(settings&&!settings.querySelector('.settings-enhanced')){const box=document.createElement('section');box.className='settings-section';box.innerHTML='<h3>Character & interface controls</h3><p>These controls affect the existing rendered characters without touching auth or proxy behavior.</p><div class="settings-enhanced"><div class="settings-control"><label for="koronaCharacterOpacity">Character opacity <output id="koronaOpacityValue">100%</output></label><input id="koronaCharacterOpacity" type="range" min="0" max="100" value="100"></div><div class="settings-control"><label for="koronaUiScale">Interface scale <output id="koronaScaleValue">100%</output></label><input id="koronaUiScale" type="range" min="85" max="115" value="100"></div><div class="settings-control"><label for="koronaAccent">Accent color</label><input id="koronaAccent" type="color" value="#00ff66"></div><div class="settings-control"><label for="koronaButtonStyle">Button texture</label><select id="koronaButtonStyle"><option value="sharp">Sharp</option><option value="soft">Soft</option><option value="smooth">Smooth</option></select></div></div>';settings.appendChild(box);const opacity=document.getElementById('koronaCharacterOpacity');opacity.addEventListener('input',()=>{document.documentElement.style.setProperty('--character-opacity',opacity.value/100);document.getElementById('koronaOpacityValue').value=opacity.value+'%';document.querySelectorAll('.vocaloid,.character,.korona-character,.fern-character,[data-character]').forEach(el=>el.style.opacity=opacity.value/100)});const scale=document.getElementById('koronaUiScale');scale.addEventListener('input',()=>{document.documentElement.style.setProperty('--ui-scale',scale.value/100);document.getElementById('koronaScaleValue').value=scale.value+'%'});document.getElementById('koronaAccent').addEventListener('input',e=>document.documentElement.style.setProperty('--green',e.target.value));document.getElementById('koronaButtonStyle').addEventListener('change',e=>document.body.dataset.buttonStyle=e.target.value)}
+  }; if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
 </body>
 </html>
