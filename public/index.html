@@ -7603,5 +7603,99 @@ body{overflow:hidden!important}
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
 })();
 </script>
+<style id="korona-fix-v4">
+/* Final interaction fixes: visible themes, compact settings, and isolated character art. */
+:root { --korona-character-opacity: .42; }
+.content { padding-top: 10px !important; }
+#settingsPage { padding-top: 0 !important; }
+#settingsPage .settings-panel { margin-top: 0 !important; max-height: none !important; overflow: visible !important; }
+#settingsPage .theme-grid { margin-top: 10px !important; }
+#koronaCharacterArt { opacity: var(--korona-character-opacity) !important; transition: opacity .18s ease; }
+body[data-theme] { background: var(--bg) !important; color: var(--text) !important; }
+body[data-theme]::before { opacity: .28 !important; }
+@media (max-height: 760px) { .content { padding-bottom: 32px !important; } }
+</style>
+<script id="korona-fix-v4-script">
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  function ensureThemeBehavior() {
+    const cards = $$('.theme-card, [data-theme], [data-theme-name]');
+    cards.forEach((card) => {
+      if (card.dataset.koronaThemeBound) return;
+      const theme = card.dataset.theme || card.dataset.themeName || card.getAttribute('data-theme');
+      if (!theme || theme === 'true') return;
+      card.dataset.koronaThemeBound = '1';
+      card.addEventListener('click', () => {
+        document.body.dataset.theme = theme;
+        $$('.theme-card').forEach((item) => item.classList.toggle('active', item === card));
+        try { localStorage.setItem('korona_theme', theme); } catch (_) {}
+      });
+    });
+    const saved = (() => { try { return localStorage.getItem('korona_theme'); } catch (_) { return null; } })();
+    if (saved && saved !== 'fern') document.body.dataset.theme = saved;
+  }
+
+  function ensureCharacters() {
+    const grid = $('.korona-character-grid, .korona-editor-grid');
+    if (!grid || grid.dataset.koronaCharactersBound) return;
+    grid.dataset.koronaCharactersBound = '1';
+    const chars = [
+      ['gojo', 'Gojo', '#9b8cff', '#d8d2ff'],
+      ['naruto', 'Naruto', '#f28a22', '#ffd166'],
+      ['hunter', 'Hunter', '#49b875', '#baf2c2'],
+      ['lebron', 'LeBron', '#e5b84b', '#6da9ff']
+    ];
+    chars.forEach(([id, name, c1, c2]) => {
+      if (grid.querySelector('[data-char="' + id + '"]')) return;
+      const card = document.createElement('button');
+      card.type = 'button'; card.className = 'korona-char-card'; card.dataset.char = id;
+      card.innerHTML = '<span class="korona-char-swatch" style="background:linear-gradient(135deg,' + c1 + ',' + c2 + ')"></span><span>' + name + '</span>';
+      card.addEventListener('click', () => {
+        document.body.dataset.character = id;
+        document.documentElement.style.setProperty('--k-char-1', c1);
+        document.documentElement.style.setProperty('--k-char-2', c2);
+        const art = $('#koronaCharacterArt');
+        if (art) { art.alt = name; art.style.display = 'block'; }
+        try { localStorage.setItem('korona_character', id); } catch (_) {}
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function capAI() {
+    const send = $('#koronaAiSend');
+    if (!send || send.dataset.koronaCap) return;
+    send.dataset.koronaCap = '1';
+    const original = send.onclick;
+    send.onclick = async () => {
+      if (!original) return;
+      const oldFetch = window.fetch;
+      window.fetch = (input, init) => {
+        if (typeof input === 'string' && input.includes('/chat/completions') && init?.body) {
+          try {
+            const body = JSON.parse(init.body);
+            body.max_tokens = 512;
+            init = { ...init, body: JSON.stringify(body) };
+          } catch (_) {}
+        }
+        return oldFetch(input, init);
+      };
+      try { await original(); } finally { window.fetch = oldFetch; }
+    };
+  }
+
+  function boot() {
+    ensureThemeBehavior(); ensureCharacters(); capAI();
+    const opacity = $('#koronaCharacterOpacity');
+    if (opacity) {
+      const apply = () => document.documentElement.style.setProperty('--korona-character-opacity', String(Number(opacity.value) / 100));
+      opacity.addEventListener('input', apply); apply();
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
+})();
+</script>
 </body>
 </html>
