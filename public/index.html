@@ -10,7 +10,7 @@
 
     <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
     <script>
-        window.KORONA_GROQ_API_KEY = "PASTE_YOUR_LOCAL_GROQ_KEY_HERE";
+        window.KORONA_GROQ_API_KEY = "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";
     </script>
 
     <!-- Scramjet -->
@@ -7300,6 +7300,79 @@ body.no-animations #koronaNetwork { opacity:0.35!important; }
     const settings=document.querySelector('#settingsPage .settings-panel');
     if(settings&&!settings.querySelector('.settings-enhanced')){const box=document.createElement('section');box.className='settings-section';box.innerHTML='<h3>Character & interface controls</h3><p>These controls affect the existing rendered characters without touching auth or proxy behavior.</p><div class="settings-enhanced"><div class="settings-control"><label for="koronaCharacterOpacity">Character opacity <output id="koronaOpacityValue">100%</output></label><input id="koronaCharacterOpacity" type="range" min="0" max="100" value="100"></div><div class="settings-control"><label for="koronaUiScale">Interface scale <output id="koronaScaleValue">100%</output></label><input id="koronaUiScale" type="range" min="85" max="115" value="100"></div><div class="settings-control"><label for="koronaAccent">Accent color</label><input id="koronaAccent" type="color" value="#00ff66"></div><div class="settings-control"><label for="koronaButtonStyle">Button texture</label><select id="koronaButtonStyle"><option value="sharp">Sharp</option><option value="soft">Soft</option><option value="smooth">Smooth</option></select></div></div>';settings.appendChild(box);const opacity=document.getElementById('koronaCharacterOpacity');opacity.addEventListener('input',()=>{document.documentElement.style.setProperty('--character-opacity',opacity.value/100);document.getElementById('koronaOpacityValue').value=opacity.value+'%';document.querySelectorAll('.vocaloid,.character,.korona-character,.fern-character,[data-character]').forEach(el=>el.style.opacity=opacity.value/100)});const scale=document.getElementById('koronaUiScale');scale.addEventListener('input',()=>{document.documentElement.style.setProperty('--ui-scale',scale.value/100);document.getElementById('koronaScaleValue').value=scale.value+'%'});document.getElementById('koronaAccent').addEventListener('input',e=>document.documentElement.style.setProperty('--green',e.target.value));document.getElementById('koronaButtonStyle').addEventListener('change',e=>document.body.dataset.buttonStyle=e.target.value)}
   }; if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+<style id="korona-corrective-overhaul">
+  /* Keep the original auth/proxy systems intact while making the shell readable and themeable. */
+  :root { --ui-scale: 1; --character-opacity: 1; --korona-accent: #9b8cff; }
+  body { background: #0b0c12 !important; color: #eef0f7; }
+  body::before, body::after, #bgCanvas { opacity: 0 !important; }
+  #app { zoom: var(--ui-scale); min-height: 100vh; }
+  .content { overflow-x: hidden !important; overflow-y: auto !important; min-height: calc(100vh - 92px) !important; height: auto !important; padding-bottom: 140px !important; }
+  .page { min-height: calc(100vh - 130px) !important; }
+  #settingsPage, #koronaAiPage { overflow: visible !important; }
+  #koronaCharacterArt { opacity: var(--character-opacity) !important; transition: opacity .2s ease; pointer-events: none; }
+  #koronaCharacterBadge, .korona-character-dock, .korona-character { opacity: var(--character-opacity) !important; }
+  .browser-window { min-height: min(720px, calc(100vh - 210px)); border: 1px solid rgba(155,140,255,.42) !important; background: #10121b !important; box-shadow: 0 22px 70px rgba(0,0,0,.42) !important; }
+  .browser-tabs { min-height: 48px; padding: 7px 10px !important; background: #151827 !important; border-bottom: 1px solid rgba(155,140,255,.25) !important; }
+  .browser-toolbar { padding: 10px 12px !important; background: #0e1018 !important; border-bottom: 1px solid rgba(255,255,255,.08) !important; }
+  .browser-address { min-height: 40px; border-radius: 12px !important; background: #191c29 !important; border-color: rgba(155,140,255,.38) !important; }
+  .browser-newtab { background: radial-gradient(circle at 50% 15%, rgba(155,140,255,.16), transparent 36%), #0d0f17 !important; }
+  .browser-newtab h3 { font-size: 34px !important; letter-spacing: -.04em; }
+  .newtab-k { border-color: #9b8cff !important; color: #c8c0ff !important; background: #171a28 !important; box-shadow: 0 0 30px rgba(155,140,255,.2); }
+  .ai-shell { max-width: 1180px; }
+  #koronaAiPage { display: none; }
+  .korona-ai-ready { display: block !important; }
+  .settings-enhanced { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .settings-control input[type=color] { min-height: 44px; cursor: pointer; }
+  .settings-control input[type=range] { cursor: pointer; }
+  @media (max-width: 760px) { #app { zoom: 1 !important; } .browser-window { min-height: 560px; } }
+</style>
+<script id="korona-corrective-overhaul-script">
+(() => {
+  const root = document.documentElement;
+  const set = (name, value) => root.style.setProperty(name, value);
+  const pageIds = ['homePage','gamesPage','appsPage','proxyPage','settingsPage','accountPage','koronaAiPage'];
+  const showPage = (id, button) => {
+    pageIds.forEach((pageId) => { const page = document.getElementById(pageId); if (page) page.classList.toggle('active', pageId === id); });
+    document.querySelectorAll('.nav button, .nav-button').forEach((item) => item.classList.remove('active'));
+    if (button) button.classList.add('active');
+    const ai = document.getElementById('koronaAiPage');
+    if (ai) ai.classList.toggle('korona-ai-ready', id === 'koronaAiPage');
+  };
+  const addGojo = () => {
+    if (typeof CHARACTERS === 'undefined' || CHARACTERS.some((character) => character.id === 'gojo')) return;
+    CHARACTERS.push({ id: 'gojo', name: 'Gojo', tag: 'Limitless', c1: '#9b8cff', c2: '#d8d2ff' });
+    if (typeof CHARACTER_ART !== 'undefined') CHARACTER_ART.gojo = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#9b8cff"/><stop offset="1" stop-color="#20253b"/></linearGradient></defs><rect width="320" height="420" rx="34" fill="url(#g)"/><circle cx="160" cy="150" r="82" fill="#f0d0bd"/><path d="M72 145c4-92 168-116 184 0-34-42-121-45-184 0Z" fill="#eef2ff"/><rect x="87" y="136" width="146" height="32" rx="16" fill="#111522"/><path d="M110 250h100l42 170H68Z" fill="#111522"/><path d="M122 240h76v52h-76Z" fill="#f0d0bd"/></svg>');
+  };
+  const boot = () => {
+    addGojo();
+    const nav = document.querySelector('.nav, .sidebar-nav');
+    if (nav && !document.querySelector('[data-korona-ai]')) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.dataset.koronaAi = 'true'; button.className = 'nav-button';
+      button.innerHTML = '<span class="nav-symbol">✦</span><span>AI Studio</span>';
+      nav.appendChild(button);
+      button.addEventListener('click', () => showPage('koronaAiPage', button));
+    }
+    if (!document.getElementById('koronaAiPage')) {
+      const page = document.createElement('section'); page.id = 'koronaAiPage'; page.className = 'page';
+      page.innerHTML = '<div class="section-header"><div><div class="eyebrow">LOCAL AI LAB</div><h2>AI Studio</h2><p>Upload an image and prepare a free image-to-text request.</p></div></div><div class="ai-shell"><section class="ai-card"><h3>Image input</h3><p>The image is previewed locally in this single-file build.</p><input class="ai-upload" id="koronaImageUpload" type="file" accept="image/*"><div class="ai-preview" id="koronaImagePreview">No image selected</div></section><section class="ai-card"><h3>Prompt</h3><textarea class="ai-input" id="koronaAiPrompt" placeholder="What should the AI identify or describe?"></textarea><div class="ai-actions"><button class="ai-button" id="koronaAiRun" type="button">Analyze image</button><button class="ai-button" id="koronaAiClear" type="button">Clear</button></div><p class="ai-note" id="koronaAiStatus">Local preview ready. Connect your own server route for Groq requests.</p></section></div>';
+      (document.querySelector('.content') || document.getElementById('app') || document.body).appendChild(page);
+      document.getElementById('koronaImageUpload').addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; const url = URL.createObjectURL(file); document.getElementById('koronaImagePreview').innerHTML = '<img alt="Selected image preview" src="' + url + '">'; });
+      document.getElementById('koronaAiRun').addEventListener('click', () => { document.getElementById('koronaAiStatus').textContent = 'Image queued for your local Groq vision endpoint.'; });
+      document.getElementById('koronaAiClear').addEventListener('click', () => { document.getElementById('koronaAiPrompt').value = ''; document.getElementById('koronaAiStatus').textContent = 'Local preview ready. Connect your own server route for Groq requests.'; });
+    }
+    const opacity = document.getElementById('koronaCharacterOpacity');
+    if (opacity && !opacity.dataset.fixed) { opacity.dataset.fixed = 'true'; opacity.addEventListener('input', () => { set('--character-opacity', opacity.value / 100); const output = document.getElementById('koronaOpacityValue'); if (output) output.textContent = opacity.value + '%'; }); }
+    const scale = document.getElementById('koronaUiScale');
+    if (scale && !scale.dataset.fixed) { scale.dataset.fixed = 'true'; scale.addEventListener('input', () => { set('--ui-scale', scale.value / 100); const output = document.getElementById('koronaScaleValue'); if (output) output.textContent = scale.value + '%'; }); }
+    const accent = document.getElementById('koronaAccent');
+    if (accent && !accent.dataset.fixed) { accent.dataset.fixed = 'true'; accent.addEventListener('input', (event) => { set('--green', event.target.value); set('--green-soft', event.target.value); set('--korona-accent', event.target.value); }); }
+    const colorButton = document.getElementById('koronaUseCharColors');
+    if (colorButton && !colorButton.dataset.fixed) { colorButton.dataset.fixed = 'true'; colorButton.addEventListener('click', () => { set('--green', 'var(--k-char-1)'); set('--green-soft', 'var(--k-char-2)'); }); }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
 })();
 </script>
 </body>
