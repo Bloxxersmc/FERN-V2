@@ -9,7 +9,7 @@
     <meta name="fern-version" content="2.1.0">
 
     <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
-    <script>window.KORONA_GROQ_API_KEY = "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";</script>
+    <script>window.KORONA_GROQ_API_KEY = "";</script>
 
     <!-- Scramjet -->
     <script src="/scram/scramjet.all.js"></script>
@@ -7826,16 +7826,57 @@ const KAI_MAX_TOKENS=512;
 
 /* ---------- Remove every old/dynamic AI implementation and install exactly one ---------- */
 function cleanAI(){
-  const pages=$$('#aiPage,#koronaAiPage,[id*="aiPage" i]');
-  const navs=$$('.nav-button,[data-page="ai"],[data-page="ai-studio"]');
-  pages.forEach((p,i)=>{if(i>0||p.id!=="aiPage")p.remove()});
-  const aiPage=$('#aiPage');
-  if(!aiPage)return;
-  navs.forEach((b,i)=>{if(i>0||b.dataset.page!=="ai")b.remove()});
-  let nav=$('.sidebar-nav,.nav');
-  if(nav&&!nav.querySelector('[data-page="ai"]')){
-    const b=document.createElement('button');b.type='button';b.className='nav-button';b.dataset.page='ai';b.setAttribute('aria-label','AI Studio');b.innerHTML='<span>✦</span><span>AI Studio</span>';nav.appendChild(b);
+  const content=$('.content')||$('#app')||document.body;
+
+  /* Preserve the existing application navigation/pages. Only replace the AI page. */
+  let aiPage=$('#aiPage');
+  const legacyPages=$$('#koronaAiPage,[id*="aiPage" i]').filter(p=>p!==aiPage);
+
+  if(!aiPage && legacyPages.length){
+    aiPage=legacyPages.shift();
+    aiPage.id='aiPage';
+    aiPage.classList.add('page');
   }
+  legacyPages.forEach(p=>p.remove());
+
+  if(!aiPage){
+    aiPage=document.createElement('section');
+    aiPage.id='aiPage';
+    aiPage.className='page';
+    content.appendChild(aiPage);
+  }else if(aiPage.parentElement!==content){
+    content.appendChild(aiPage);
+  }
+
+  /* Keep Home, Games, Apps, Browser, Settings, Account, etc. intact. */
+  let nav=$('.sidebar-nav,.nav');
+  if(nav){
+    $$('.nav-button[data-page="ai"],.nav-button[data-page="ai-studio"],[data-korona-ai]',nav).forEach((b,i)=>{
+      if(i>0)b.remove();
+    });
+    let button=$('.nav-button[data-page="ai"]',nav);
+    if(!button){
+      const old=$('[data-korona-ai]',nav);
+      if(old){
+        old.removeAttribute('data-korona-ai');
+        old.dataset.page='ai';
+        old.className='nav-button';
+        old.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
+        button=old;
+      }else{
+        button=document.createElement('button');
+        button.type='button';
+        button.className='nav-button';
+        button.dataset.page='ai';
+        button.setAttribute('aria-label','AI Studio');
+        button.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
+        const homeButton=$('.nav-button[data-page="home"]',nav);
+        if(homeButton) homeButton.insertAdjacentElement('afterend',button);
+        else nav.appendChild(button);
+      }
+    }
+  }
+
   if(aiPage.dataset.finalBuilt==='1')return;
   aiPage.dataset.finalBuilt='1';
   aiPage.innerHTML=`<div class="kai-shell">
