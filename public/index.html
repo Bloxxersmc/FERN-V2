@@ -9,7 +9,9 @@
     <meta name="fern-version" content="2.1.0">
 
     <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
-    <script>window.KORONA_GROQ_API_KEY = "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";</script>
+    <script>
+        window.KORONA_GROQ_API_KEY = "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";
+    </script>
 
     <!-- Scramjet -->
     <script src="/scram/scramjet.all.js"></script>
@@ -7696,733 +7698,112 @@ body[data-theme]::before { opacity: .28 !important; }
 })();
 </script>
 
-<!-- KORONA FINAL SYSTEM REBUILD: AI Studio / Characters / Browser / Settings -->
-<style id="korona-final-rebuild-css">
-:root{
-  --k-ui-scale:1;
-  --k-accent:#00eaff;
-  --k-bg:#070a10;
-  --k-panel:#0d121c;
-  --k-panel-2:#111827;
-  --k-text:#eef4ff;
-  --k-muted:#8d9ab0;
-  --k-border:rgba(255,255,255,.10);
-  --k-border-strong:color-mix(in srgb,var(--k-accent) 55%,transparent);
-  --k-char-opacity:1;
-  --k-char-accent:#8b9cff;
-  --k-char-filter:none;
-}
-html,body{min-height:100%;overflow:hidden!important}
-body{background:var(--k-bg)!important;color:var(--k-text)!important}
-#bgCanvas,#fernSkyDecor,#fernWebGLAurora,#fernMistTexture,#fernParticleCanvas,#fernStars,#fernMoon,
-.fern-moon,.fern-nebula,.fern-nebula-cloud,.fern-mist-layer,.fern-shooting-star{display:none!important}
-#app{zoom:var(--k-ui-scale)!important;overflow:hidden!important}
-#app,.content,.page{min-height:0!important}
-.content{overflow:auto!important}
-.korona-final-character{
- position:fixed!important;right:18px;bottom:8px;width:min(260px,25vw);height:min(420px,58vh);
- object-fit:contain;object-position:bottom right;z-index:8;pointer-events:none!important;
- opacity:var(--k-char-opacity)!important;filter:var(--k-char-filter)!important;
- transition:opacity .2s ease,filter .2s ease,transform .2s ease;display:block;
-}
-.korona-final-character.hidden{display:none!important}
-.korona-character-badge-final{
- position:fixed;right:18px;bottom:calc(min(420px,58vh) + 14px);z-index:9;
- padding:7px 11px;border:1px solid color-mix(in srgb,var(--k-char-accent) 48%,transparent);
- background:color-mix(in srgb,var(--k-panel) 88%,transparent);color:var(--k-text);
- border-radius:9px;font-size:11px;font-weight:800;pointer-events:none;
-}
-#proxyPage,#aiPage,#settingsPage{height:100%;min-height:0!important}
-#proxyPage .browser-page{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important}
-#proxyPage .browser-topline{flex:0 0 auto!important}
-#proxyPage .browser-window{
- flex:1 1 auto!important;min-height:0!important;height:auto!important;width:100%!important;
- display:flex!important;flex-direction:column!important;overflow:hidden!important;
-}
-#proxyPage .browser-tabs{
- flex:0 0 46px!important;min-height:46px!important;height:46px!important;overflow:auto hidden!important;
- display:flex!important;align-items:stretch!important;gap:6px!important;
-}
-#proxyPage .browser-toolbar{
- flex:0 0 52px!important;min-height:52px!important;height:52px!important;
- display:flex!important;align-items:center!important;gap:7px!important;
-}
-#proxyPage .browser-address{flex:1 1 auto!important;min-width:0!important}
-#proxyPage .browser-address input{width:100%!important;min-width:0!important}
-#proxyPage .iframe-container{
- position:relative!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;
- margin:0!important;overflow:hidden!important;display:flex!important;
-}
-#proxyPage .browser-frames{
- position:relative!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;
- width:100%!important;height:100%!important;overflow:auto!important;
-}
-#proxyPage .browser-frames iframe,
-#proxyPage iframe.korona-browser-frame{
- position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
- min-width:100%!important;min-height:100%!important;border:0!important;display:block;
-}
-#proxyPage .browser-newtab{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;overflow:auto!important}
-#proxyPage .iframe-toolbar{z-index:30!important}
-#proxyPage .proxy-opening-overlay{z-index:25!important;pointer-events:none!important}
-.korona-final-browser{height:100%;min-height:0;display:flex;flex-direction:column;background:var(--k-bg);border:1px solid var(--k-border);border-radius:16px;overflow:hidden}
-.kfb-tabs{flex:0 0 48px;display:flex;gap:6px;align-items:flex-end;padding:6px 8px 0;background:var(--k-panel);border-bottom:1px solid var(--k-border);overflow-x:auto}
-.kfb-tab{height:42px;min-width:130px;max-width:230px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid transparent;border-bottom:0;background:transparent;color:var(--k-muted);cursor:pointer;flex:0 0 auto}
-.kfb-tab.active{color:var(--k-text);background:var(--k-panel-2);border-color:var(--k-border);box-shadow:inset 0 2px 0 var(--k-accent)}
-.kfb-tab-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.kfb-tab-close{border:0;background:transparent;color:inherit;cursor:pointer;font-size:18px}
-.kfb-new{height:40px;width:40px;flex:0 0 40px;border:1px solid var(--k-border);background:var(--k-panel-2);color:var(--k-accent);cursor:pointer}
-.kfb-toolbar{flex:0 0 54px;display:flex;gap:7px;align-items:center;padding:7px;background:var(--k-panel);border-bottom:1px solid var(--k-border)}
-.kfb-nav{width:38px;height:38px;border:1px solid var(--k-border);background:var(--k-panel-2);color:var(--k-text);cursor:pointer}
-.kfb-address{height:38px;display:flex;align-items:center;flex:1;min-width:0;border:1px solid var(--k-border);background:var(--k-bg)}
-.kfb-address input{height:100%;flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--k-text);padding:0 12px;font:inherit}
-.kfb-go{height:30px;margin-right:4px;padding:0 11px;border:0;background:var(--k-accent);color:#001018;cursor:pointer;font-weight:800}
-.kfb-viewport{position:relative;flex:1;min-height:0;overflow:hidden;background:#fff}
-.kfb-frame-host{position:absolute;inset:0;overflow:auto}
-.kfb-frame-host iframe{display:block;width:100%;height:100%;border:0}
-.kfb-home{position:absolute;inset:0;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 50% 20%,color-mix(in srgb,var(--k-accent) 12%,transparent),transparent 42%),var(--k-bg);color:var(--k-text)}
-.kfb-home-inner{max-width:560px;padding:30px}.kfb-home h3{font-size:36px;margin:0 0 10px}.kfb-home p{color:var(--k-muted)}
-.kfb-status{position:absolute;right:12px;bottom:12px;padding:6px 9px;background:rgba(0,0,0,.55);color:#fff;border:1px solid rgba(255,255,255,.14);font-size:11px;z-index:5;pointer-events:none}
-#aiPage{overflow:hidden!important;padding:18px!important}
-.kai-shell{height:100%;min-height:0;display:flex;flex-direction:column;gap:12px}
-.kai-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.kai-head h2{margin:0}.kai-head p{margin:5px 0;color:var(--k-muted)}
-.kai-actions{display:flex;gap:8px}.kai-button{border:1px solid var(--k-border);background:var(--k-panel-2);color:var(--k-text);padding:9px 13px;cursor:pointer}.kai-button.primary{background:var(--k-accent);color:#001018;border-color:transparent;font-weight:800}
-.kai-status{font-size:11px;color:var(--k-muted);align-self:center}
-.kai-history{flex:1 1 auto;min-height:0;overflow:auto;padding:8px;border:1px solid var(--k-border);background:var(--k-panel);border-radius:14px}
-.kai-empty{height:100%;display:grid;place-items:center;color:var(--k-muted);text-align:center}
-.kai-message{display:flex;margin:0 0 12px}.kai-message.user{justify-content:flex-end}.kai-bubble{max-width:min(820px,88%);padding:11px 13px;border:1px solid var(--k-border);background:var(--k-panel-2);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}.kai-message.user .kai-bubble{background:color-mix(in srgb,var(--k-accent) 12%,var(--k-panel-2));border-color:color-mix(in srgb,var(--k-accent) 30%,var(--k-border))}
-.kai-bubble img{display:block;max-width:min(420px,100%);max-height:260px;object-fit:contain;margin-top:9px;border:1px solid var(--k-border)}
-.kai-compose{flex:0 0 auto;display:grid;grid-template-columns:1fr auto;gap:8px}
-.kai-input{min-height:92px;max-height:180px;resize:vertical;border:1px solid var(--k-border);background:var(--k-panel);color:var(--k-text);padding:12px;font:inherit;outline:none}
-.kai-input:focus{border-color:var(--k-accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--k-accent) 18%,transparent)}
-.kai-compose-side{display:flex;flex-direction:column;gap:8px}.kai-upload{display:grid;place-items:center;min-width:130px;padding:10px;border:1px dashed var(--k-border-strong);background:var(--k-panel);cursor:pointer;color:var(--k-text);text-align:center}.kai-send{min-width:130px;border:0;background:var(--k-accent);color:#001018;font-weight:900;cursor:pointer}.kai-file-name{font-size:10px;color:var(--k-muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#settingsPage{overflow:hidden!important;padding:18px!important}
-.kset-shell{height:100%;min-height:0;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:12px}
-.kset-card{flex:0 0 auto;border:1px solid var(--k-border);background:var(--k-panel);padding:16px;border-radius:14px}
-.kset-card h3{margin:0 0 4px}.kset-card p{margin:0;color:var(--k-muted);font-size:12px}
-.kset-theme-grid,.kset-char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:13px}
-.kset-theme,.kset-char{min-height:62px;border:1px solid var(--k-border);background:var(--k-bg);color:var(--k-text);cursor:pointer;text-align:left;padding:10px;display:flex;align-items:center;gap:9px}
-.kset-theme.active,.kset-char.active{border-color:var(--k-accent);box-shadow:0 0 0 1px var(--k-accent)}
-.kset-preview{width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(255,255,255,.15)}
-.kset-char img{width:40px;height:48px;object-fit:contain;background:#0003}
-.kset-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:13px}
-.kset-control{display:flex;flex-direction:column;gap:7px}.kset-control label{font-size:12px;font-weight:800}.kset-control small{color:var(--k-muted)}
-.kset-control input[type=range]{width:100%}.kset-control input[type=color]{width:100%;height:42px;background:var(--k-bg);border:1px solid var(--k-border);cursor:pointer}
-.kset-control select{height:42px;background:var(--k-bg);color:var(--k-text);border:1px solid var(--k-border);padding:0 10px}
-.kset-reset{border:1px solid var(--k-border);background:var(--k-panel-2);color:var(--k-text);padding:10px 13px;cursor:pointer}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--k-accent);outline-offset:2px}
-@media(max-width:800px){.kai-compose{grid-template-columns:1fr}.kai-compose-side{display:grid;grid-template-columns:1fr 1fr}.kai-send,.kai-upload{min-width:0}.korona-final-character{width:170px;height:300px}.korona-character-badge-final{right:8px}.kfb-toolbar{flex-wrap:nowrap}.kfb-nav{flex:0 0 34px;width:34px}.kfb-go{display:none}}
-</style>
-<script id="korona-final-rebuild-script">
-(function(){
-"use strict";
 
-/* ---------- Safe utility ---------- */
+<!-- KORONA CLEAN FINAL REBUILD -->
+<style id="korona-clean-final-css">
+:root{
+  --kc-bg:#070a10;--kc-panel:#0d121c;--kc-panel2:#131b28;--kc-text:#eef4ff;--kc-muted:#91a0b5;
+  --kc-accent:#00eaff;--kc-border:rgba(255,255,255,.12);--kc-scale:1;--kc-char-opacity:1;--kc-char-color:#00eaff;
+}
+html,body{width:100%!important;height:100%!important;margin:0!important;overflow:hidden!important;background:var(--kc-bg)!important;color:var(--kc-text)!important}
+body::before,body::after{display:none!important}
+#bgCanvas,#fernSkyDecor,#fernWebGLAurora,#fernMistTexture,#fernParticleCanvas,#fernStars,#fernMoon,.fern-moon,.fern-nebula,.fern-nebula-cloud,.fern-mist-layer,.fern-shooting-star{display:none!important}
+#app{position:relative!important;width:100%!important;height:100%!important;min-height:100%!important;max-width:none!important;display:flex!important;zoom:var(--kc-scale)!important;background:var(--kc-bg)!important;color:var(--kc-text)!important}
+.korona-sidebar{flex:0 0 172px!important;height:100%!important;min-height:0!important;box-sizing:border-box!important;background:var(--kc-panel)!important;border-right:1px solid var(--kc-border)!important;overflow:hidden!important;z-index:50!important}
+.sidebar-nav{overflow-y:auto!important;min-height:0!important}
+.content{flex:1 1 auto!important;width:auto!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;background:var(--kc-bg)!important;color:var(--kc-text)!important;box-sizing:border-box!important}
+.content>.page{width:100%!important;max-width:none!important;min-height:100%!important;height:100%!important;box-sizing:border-box!important;margin:0!important;padding:0 28px 28px!important;overflow-x:hidden!important;overflow-y:auto!important;color:var(--kc-text)!important;background:transparent!important}
+.content>.page.active{display:block!important}
+.content>.page:not(.active){display:none!important}
+/* Eliminate the old top-gap rules while keeping deliberate page padding. */
+.content>.page>.section-header:first-child,.content>.page>.browser-page:first-child,.content>.page>.settings-panel:first-child{margin-top:0!important}
+/* Theme propagation into the original UI */
+body,body[data-theme],#app,.content,.page,.korona-home,.quick-launch-panel,.section-header,.settings-section,.settings-panel,.theme-card,.game-card,.app-tile,.account-card,.panel,.hero,.library-controls,.browser-page,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container{background-color:var(--kc-bg)!important;color:var(--kc-text)!important;border-color:var(--kc-border)!important}
+.korona-sidebar,.sidebar-nav,.sidebar-bottom,.sidebar-brand{background-color:var(--kc-panel)!important;color:var(--kc-text)!important;border-color:var(--kc-border)!important}
+.section-header,.korona-home,.quick-launch-panel,.settings-section,.settings-panel,.theme-card,.game-card,.app-tile,.account-card,.panel,.hero,.library-controls,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,.ai-card{background-color:var(--kc-panel)!important;color:var(--kc-text)!important;border-color:var(--kc-border)!important}
+button,.nav-button,.quick-site,.app-tile,.theme-card,.game-card,.korona-large-button,.settings-toggle,.browser-nav-button,.browser-tab,.new-tab-button,.iframe-toolbar button,.ai-button,.kc-theme,.kc-char,.kc-control button{background-color:var(--kc-panel2)!important;color:var(--kc-text)!important;border-color:color-mix(in srgb,var(--kc-accent) 42%,var(--kc-border))!important}
+button:hover,.nav-button:hover,.quick-site:hover,.app-tile:hover,.theme-card:hover,.kc-theme:hover,.kc-char:hover{border-color:var(--kc-accent)!important;color:var(--kc-text)!important}
+.nav-button.active,.theme-card.active,.kc-theme.active,.kc-char.active{background:color-mix(in srgb,var(--kc-accent) 15%,var(--kc-panel2))!important;border-color:var(--kc-accent)!important;color:var(--kc-text)!important;box-shadow:inset 3px 0 0 var(--kc-accent),0 0 18px color-mix(in srgb,var(--kc-accent) 16%,transparent)!important}
+.korona-large-button,.ai-button.primary,.kc-primary{background:var(--kc-accent)!important;color:#001018!important;border-color:var(--kc-accent)!important}
+input,textarea,select,.browser-address,.ai-input,.kc-control input[type=color]{background:var(--kc-bg)!important;color:var(--kc-text)!important;border-color:color-mix(in srgb,var(--kc-accent) 32%,var(--kc-border))!important}
+input[type=range]{accent-color:var(--kc-accent)!important}
+*{scrollbar-color:var(--kc-accent) transparent}
+/* Character: ONLY this layer is affected by opacity. */
+#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-character,.fern-character{display:none!important;visibility:hidden!important;opacity:0!important}
+#kcCharacter{position:fixed!important;right:18px!important;bottom:8px!important;width:min(310px,27vw)!important;height:min(470px,66vh)!important;object-fit:contain!important;object-position:center bottom!important;z-index:2147483000!important;pointer-events:none!important;margin:0!important;padding:0!important;background:transparent!important;opacity:var(--kc-char-opacity)!important;filter:none!important;display:block!important;transition:opacity .15s ease}
+#kcCharacter.kc-hidden{display:none!important}
+#kcCharacterBadge{position:fixed!important;right:18px!important;bottom:calc(min(470px,66vh) + 10px)!important;z-index:2147483001!important;pointer-events:none!important;background:var(--kc-panel)!important;color:var(--kc-text)!important;border:1px solid var(--kc-char-color)!important;padding:7px 10px!important;font-size:11px!important;display:block!important}
+/* AI */
+#koronaAiPage{display:none!important}
+#kcAiPage{height:100%!important;min-height:100%!important;overflow:hidden!important;padding:0 24px 24px!important}
+.kc-ai-shell{height:100%;min-height:0;display:flex;flex-direction:column;gap:12px}
+.kc-ai-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex:0 0 auto}
+.kc-ai-head h2{margin:0}.kc-ai-head p{margin:4px 0;color:var(--kc-muted)}
+.kc-ai-actions{display:flex;align-items:center;gap:8px}.kc-ai-status{font-size:11px;color:var(--kc-muted)}
+.kc-ai-history{flex:1 1 auto;min-height:0;overflow:auto;padding:12px;background:var(--kc-panel);border:1px solid var(--kc-border)}
+.kc-ai-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--kc-muted)}
+.kc-ai-message{display:flex;margin-bottom:12px}.kc-ai-message.user{justify-content:flex-end}.kc-ai-bubble{max-width:min(850px,88%);padding:12px 14px;background:var(--kc-panel2);border:1px solid var(--kc-border);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}.kc-ai-message.user .kc-ai-bubble{border-color:color-mix(in srgb,var(--kc-accent) 45%,var(--kc-border));background:color-mix(in srgb,var(--kc-accent) 10%,var(--kc-panel2))}.kc-ai-bubble img{display:block;max-width:min(520px,100%);max-height:300px;object-fit:contain;margin-top:8px;border:1px solid var(--kc-border)}
+.kc-ai-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;flex:0 0 auto}.kc-ai-input{width:100%;min-height:82px;max-height:190px;box-sizing:border-box;resize:vertical;padding:12px;font:inherit}.kc-ai-side{display:grid;grid-template-rows:auto auto 1fr;gap:7px;min-width:135px}.kc-upload{display:grid;place-items:center;padding:10px;border:1px dashed var(--kc-accent);background:var(--kc-panel);color:var(--kc-text);cursor:pointer}.kc-ai-send{min-height:42px;background:var(--kc-accent)!important;color:#001018!important;font-weight:900}.kc-file-name{font-size:10px;color:var(--kc-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Settings */
+#settingsPage{height:100%!important;min-height:100%!important;overflow:hidden!important;padding:0!important}
+#kcSettings{height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;padding:22px 26px 34px;box-sizing:border-box}
+.kc-setting-section{margin-bottom:14px;padding:16px;background:var(--kc-panel);border:1px solid var(--kc-border)}
+.kc-setting-section h3{margin:0 0 4px}.kc-setting-section p{margin:0;color:var(--kc-muted);font-size:12px}
+.kc-theme-grid,.kc-char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px;margin-top:12px}.kc-theme,.kc-char{min-height:60px;text-align:left;padding:9px;display:flex;align-items:center;gap:9px;cursor:pointer}.kc-theme-preview{width:32px;height:32px;flex:0 0 32px;border:1px solid rgba(255,255,255,.18)}
+.kc-char{min-height:86px}.kc-char-thumb{width:52px;height:68px;object-fit:contain;flex:0 0 52px;background:#0002;border:1px solid var(--kc-border)}.kc-char-name{font-weight:800}.kc-char-desc{display:block;color:var(--kc-muted);font-size:10px;margin-top:3px}
+.kc-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}.kc-control{display:flex;flex-direction:column;gap:7px}.kc-control label{font-size:12px;font-weight:800}.kc-control output{color:var(--kc-muted);font-size:11px}.kc-control input[type=range]{width:100%}.kc-control input[type=color]{height:40px;width:100%;padding:2px}.kc-reset{padding:10px 13px;cursor:pointer}
+@media(max-width:800px){#kcCharacter{width:180px!important;height:300px!important}.kc-ai-compose{grid-template-columns:1fr}.kc-ai-side{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;}.kc-file-name{grid-column:1/-1}.content>.page{padding:16px!important}}
+</style>
+<script id="korona-clean-final-script">
+(function(){
+'use strict';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-const safeJSON=(v,f)=>{try{return JSON.parse(v)}catch(_){return f}};
-const KAI_MODEL="qwen/qwen3.6-27b";
-const KAI_MAX_TOKENS=512;
-
-/* ---------- Remove every old/dynamic AI implementation and install exactly one ---------- */
-function cleanAI(){
-  const content=$('.content')||$('#app')||document.body;
-
-  /* Preserve the existing application navigation/pages. Only replace the AI page. */
-  let aiPage=$('#aiPage');
-  const legacyPages=$$('#koronaAiPage,[id*="aiPage" i]').filter(p=>p!==aiPage);
-
-  if(!aiPage && legacyPages.length){
-    aiPage=legacyPages.shift();
-    aiPage.id='aiPage';
-    aiPage.classList.add('page');
-  }
-  legacyPages.forEach(p=>p.remove());
-
-  if(!aiPage){
-    aiPage=document.createElement('section');
-    aiPage.id='aiPage';
-    aiPage.className='page';
-    content.appendChild(aiPage);
-  }else if(aiPage.parentElement!==content){
-    content.appendChild(aiPage);
-  }
-
-  /* Keep Home, Games, Apps, Browser, Settings, Account, etc. intact. */
-  let nav=$('.sidebar-nav,.nav');
-  if(nav){
-    $$('.nav-button[data-page="ai"],.nav-button[data-page="ai-studio"],[data-korona-ai]',nav).forEach((b,i)=>{
-      if(i>0)b.remove();
-    });
-    let button=$('.nav-button[data-page="ai"]',nav);
-    if(!button){
-      const old=$('[data-korona-ai]',nav);
-      if(old){
-        old.removeAttribute('data-korona-ai');
-        old.dataset.page='ai';
-        old.className='nav-button';
-        old.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
-        button=old;
-      }else{
-        button=document.createElement('button');
-        button.type='button';
-        button.className='nav-button';
-        button.dataset.page='ai';
-        button.setAttribute('aria-label','AI Studio');
-        button.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
-        const homeButton=$('.nav-button[data-page="home"]',nav);
-        if(homeButton) homeButton.insertAdjacentElement('afterend',button);
-        else nav.appendChild(button);
-      }
-    }
-  }
-
-  if(aiPage.dataset.finalBuilt==='1')return;
-  aiPage.dataset.finalBuilt='1';
-  aiPage.innerHTML=`<div class="kai-shell">
-    <div class="kai-head"><div><div class="eyebrow">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>One conversation for text questions and image-based problems.</p></div>
-      <div class="kai-actions"><span class="kai-status" id="kaiStatus" aria-live="polite">Ready · ${KAI_MODEL}</span><button class="kai-button" id="kaiNewChat" type="button">New Chat</button></div></div>
-    <div class="kai-history" id="kaiHistory" aria-live="polite"><div class="kai-empty">Ask a question or upload a screenshot/photo of a problem.</div></div>
-    <div class="kai-compose"><textarea class="kai-input" id="kaiInput" aria-label="AI Studio question" placeholder="Ask a question, paste an exercise, or explain what you need..." rows="4"></textarea>
-      <div class="kai-compose-side"><label class="kai-upload" for="kaiFile">Upload image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><span class="kai-file-name" id="kaiFileName">No image selected</span><button class="kai-send" id="kaiSend" type="button">Send</button></div>
-    </div></div>`;
-  bindAI();
-}
-const aiState={messages:[],image:null};
-function renderAI(){
-  const h=$('#kaiHistory');if(!h)return;
-  h.innerHTML='';
-  if(!aiState.messages.length){h.innerHTML='<div class="kai-empty">Ask a question or upload a screenshot/photo of a problem.</div>';return}
-  aiState.messages.forEach(m=>{
-    const row=document.createElement('div');row.className='kai-message '+m.role;
-    const bubble=document.createElement('div');bubble.className='kai-bubble';
-    if(m.image){const img=document.createElement('img');img.src=m.image;img.alt='Image attached to this message';bubble.appendChild(img)}
-    const text=document.createElement('div');text.textContent=m.content||'';bubble.appendChild(text);
-    row.appendChild(bubble);h.appendChild(row);
-  });
-  h.scrollTop=h.scrollHeight;
-}
-function bindAI(){
-  const file=$('#kaiFile'),input=$('#kaiInput'),send=$('#kaiSend'),newChat=$('#kaiNewChat'),name=$('#kaiFileName');
-  if(!file||!input||!send||!newChat)return;
-  file.onchange=()=>{
-    const f=file.files&&file.files[0];if(!f){aiState.image=null;if(name)name.textContent='No image selected';return}
-    if(!f.type.startsWith('image/')){if(name)name.textContent='Unsupported image';file.value='';return}
-    const reader=new FileReader();
-    reader.onload=()=>{aiState.image={data:String(reader.result),name:f.name,type:f.type};if(name)name.textContent=f.name};
-    reader.readAsDataURL(f);
-  };
-  newChat.onclick=()=>{aiState.messages=[];aiState.image=null;file.value='';if(name)name.textContent='No image selected';input.value='';$('#kaiStatus').textContent='Ready · '+KAI_MODEL;renderAI()};
-  input.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();send.click()}};
-  send.onclick=sendAI;
-}
-function getGroqKey(){
-  return String(window.KORONA_GROQ_API_KEY||'').trim();
-}
-async function sendAI(){
-  const input=$('#kaiInput'),status=$('#kaiStatus'),send=$('#kaiSend');
-  const text=(input?.value||'').trim();
-  if(!text&&!aiState.image){if(status)status.textContent='Enter a question or upload an image.';return}
-  const key=getGroqKey();
-  if(!key){if(status)status.textContent='Groq key missing · set window.KORONA_GROQ_API_KEY locally.';return}
-  const user={role:'user',content:text||'Please inspect this image and solve or explain the problem shown.',image:aiState.image?.data||null};
-  aiState.messages.push(user);renderAI();
-  if(input)input.value='';
-  if(send)send.disabled=true;
-  if(status)status.textContent='Thinking…';
-  try{
-    const messages=[{role:'system',content:'You are Korona AI Studio. Answer clearly and read images carefully. For screenshots/photos of math, English, worksheets, diagrams, or other problems, extract the relevant content from the image before solving or explaining it. Show useful reasoning without inventing text that is not visible. Remember and use earlier conversation messages for follow-up questions.'}];
-    aiState.messages.forEach(m=>{
-      const content=[];
-      if(m.content)content.push({type:'text',text:m.content});
-      if(m.image)content.push({type:'image_url',image_url:{url:m.image}});
-      messages.push({role:m.role,content:content.length===1&&!m.image?content[0].text:content});
-    });
-    const response=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},
-      body:JSON.stringify({model:KAI_MODEL,messages,temperature:.2,max_tokens:KAI_MAX_TOKENS})
-    });
-    const payload=await response.json();
-    if(!response.ok)throw new Error(payload?.error?.message||('Groq request failed ('+response.status+')'));
-    const answer=payload?.choices?.[0]?.message?.content;
-    if(!answer)throw new Error('Groq returned no answer.');
-    aiState.messages.push({role:'assistant',content:String(answer),image:null});
-    if(status)status.textContent='Complete · '+KAI_MODEL;
-    aiState.image=null;if($('#kaiFile'))$('#kaiFile').value='';if($('#kaiFileName'))$('#kaiFileName').textContent='No image selected';
-    renderAI();
-  }catch(err){
-    aiState.messages.pop();
-    renderAI();
-    if(status)status.textContent='AI error · '+err.message;
-  }finally{if(send)send.disabled=false}
-}
-
-/* ---------- Character system: unique asset per entry, identity independent from effects ---------- */
-const characterDefs=[
- {id:'none',name:'None',desc:'No character',accent:'#8a8a8a'},
- {id:'gojo',name:'Gojo',desc:'Limitless',accent:'#9b8cff'},
- {id:'naruto',name:'Naruto',desc:'Shinobi',accent:'#f28a22'},
- {id:'hunter',name:'Hunter',desc:'Nen user',accent:'#49b875'},
- {id:'lebron',name:'LeBron James',desc:'Basketball',accent:'#e5b84b'},
- {id:'miku',name:'Miku',desc:'Vocaloid',accent:'#39ccd6'},
- {id:'teto',name:'Teto',desc:'Kasane Teto',accent:'#e8455f'},
- {id:'neru',name:'Neru',desc:'Akita Neru',accent:'#e8c547'},
- {id:'luka',name:'Luka',desc:'Megurine Luka',accent:'#ff9ec4'},
- {id:'rin',name:'Rin',desc:'Kagamine Rin',accent:'#ffb23f'},
- {id:'len',name:'Len',desc:'Kagamine Len',accent:'#f2e14c'},
- {id:'kaito',name:'Kaito',desc:'KAITO',accent:'#3f7bff'},
- {id:'meiko',name:'Meiko',desc:'MEIKO',accent:'#d8384a'}
-];
-function svgAsset(c){
- const palettes={gojo:['#8ea2ff','#dfe5ff'],naruto:['#ff8a24','#ffd166'],hunter:['#49b875','#baf2c2'],lebron:['#e5b84b','#6da9ff'],miku:['#39ccd6','#b8ffff'],teto:['#e8455f','#ffb3c0'],neru:['#e8c547','#fff0a8'],luka:['#ff9ec4','#ffd2e4'],rin:['#ffb23f','#ffe0a0'],len:['#f2e14c','#fff9b0'],kaito:['#3f7bff','#a9c6ff'],meiko:['#d8384a','#ff9aa2']};
- const p=palettes[c.id]||['#888','#ddd']; const hair=c.id==='gojo'?'#e9f0ff':c.id==='naruto'?'#f07b20':c.id==='lebron'?'#171717':'#222';
- const face=c.id==='lebron'?'#7b4a2e':c.id==='naruto'?'#d79567':c.id==='miku'||c.id==='teto'?'#f1c4ae':'#e0b18d';
- const label=c.name.replace(/&/g,'&amp;');
- return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 360"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${p[0]}"/><stop offset="1" stop-color="${p[1]}"/></linearGradient></defs><rect width="240" height="360" rx="28" fill="#080b12"/><circle cx="120" cy="118" r="78" fill="url(#g)" opacity=".25"/><path d="M55 320c7-67 42-93 65-93s58 26 65 93" fill="url(#g)"/><ellipse cx="120" cy="125" rx="54" ry="66" fill="${face}"/><path d="M65 116c3-63 29-89 58-89 35 0 55 31 54 88-18-22-34-34-54-38-21 18-37 29-58 39z" fill="${hair}"/><circle cx="99" cy="128" r="7" fill="#151923"/><circle cx="141" cy="128" r="7" fill="#151923"/><path d="M102 157q18 13 36 0" fill="none" stroke="#5a3030" stroke-width="4" stroke-linecap="round"/><rect x="22" y="326" width="196" height="22" rx="11" fill="${p[0]}" opacity=".18"/><text x="120" y="343" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">${label}</text></svg>`);
-}
-const charAssets=Object.fromEntries(characterDefs.filter(c=>c.id!=='none').map(c=>[c.id,svgAsset(c)]));
-const charState={id:'none',opacity:1,color:null};
-function loadCharState(){const saved=safeJSON(localStorage.getItem('korona_character_settings_v2'),'');if(saved){charState.id=saved.id||'none';charState.opacity=Math.max(0,Math.min(1,Number(saved.opacity??1)));charState.color=saved.color||null}}
-function saveCharState(){localStorage.setItem('korona_character_settings_v2',JSON.stringify(charState))}
-function applyCharacter(){
- const img=$('#koronaFinalCharacter');if(!img)return;
- const c=characterDefs.find(x=>x.id===charState.id)||characterDefs[0];
- if(c.id==='none'){img.classList.add('hidden');img.removeAttribute('src');$('#koronaCharacterBadgeFinal')?.classList.add('hidden');return}
- img.classList.remove('hidden');img.src=charAssets[c.id];img.alt=c.name+' character';img.style.opacity=String(charState.opacity);
- const color=charState.color||c.accent;img.style.filter=colorFilter(color);
- document.documentElement.style.setProperty('--k-char-accent',color);
- const badge=$('#koronaCharacterBadgeFinal');if(badge){badge.textContent=c.name+' · '+c.desc;badge.classList.remove('hidden')}
- $$('.kset-char').forEach(b=>b.classList.toggle('active',b.dataset.char===charState.id));
-}
-function colorFilter(hex){
- const h=hex.replace('#','');if(h.length!==6)return 'none';
- const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
- const hue=Math.round((Math.atan2(Math.sqrt(3)*(g-b),2*r-g-b)*180/Math.PI+360)%360);
- return `saturate(.78) sepia(.15) hue-rotate(${hue-210}deg)`;
-}
-
-/* ---------- Theme/settings: settings persist, AI does not ---------- */
+const KEY_SETTINGS='korona_clean_settings_v1',KEY_CHAR='korona_clean_character_v1';
+const MODEL='qwen/qwen3.8-27b',MAX_TOKENS=512;
 const themes={
- korona:['#070a10','#0d121c','#00eaff','#eef4ff'],
- midnight:['#060711','#101328','#7186ff','#eef1ff'],
- amber:['#0d0903','#1b1207','#ffb020','#fff4df'],
- ice:['#031117','#08242e','#5de7ff','#e9fbff'],
- violet:['#0b0415','#180b25','#b36bff','#f8efff'],
- rose:['#12050a','#230b14','#ff6688','#fff0f4'],
- mono:['#070707','#151515','#d7d7d7','#eeeeee'],
- cyan:['#03110f','#09231f','#20ffd4','#e8fffb'],
- light:['#f3f6f5','#ffffff','#087d3d','#132018'],
- cyberpunk:['#090511','#180d25','#00eaff','#f2fbff'],
- aurora:['#06100f','#102b27','#63ffd0','#effff9'],
- sunset:['#13070a','#281017','#ff8a5b','#fff4ef'],
- ocean:['#03101b','#0a2032','#43b8ff','#effaff'],
- dracula:['#0b0912','#1b1528','#bd93f9','#f4edff']
+ korona:['#070a10','#0d121c','#00eaff','#eef4ff'],midnight:['#060711','#101328','#7186ff','#eef1ff'],amber:['#0d0903','#1b1207','#ffb020','#fff4df'],ice:['#031117','#08242e','#5de7ff','#e9fbff'],violet:['#0b0415','#180b25','#b36bff','#f8efff'],rose:['#12050a','#230b14','#ff6688','#fff0f4'],mono:['#070707','#151515','#d7d7d7','#eeeeee'],cyan:['#03110f','#09231f','#20ffd4','#e8fffb'],light:['#f3f6f5','#ffffff','#087d3d','#132018'],cyberpunk:['#090511','#180d25','#ff2dcc','#f2fbff'],aurora:['#06100f','#102b27','#63ffd0','#effff9'],sunset:['#13070a','#281017','#ff8a5b','#fff4ef'],ocean:['#03101b','#0a2032','#43b8ff','#effaff'],dracula:['#0b0912','#1b1528','#bd93f9','#f4edff']
 };
-const settingState={theme:'korona',scale:1,accent:null};
-function loadSettings(){const x=safeJSON(localStorage.getItem('korona_final_settings_v1'),{});settingState.theme=x.theme||'korona';settingState.scale=Number(x.scale)||1;settingState.accent=x.accent||null}
-function saveSettings(){localStorage.setItem('korona_final_settings_v1',JSON.stringify(settingState))}
-function applySettings(){
- const t=themes[settingState.theme]||themes.korona;
- const root=document.documentElement;
- root.style.setProperty('--k-ui-scale',String(settingState.scale));
- root.style.setProperty('--k-bg',t[0]);root.style.setProperty('--k-panel',t[1]);root.style.setProperty('--k-panel-2',shiftHex(t[1],10));root.style.setProperty('--k-accent',settingState.accent||t[2]);root.style.setProperty('--k-text',t[3]);
- document.body.dataset.ktheme=settingState.theme;
- $$('.kset-theme').forEach(b=>b.classList.toggle('active',b.dataset.theme===settingState.theme));
- const scale=$('#ksetScale');if(scale)scale.value=String(Math.round(settingState.scale*100));
- const scaleOut=$('#ksetScaleOut');if(scaleOut)scaleOut.textContent=Math.round(settingState.scale*100)+'%';
- const accent=$('#ksetAccent');if(accent)accent.value=settingState.accent||t[2];
-}
-function shiftHex(hex,n){if(!/^#[0-9a-f]{6}$/i.test(hex))return hex;const v=parseInt(hex.slice(1),16);const r=Math.max(0,Math.min(255,(v>>16)+n)),g=Math.max(0,Math.min(255,((v>>8)&255)+n)),b=Math.max(0,Math.min(255,(v&255)+n));return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')}
-
-/* ---------- Replace settings markup with one independently scrolling panel ---------- */
-function buildSettings(){
- const p=$('#settingsPage');if(!p)return;
- p.innerHTML=`<div class="kset-shell">
-  <div class="section-header"><div class="eyebrow">KORONA CONTROL CENTER</div><h2>Settings</h2><p>Theme, scale, accent, and character controls are isolated from the rest of the page.</p></div>
-  <section class="kset-card"><h3>Theme</h3><p>Changes apply immediately to the whole application, including browser chrome.</p><div class="kset-theme-grid">${Object.keys(themes).map(k=>`<button type="button" class="kset-theme" data-theme="${k}"><span class="kset-preview" style="background:linear-gradient(135deg,${themes[k][0]},${themes[k][2]})"></span><span>${k[0].toUpperCase()+k.slice(1)}</span></button>`).join('')}</div></section>
-  <section class="kset-card"><h3>Interface</h3><p>These controls visibly affect the interface without changing character opacity.</p><div class="kset-controls">
-   <div class="kset-control"><label for="ksetScale">Interface scale <output id="ksetScaleOut">100%</output></label><input id="ksetScale" type="range" min="85" max="115" value="100"></div>
-   <div class="kset-control"><label for="ksetAccent">Accent color</label><input id="ksetAccent" type="color" value="#00eaff"></div>
-  </div></section>
-  <section class="kset-card"><h3>Character</h3><p>Select the actual character asset. Effects and colors are separate from identity.</p><div class="kset-char-grid">${characterDefs.map(c=>`<button type="button" class="kset-char" data-char="${c.id}">${c.id==='none'?'<span class="kset-preview" style="background:#222"></span>':`<img src="${charAssets[c.id]}" alt="">`}<span><strong>${c.name}</strong><small>${c.desc}</small></span></button>`).join('')}</div>
-   <div class="kset-controls"><div class="kset-control"><label for="ksetOpacity">Character opacity <output id="ksetOpacityOut">100%</output></label><input id="ksetOpacity" type="range" min="0" max="100" value="100"></div><div class="kset-control"><label for="ksetCharColor">Character color effect</label><input id="ksetCharColor" type="color" value="#9b9bff"><small>Only the character image and its character badge accent use this value.</small></div></div>
-  </section>
-  <section class="kset-card"><h3>Maintenance</h3><p>AI conversation is never stored in localStorage. New Chat clears only AI messages.</p><button class="kset-reset" id="ksetReset">Reset appearance</button></section>
- </div>`;
- $$('.kset-theme').forEach(b=>b.onclick=()=>{settingState.theme=b.dataset.theme;settingState.accent=null;applySettings();saveSettings()});
- $('#ksetScale').oninput=e=>{settingState.scale=Number(e.target.value)/100;applySettings();saveSettings()};
- $('#ksetAccent').oninput=e=>{settingState.accent=e.target.value;applySettings();saveSettings()};
- $$('.kset-char').forEach(b=>b.onclick=()=>{charState.id=b.dataset.char;charState.color=null;saveCharState();applyCharacter()});
- $('#ksetOpacity').oninput=e=>{charState.opacity=Number(e.target.value)/100;$('#ksetOpacityOut').textContent=e.target.value+'%';saveCharState();applyCharacter()};
- $('#ksetCharColor').oninput=e=>{charState.color=e.target.value;saveCharState();applyCharacter()};
- $('#ksetReset').onclick=()=>{settingState.theme='korona';settingState.scale=1;settingState.accent=null;charState.id='none';charState.opacity=1;charState.color=null;saveSettings();saveCharState();applySettings();applyCharacter();};
- applySettings();applyCharacter();
- const op=$('#ksetOpacity');if(op){op.value=Math.round(charState.opacity*100);$('#ksetOpacityOut').textContent=op.value+'%'}
- const cc=$('#ksetCharColor');if(cc)cc.value=charState.color||characterDefs.find(c=>c.id===charState.id)?.accent||'#9b9bff';
-}
-
-/* ---------- Full browser replacement ---------- */
-const browserState={tabs:[],active:null,counter:0};
-function normalizeBrowserURL(v){v=String(v||'').trim();if(!v)return '';if(/^https?:\/\//i.test(v))return v;if(/^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(v))return 'https://'+v;return 'https://www.google.com/search?q='+encodeURIComponent(v)}
-function browserPage(){
- const p=$('#proxyPage');if(!p)return;
- p.innerHTML=`<div class="browser-page" style="height:100%;min-height:0;display:flex;flex-direction:column"><div class="browser-topline"><div><div class="browser-eyebrow">KORONA BROWSER</div><h2>Browser</h2></div><div class="browser-status"><span></span> ready</div></div>
- <div class="korona-final-browser" id="kfb"><div class="kfb-tabs" id="kfbTabs"><button class="kfb-new" id="kfbNew" type="button" aria-label="New tab">+</button></div>
- <div class="kfb-toolbar"><button class="kfb-nav" id="kfbBack" type="button" aria-label="Back">←</button><button class="kfb-nav" id="kfbForward" type="button" aria-label="Forward">→</button><button class="kfb-nav" id="kfbReload" type="button" aria-label="Reload">↻</button><div class="kfb-address"><span aria-hidden="true" style="padding-left:10px">⌕</span><input id="kfbUrl" type="text" autocomplete="off" aria-label="Website address" placeholder="Search or enter a website address"><button class="kfb-go" id="kfbGo" type="button">Go</button></div><button class="kfb-nav" id="kfbFull" type="button" aria-label="Fullscreen">⛶</button></div>
- <div class="kfb-viewport" id="kfbViewport"><div class="kfb-frame-host" id="kfbHost"></div><div class="kfb-home" id="kfbHome"><div class="kfb-home-inner"><h3>korona</h3><p>Enter a website address or search above.</p></div></div><div class="kfb-status" id="kfbStatus">New Tab</div></div></div></div>`;
- browserState.tabs=[];browserState.active=null;browserState.counter=0;newBrowserTab();
-}
-function newBrowserTab(url=''){
- const tab={id:'kfb-'+(++browserState.counter),url:'',frame:null,title:'New Tab'};browserState.tabs.push(tab);browserState.active=tab.id;renderBrowserTabs();syncBrowserView();if(url)goBrowser(url);return tab;
-}
-function activeBrowserTab(){return browserState.tabs.find(t=>t.id===browserState.active)}
-function renderBrowserTabs(){
- const tabs=$('#kfbTabs');if(!tabs)return;
- tabs.querySelectorAll('.kfb-tab').forEach(x=>x.remove());
- const plus=$('#kfbNew');
- browserState.tabs.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='kfb-tab'+(t.id===browserState.active?' active':'');b.dataset.id=t.id;b.innerHTML='<span>◉</span><span class="kfb-tab-title"></span><span class="kfb-tab-close">×</span>';b.querySelector('.kfb-tab-title').textContent=t.title;b.onclick=e=>{if(e.target.closest('.kfb-tab-close')){closeBrowserTab(t.id)}else{browserState.active=t.id;renderBrowserTabs();syncBrowserView()}};tabs.insertBefore(b,plus)});
-}
-function syncBrowserView(){
- const t=activeBrowserTab();if(!t)return;
- const host=$('#kfbHost'),home=$('#kfbHome'),url=$('#kfbUrl'),status=$('#kfbStatus');if(!host)return;
- host.querySelectorAll('iframe').forEach(f=>f.style.display='none');
- if(t.frame?.frame){t.frame.frame.style.display='block';home.style.display='none'}else home.style.display='grid';
- url.value=t.url||'';status.textContent=t.title||'New Tab';renderBrowserTabs();
-}
-function closeBrowserTab(id){const i=browserState.tabs.findIndex(t=>t.id===id);if(i<0)return;const t=browserState.tabs[i];t.frame?.frame?.remove();browserState.tabs.splice(i,1);if(!browserState.tabs.length)newBrowserTab();else{browserState.active=browserState.tabs[Math.max(0,i-1)].id;renderBrowserTabs();syncBrowserView()}}
-async function goBrowser(value){
- const t=activeBrowserTab();const url=normalizeBrowserURL(value);if(!t||!url)return;
- t.url=url;t.title=new URL(url).hostname.replace(/^www\\./,'')||'Loading';syncBrowserView();
- try{
-  if(typeof createFernScramjetFrame!=='function')throw new Error('Scramjet browser engine is unavailable.');
-  if(!t.frame)t.frame=await createFernScramjetFrame(t.id,$('#kfbHost'));
-  browserState.tabs.forEach(x=>{if(x.frame?.frame)x.frame.frame.style.display=x.id===t.id?'block':'none'});
-  await t.frame.go(url);t.title=new URL(url).hostname.replace(/^www\\./,'');syncBrowserView();
- }catch(e){$('#kfbStatus').textContent='Browser error · '+e.message}
-}
-function bindBrowser(){
- $('#kfbNew').onclick=()=>newBrowserTab();
- $('#kfbGo').onclick=()=>goBrowser($('#kfbUrl').value);
- $('#kfbUrl').onkeydown=e=>{if(e.key==='Enter')goBrowser(e.target.value)};
- $('#kfbBack').onclick=()=>{const t=activeBrowserTab();try{t?.frame?.frame?.contentWindow?.history.back()}catch(_){}};
- $('#kfbForward').onclick=()=>{const t=activeBrowserTab();try{t?.frame?.frame?.contentWindow?.history.forward()}catch(_){}};
- $('#kfbReload').onclick=()=>{const t=activeBrowserTab();try{t?.frame?.frame?.contentWindow?.location.reload()}catch(_){}};
- $('#kfbFull').onclick=()=>{$('#kfb')?.requestFullscreen?.().catch?.(()=>{})};
-}
-function bindNav(){
- const ai=$('#aiPage'),settings=$('#settingsPage'),proxy=$('#proxyPage');
- $$('.nav-button').forEach(b=>{
-  if(b.dataset.kfinalBound)return;b.dataset.kfinalBound='1';
-  b.addEventListener('click',()=>{
-   const target=b.dataset.page;
-   if(target==='ai')showFinalPage(ai,b);
-   else if(target==='settings')showFinalPage(settings,b);
-   else if(target==='proxy')showFinalPage(proxy,b);
-  });
- });
-}
-function showFinalPage(page,button){
- if(!page)return;
- $$('.page').forEach(p=>p.classList.toggle('active',p===page));
- $$('.nav-button').forEach(b=>b.classList.toggle('active',b===button));
- const content=$('.content');if(content&&page!==$('#settingsPage'))content.scrollTop=0;
- if(page===$('#settingsPage'))$('.kset-shell')?.focus?.();
-}
-function installCharacterLayer(){
- let img=$('#koronaFinalCharacter');if(!img){img=document.createElement('img');img.id='koronaFinalCharacter';img.className='korona-final-character hidden';document.body.appendChild(img)}
- let badge=$('#koronaCharacterBadgeFinal');if(!badge){badge=document.createElement('div');badge.id='koronaCharacterBadgeFinal';badge.className='korona-character-badge-final hidden';document.body.appendChild(badge)}
-}
-function bootFinal(){
- cleanAI();loadSettings();loadCharState();buildSettings();installCharacterLayer();applySettings();applyCharacter();browserPage();bindBrowser();bindNav();
- const aiButton=$('.nav-button[data-page="ai"]');if(aiButton)aiButton.addEventListener('click',()=>showFinalPage($('#aiPage'),aiButton),{once:false});
- new MutationObserver(()=>{cleanAI()}).observe(document.body,{childList:true,subtree:true});
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootFinal,{once:true});else bootFinal();
-})();
-</script>
-
-
-<style id="korona-final-stability-css">
-/* FINAL STABILITY PASS — overrides the older customization layers instead of stacking on them. */
-:root{
-  --bg:var(--k-bg)!important;
-  --panel:var(--k-panel)!important;
-  --panel-2:var(--k-panel-2)!important;
-  --text:var(--k-text)!important;
-  --muted:var(--k-muted)!important;
-  --border:var(--k-border)!important;
-  --border-bright:var(--k-accent)!important;
-  --green:var(--k-accent)!important;
-  --accent:var(--k-accent)!important;
-  --ui-scale:var(--k-ui-scale)!important;
-  --character-opacity:1!important;
-  --korona-character-opacity:1!important;
-}
-html,body,#app{width:100%!important;max-width:none!important;}
-body{background:var(--k-bg)!important;color:var(--k-text)!important;}
-body::before,body::after{opacity:0!important;pointer-events:none!important;}
-
-/* No mystery gap above pages. */
-.content{
-  margin-top:0!important;
-  padding-top:0!important;
-  padding-bottom:0!important;
-  min-height:0!important;
-  height:100%!important;
-  box-sizing:border-box!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-}
-.content>.page{
-  margin-top:0!important;
-  padding-top:0!important;
-  min-height:100%!important;
-  box-sizing:border-box!important;
-}
-#homePage,#gamesPage,#appsPage,#bookmarksPage,#aboutPage,#accountPage,#proxyPage,#settingsPage,#aiPage{
-  margin-top:0!important;
-}
-
-/* The old character engine is disabled. Only #koronaFinalCharacter is allowed to be visible. */
-#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-character:not(#koronaFinalCharacter),.fern-character{display:none!important;visibility:hidden!important;opacity:0!important;}
-#koronaFinalCharacter{
-  position:fixed!important;
-  right:18px!important;
-  bottom:8px!important;
-  width:min(330px,28vw)!important;
-  height:min(500px,68vh)!important;
-  max-width:none!important;
-  max-height:none!important;
-  margin:0!important;
-  padding:0!important;
-  object-fit:contain!important;
-  object-position:center bottom!important;
-  z-index:2147483000!important;
-  pointer-events:none!important;
-  opacity:var(--k-char-opacity)!important;
-  filter:var(--k-char-filter)!important;
-  transform:none!important;
-  display:block!important;
-  background:transparent!important;
-}
-#koronaFinalCharacter.hidden{display:none!important;}
-#koronaCharacterBadgeFinal{
-  position:fixed!important;
-  right:18px!important;
-  bottom:calc(min(500px,68vh) + 14px)!important;
-  z-index:2147483001!important;
-  pointer-events:none!important;
-  opacity:1!important;
-}
-
-/* The opacity variable is reserved exclusively for the character. */
-#app,#app>* ,.content,.content>.page,.topbar,.nav,.korona-sidebar,.browser-page,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,.settings-panel,.settings-section,.game-card,.theme-card,.hero,.panel,.ai-card{
-  opacity:1!important;
-}
-
-/* Make scale actually visible and consistent. */
-#app{
-  zoom:var(--k-ui-scale)!important;
-  width:calc(100% / var(--k-ui-scale))!important;
-  height:calc(100% / var(--k-ui-scale))!important;
-  min-height:calc(100% / var(--k-ui-scale))!important;
-}
-
-/* Make the selected theme propagate into the old and new UI, including buttons. */
-body,
-.korona-sidebar,.nav,.topbar,.online,
-.content,.page,
-.hero,.panel,.settings-panel,.settings-section,
-.theme-card,.game-card,.library-controls,
-.browser-page,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,
-.kai-shell,.kai-history,.kai-compose,.kset-card,.kset-theme,.kset-char{
-  color:var(--k-text)!important;
-  border-color:var(--k-border)!important;
-}
-.korona-sidebar,.nav,.topbar,.online,.settings-panel,.settings-section,.theme-card,.game-card,.panel,.hero,.library-controls,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,.kai-history,.kai-input,.kset-card{
-  background-color:var(--k-panel)!important;
-}
-.korona-sidebar .nav-button,
-.nav .nav-button,
-.korona-large-button,
-button,
-.korona-actions button,
-.theme-card,
-.settings-toggle,
-.proxy-controls button,
-.iframe-toolbar button,
-.browser-toolbar button,
-.browser-tab,
-.new-tab-button,
-.kfb-nav,.kfb-new,.kfb-tab,.kfb-go,
-.kai-button,.kai-upload,.kset-theme,.kset-char,.kset-reset{
-  color:var(--k-text)!important;
-  background-color:var(--k-panel-2)!important;
-  border-color:color-mix(in srgb,var(--k-accent) 42%,var(--k-border))!important;
-}
-button:hover,.nav-button:hover,.theme-card:hover,.kset-theme:hover,.kset-char:hover{
-  border-color:var(--k-accent)!important;
-  color:var(--k-text)!important;
-}
-.nav-button.active,.theme-card.active,.kset-theme.active,.kset-char.active,
-.kfb-tab.active{
-  color:var(--k-text)!important;
-  background-color:color-mix(in srgb,var(--k-accent) 14%,var(--k-panel-2))!important;
-  border-color:var(--k-accent)!important;
-  box-shadow:inset 3px 0 0 var(--k-accent),0 0 18px color-mix(in srgb,var(--k-accent) 16%,transparent)!important;
-}
-.korona-large-button,.kai-button.primary,.kai-send,.kfb-go{
-  background:var(--k-accent)!important;
-  color:#001018!important;
-  border-color:var(--k-accent)!important;
-}
-input,textarea,select,.browser-address,.kfb-address,.kai-input{
-  color:var(--k-text)!important;
-  background-color:var(--k-bg)!important;
-  border-color:color-mix(in srgb,var(--k-accent) 32%,var(--k-border))!important;
-}
-input[type="range"]{accent-color:var(--k-accent)!important;}
-
-/* Settings is its own scroll region. */
-#settingsPage{height:100%!important;overflow:hidden!important;padding:0!important;}
-#settingsPage .kset-shell{
-  height:100%!important;
-  max-height:none!important;
-  min-height:0!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  padding:0 8px 28px 0!important;
-  box-sizing:border-box!important;
-}
-
-/* AI is one page and fills the available area. */
-#aiPage{height:100%!important;min-height:0!important;overflow:hidden!important;padding:0!important;}
-#aiPage .kai-shell{height:100%!important;min-height:0!important;}
-#aiPage .kai-history{min-height:0!important;overflow:auto!important;}
-
-@media(max-width:800px){
-  #koronaFinalCharacter{width:220px!important;height:360px!important;right:4px!important;bottom:4px!important;}
-  #koronaCharacterBadgeFinal{right:5px!important;bottom:374px!important;}
-}
-</style>
-<script id="korona-final-stability-script">
-(function(){
-  'use strict';
-  const q=(s,r=document)=>r.querySelector(s), qa=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  let normalizing=false;
-
-  function removeLegacyCharacter(){
-    ['#koronaCharacterArt','#koronaCharacterBadge'].forEach(sel=>qa(sel).forEach(el=>el.remove()));
-    qa('.korona-character-dock,.fern-character').forEach(el=>el.remove());
-    document.documentElement.style.setProperty('--character-opacity','1');
-    document.documentElement.style.setProperty('--korona-character-opacity','1');
-  }
-
-  function normalizeAINav(){
-    const nav=q('#koronaSidebar .sidebar-nav')||q('.sidebar-nav')||q('.nav');
-    if(!nav)return;
-    const candidates=qa('.nav-button',nav).filter(b=>{
-      const label=(b.textContent||'').trim().toLowerCase();
-      return b.dataset.page==='ai'||b.dataset.page==='ai-studio'||b.id==='koronaAiNav'||b.hasAttribute('data-korona-ai')||label==='ai studio';
-    });
-    if(!candidates.length)return;
-    const keep=candidates[0];
-    candidates.slice(1).forEach(b=>b.remove());
-    /* Clone once: this strips every old addEventListener attached by the previous AI implementations. */
-    if(!keep.dataset.finalNavClone){
-      const clone=keep.cloneNode(true);
-      clone.removeAttribute('id');
-      clone.dataset.page='ai';
-      clone.removeAttribute('data-korona-ai');
-      clone.className='nav-button';
-      clone.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
-      clone.dataset.finalNavClone='1';
-      keep.replaceWith(clone);
-      clone.addEventListener('click',function(e){
-        e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();
-        showPage('ai',clone);
-      },true);
-    }else{
-      keep.dataset.page='ai';
-    }
-  }
-
-  function normalizeAIPages(){
-    const pages=qa('[id*="aiPage" i]');
-    let page=q('#aiPage');
-    if(!page && pages.length){page=pages[0];page.id='aiPage';}
-    pages.forEach(p=>{if(p!==page)p.remove();});
-    if(!page)return;
-    page.hidden=false;
-    page.style.display=page.classList.contains('active')?'block':'none';
-  }
-
-  function showPage(name,button){
-    const id={home:'homePage',games:'gamesPage',apps:'appsPage',proxy:'proxyPage',settings:'settingsPage',account:'accountPage',bookmarks:'bookmarksPage',about:'aboutPage',ai:'aiPage'}[name];
-    const page=id?document.getElementById(id):null;
-    if(!page)return;
-    qa('.content>.page').forEach(p=>{
-      const active=p===page;
-      p.classList.toggle('active',active);
-      p.hidden=!active;
-      p.style.display=active?'block':'none';
-    });
-    qa('.sidebar-nav .nav-button,.nav .nav-button').forEach(b=>b.classList.toggle('active',b===button));
-    if(name==='ai'){
-      normalizeAIPages();
-      page.hidden=false;page.style.display='block';page.classList.add('active');
-    }
-    const content=q('.content');if(content)content.scrollTop=0;
-  }
-
-  function bindNavigation(){
-    const nav=q('#koronaSidebar .sidebar-nav')||q('.sidebar-nav')||q('.nav');
-    if(!nav)return;
-    qa('.nav-button',nav).forEach(btn=>{
-      if(btn.dataset.finalNavBound==='1')return;
-      btn.dataset.finalNavBound='1';
-      btn.addEventListener('click',function(e){
-        const target=this.dataset.page;
-        if(!target)return;
-        e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();
-        showPage(target,this);
-      },true);
-    });
-  }
-
-  function enforce(){
-    if(normalizing)return;
-    normalizing=true;
-    try{
-      removeLegacyCharacter();
-      normalizeAINav();
-      normalizeAIPages();
-      bindNavigation();
-      const app=q('#app');if(app)app.style.zoom=getComputedStyle(document.documentElement).getPropertyValue('--k-ui-scale').trim()||'1';
-      /* Force the final character to remain the only character layer. */
-      const img=q('#koronaFinalCharacter');
-      if(img){if(!window.__koronaCharacterOpacityInitialized){const existing=parseFloat(img.style.opacity);window.__koronaCharacterOpacity=Number.isFinite(existing)?existing:1;window.__koronaCharacterOpacityInitialized=true;}img.style.opacity=String(window.__koronaCharacterOpacity);img.style.zIndex='2147483000';}
-    }finally{normalizing=false;}
-  }
-
-  window.__koronaCharacterOpacity=1;
-  const oldApply=window.applyCharacter;
-  /* applyCharacter is scoped in the previous IIFE, so the final settings handler owns opacity directly. */
-  const opacity=q('#ksetOpacity');
-  if(opacity){
-    opacity.addEventListener('input',function(){
-      window.__koronaCharacterOpacity=Number(this.value)/100;
-      const img=q('#koronaFinalCharacter');
-      if(img)img.style.opacity=String(window.__koronaCharacterOpacity);
-    },true);
-  }
-
-  enforce();
-  setTimeout(enforce,50);
-  setTimeout(enforce,250);
-  setTimeout(enforce,1000);
-  const observer=new MutationObserver(()=>{ if(!normalizing) enforce(); });
-  observer.observe(document.body,{childList:true,subtree:true});
+const chars=[
+{id:'none',name:'None',desc:'No character',a:'#777',b:'#aaa'},
+{id:'gojo',name:'Gojo',desc:'Limitless',a:'#9b8cff',b:'#dfe6ff'},
+{id:'naruto',name:'Naruto',desc:'Shinobi',a:'#ff8a24',b:'#ffd166'},
+{id:'hunter',name:'Hunter',desc:'Nen user',a:'#49b875',b:'#baf2c2'},
+{id:'lebron',name:'LeBron James',desc:'Basketball',a:'#e5b84b',b:'#6da9ff'},
+{id:'miku',name:'Miku',desc:'Hatsune Miku',a:'#39ccd6',b:'#b8ffff'},
+{id:'teto',name:'Teto',desc:'Kasane Teto',a:'#e8455f',b:'#ffb3c0'},
+{id:'neru',name:'Neru',desc:'Akita Neru',a:'#e8c547',b:'#fff0a8'},
+{id:'luka',name:'Luka',desc:'Megurine Luka',a:'#ff9ec4',b:'#ffd2e4'},
+{id:'rin',name:'Rin',desc:'Kagamine Rin',a:'#ffb23f',b:'#ffe0a0'},
+{id:'len',name:'Len',desc:'Kagamine Len',a:'#f2e14c',b:'#fff9b0'},
+{id:'kaito',name:'Kaito',desc:'KAITO',a:'#3f7bff',b:'#a9c6ff'},
+{id:'meiko',name:'Meiko',desc:'MEIKO',a:'#d8384a',b:'#ff9aa2'}
+];
+function asset(c){if(c.id==='none')return '';const hair={gojo:'#eef4ff',naruto:'#f07820',hunter:'#151d2b',lebron:'#171717',miku:'#1dced0',teto:'#c83c55',neru:'#e5c83f',luka:'#d783a9',rin:'#f4a52f',len:'#e7d83c',kaito:'#477fe8',meiko:'#8e3434'}[c.id]||'#222';const skin=c.id==='lebron'?'#7b4a2e':c.id==='naruto'?'#d79567':'#e0b18d';const shirt=c.a;const extra=c.id==='gojo'?'<rect x="79" y="99" width="82" height="34" rx="10" fill="#10131c"/><rect x="83" y="103" width="74" height="25" rx="8" fill="#05070b"/>':c.id==='naruto'?'<path d="M78 91l-12-22 24 13zM162 91l12-22-24 13z" fill="#f07820"/>':c.id==='miku'?'<path d="M65 110C25 85 25 25 72 20c-7 39 5 64 20 78zM175 110c40-25 40-85-7-90 7 39-5 64-20 78z" fill="#24cbd0"/>':c.id==='teto'?'<path d="M61 105C24 73 30 30 67 18c4 34 15 55 28 68zM179 105c37-32 31-75-6-87-4 34-15 55-28 68z" fill="#d94360"/>':'<path d="M62 108Q120 24 178 108Q168 48 120 38Q72 48 62 108Z" fill="'+hair+'"/>';return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 360"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+c.a+'"/><stop offset="1" stop-color="'+c.b+'"/></linearGradient></defs><rect width="240" height="360" fill="transparent"/><ellipse cx="120" cy="322" rx="78" ry="24" fill="#000" opacity=".18"/><path d="M52 350Q61 228 120 224Q179 228 188 350Z" fill="url(#g)"/> <ellipse cx="120" cy="130" rx="57" ry="70" fill="'+skin+'"/> '+extra+'<path d="M63 119Q68 45 120 39Q172 45 177 119Q151 90 120 86Q89 90 63 119Z" fill="'+hair+'"/><circle cx="99" cy="132" r="7" fill="#111827"/><circle cx="141" cy="132" r="7" fill="#111827"/><path d="M101 160Q120 173 139 160" fill="none" stroke="#673b3b" stroke-width="4" stroke-linecap="round"/><rect x="31" y="325" width="178" height="25" rx="12" fill="#000" opacity=".3"/><text x="120" y="342" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">'+c.name+'</text></svg>');}
+const charAssets=Object.fromEntries(chars.map(c=>[c.id,asset(c)]));
+let settings=Object.assign({theme:'korona',scale:1,accent:''},safe(localStorage.getItem(KEY_SETTINGS),{}));
+let character=Object.assign({id:'none',opacity:1},safe(localStorage.getItem(KEY_CHAR),{}));
+const ai={messages:[],image:null};
+function safe(v,f){try{return JSON.parse(v)}catch(_){return f}}
+function save(){try{localStorage.setItem(KEY_SETTINGS,JSON.stringify(settings));localStorage.setItem(KEY_CHAR,JSON.stringify(character))}catch(_) {}}
+function syncVars(){const t=themes[settings.theme]||themes.korona,a=settings.accent||t[2],root=document.documentElement;root.style.setProperty('--kc-bg',t[0]);root.style.setProperty('--kc-panel',t[1]);root.style.setProperty('--kc-panel2',shift(t[1],12));root.style.setProperty('--kc-text',t[3]);root.style.setProperty('--kc-accent',a);root.style.setProperty('--kc-scale',String(settings.scale));root.style.setProperty('--kc-char-opacity',String(character.opacity));const r=hex(character.color||a);root.style.setProperty('--kc-char-color',character.color||a);root.style.setProperty('--bg',t[0]);root.style.setProperty('--bg-light',t[1]);root.style.setProperty('--panel',t[1]);root.style.setProperty('--panel-hover',shift(t[1],14));root.style.setProperty('--panel-2',shift(t[1],12));root.style.setProperty('--text',t[3]);root.style.setProperty('--muted',t[3]+'99');root.style.setProperty('--green',a);root.style.setProperty('--green-soft',a);root.style.setProperty('--border','color-mix(in srgb,'+a+' 22%,rgba(255,255,255,.12))');root.style.setProperty('--border-bright',a);root.style.setProperty('--ui-scale',String(settings.scale));root.style.setProperty('--character-opacity','1');root.style.setProperty('--korona-character-opacity','1');document.body.dataset.theme=settings.theme;document.body.style.background=t[0];const app=$('#app');if(app)app.style.zoom=String(settings.scale);updateSettingsUI()}
+function hex(h){return /^#[0-9a-f]{6}$/i.test(h)?h:'#00eaff'}
+function shift(h,n){if(!/^#[0-9a-f]{6}$/i.test(h))return h;const v=parseInt(h.slice(1),16),r=Math.max(0,Math.min(255,(v>>16)+n)),g=Math.max(0,Math.min(255,((v>>8)&255)+n)),b=Math.max(0,Math.min(255,(v&255)+n));return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function updateSettingsUI(){ $$('.kc-theme').forEach(b=>b.classList.toggle('active',b.dataset.theme===settings.theme));$$('.kc-char').forEach(b=>b.classList.toggle('active',b.dataset.char===character.id));const sc=$('#kcScale'),so=$('#kcScaleOut'),op=$('#kcOpacity'),oo=$('#kcOpacityOut'),ac=$('#kcAccent');if(sc){sc.value=String(settings.scale);so.textContent=Math.round(settings.scale*100)+'%'}if(op){op.value=String(character.opacity);oo.textContent=Math.round(character.opacity*100)+'%'}if(ac)ac.value=settings.accent||themes[settings.theme][2];const cc=$('#kcCharColor');if(cc)cc.value=character.color||((chars.find(x=>x.id===character.id)||chars[0]).a||themes[settings.theme][2])}
+function applyCharacter(){let img=$('#kcCharacter'),badge=$('#kcCharacterBadge');const c=chars.find(x=>x.id===character.id)||chars[0];if(c.id==='none'){img?.classList.add('kc-hidden');if(img)img.removeAttribute('src');if(badge)badge.style.display='none';return}if(img){img.classList.remove('kc-hidden');img.src=charAssets[c.id];img.alt=c.name;img.style.opacity=String(character.opacity)}if(badge){badge.textContent=c.name+' · '+c.desc;badge.style.display='block'}document.documentElement.style.setProperty('--kc-char-color',character.color||c.a);updateSettingsUI()}
+function buildSettings(){const p=$('#settingsPage');if(!p)return;p.innerHTML='<div id="kcSettings"><div class="section-header"><div class="eyebrow">KORONA CONTROL CENTER</div><h2>Settings</h2><p>Appearance and character controls are independent from the rest of Korona.</p></div><section class="kc-setting-section"><h3>Theme</h3><p>Changes the background, panels, text, borders, browser chrome, and controls immediately.</p><div class="kc-theme-grid">'+Object.keys(themes).map(k=>'<button type="button" class="kc-theme" data-theme="'+k+'"><span class="kc-theme-preview" style="background:linear-gradient(135deg,'+themes[k][0]+','+themes[k][2]+')"></span><span>'+k[0].toUpperCase()+k.slice(1)+'</span></button>').join('')+'</div></section><section class="kc-setting-section"><h3>Interface</h3><div class="kc-controls"><div class="kc-control"><label for="kcScale">Interface scale <output id="kcScaleOut">100%</output></label><input id="kcScale" type="range" min="0.8" max="1.25" step="0.05" value="1"></div><div class="kc-control"><label for="kcAccent">Accent color</label><input id="kcAccent" type="color" value="#00eaff"></div></div></section><section class="kc-setting-section"><h3>Character</h3><p>Each entry has its own artwork. Character opacity affects only the character image.</p><div class="kc-char-grid">'+chars.map(c=>'<button type="button" class="kc-char" data-char="'+c.id+'">'+(c.id==='none'?'<span class="kc-char-thumb"></span>':'<img class="kc-char-thumb" src="'+charAssets[c.id]+'" alt="'+c.name+' preview">')+'<span><span class="kc-char-name">'+c.name+'</span><span class="kc-char-desc">'+c.desc+'</span></span></button>').join('')+'</div><div class="kc-controls"><div class="kc-control"><label for="kcOpacity">Character opacity <output id="kcOpacityOut">100%</output></label><input id="kcOpacity" type="range" min="0" max="1" step="0.01" value="1"></div><div class="kc-control"><label for="kcCharColor">Character color</label><input id="kcCharColor" type="color" value="#00eaff"></div></div></section><section class="kc-setting-section"><button class="kc-reset" id="kcReset" type="button">Reset appearance and character</button></section></div>';bindSettings();updateSettingsUI()}
+function bindSettings(){ $$('.kc-theme').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.theme;settings.accent='';save();syncVars()});$$('.kc-char').forEach(b=>b.onclick=()=>{character.id=b.dataset.char;character.color='';save();applyCharacter();syncVars()});const sc=$('#kcScale');if(sc)sc.oninput=()=>{settings.scale=Number(sc.value);save();syncVars()};const ac=$('#kcAccent');if(ac)ac.oninput=()=>{settings.accent=ac.value;save();syncVars()};const op=$('#kcOpacity');if(op)op.oninput=()=>{character.opacity=Number(op.value);save();syncVars();applyCharacter()};const cc=$('#kcCharColor');if(cc)cc.oninput=()=>{character.color=cc.value;save();applyCharacter();syncVars()};$('#kcReset')?.addEventListener('click',()=>{settings={theme:'korona',scale:1,accent:''};character={id:'none',opacity:1,color:''};save();syncVars();applyCharacter()})}
+function installCharacter(){let img=$('#kcCharacter');if(!img){img=document.createElement('img');img.id='kcCharacter';img.className='kc-hidden';document.body.appendChild(img)}let badge=$('#kcCharacterBadge');if(!badge){badge=document.createElement('div');badge.id='kcCharacterBadge';badge.style.display='none';document.body.appendChild(badge)}}
+function cleanLegacy(){ $$('#koronaAiPage').forEach(x=>x.remove()); $$('.korona-character-dock,.korona-character,#koronaCharacterArt,#koronaCharacterBadge,.fern-character').forEach(x=>x.remove());const nav=$('#koronaSidebar .sidebar-nav');if(nav){const aiBtns=$$('.nav-button',nav).filter(b=>{const t=(b.textContent||'').trim().toLowerCase();return b.dataset.page==='ai'||b.dataset.koronaAi!==undefined||t==='ai studio'});aiBtns.slice(1).forEach(b=>b.remove());let btn=aiBtns[0];if(!btn){btn=document.createElement('button');btn.type='button';btn.className='nav-button';nav.appendChild(btn)}btn.dataset.page='kc-ai';btn.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';btn.removeAttribute('data-korona-ai');if(btn.dataset.kcBound!=='1'){btn.dataset.kcBound='1';btn.addEventListener('click',e=>{e.preventDefault();showPage('kc-ai',btn)},true)}}}
+function installAI(){let p=$('#kcAiPage');if(!p){p=document.createElement('section');p.id='kcAiPage';p.className='page';($('.content')||$('#app')).appendChild(p)}p.innerHTML='<div class="kc-ai-shell"><div class="kc-ai-head"><div><div class="eyebrow">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Text questions and image-based problems in one conversation.</p></div><div class="kc-ai-actions"><span class="kc-ai-status" id="kcAiStatus">Ready · '+MODEL+'</span><button class="ai-button" id="kcNewChat" type="button">New Chat</button></div></div><div class="kc-ai-history" id="kcAiHistory"><div class="kc-ai-empty">Ask a question or upload a screenshot/photo.</div></div><div class="kc-ai-compose"><textarea class="kc-ai-input" id="kcAiInput" aria-label="AI Studio question" placeholder="Ask a question or explain what you need..." rows="4"></textarea><div class="kc-ai-side"><label class="kc-upload" for="kcAiFile">Upload image<input id="kcAiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><span class="kc-file-name" id="kcFileName">No image selected</span><button class="kc-ai-send" id="kcAiSend" type="button">Send</button></div></div></div>';bindAI()}
+function renderAI(){const h=$('#kcAiHistory');if(!h)return;h.innerHTML='';if(!ai.messages.length){h.innerHTML='<div class="kc-ai-empty">Ask a question or upload a screenshot/photo.</div>';return}ai.messages.forEach(m=>{const row=document.createElement('div');row.className='kc-ai-message '+m.role;const b=document.createElement('div');b.className='kc-ai-bubble';if(m.image){const im=document.createElement('img');im.src=m.image;im.alt='Attached image';b.appendChild(im)}const tx=document.createElement('div');tx.textContent=m.content||'';b.appendChild(tx);row.appendChild(b);h.appendChild(row)});h.scrollTop=h.scrollHeight}
+function bindAI(){const f=$('#kcAiFile'),i=$('#kcAiInput'),send=$('#kcAiSend'),nc=$('#kcNewChat');if(!f||!i||!send||!nc)return;f.onchange=()=>{const file=f.files?.[0];if(!file){ai.image=null;$('#kcFileName').textContent='No image selected';return}if(!file.type.startsWith('image/')){f.value='';$('#kcFileName').textContent='Unsupported image';return}const r=new FileReader();r.onload=()=>{ai.image={data:String(r.result),name:file.name,type:file.type};$('#kcFileName').textContent=file.name};r.readAsDataURL(file)};nc.onclick=()=>{ai.messages=[];ai.image=null;f.value='';i.value='';$('#kcFileName').textContent='No image selected';$('#kcAiStatus').textContent='Ready · '+MODEL;renderAI()};i.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();send.click()}};send.onclick=sendAI}
+function key(){return String(window.KORONA_GROQ_API_KEY||'').trim()}
+async function sendAI(){const i=$('#kcAiInput'),status=$('#kcAiStatus'),send=$('#kcAiSend'),text=(i?.value||'').trim();if(!text&&!ai.image){status.textContent='Enter a question or attach an image.';return}const k=key();if(!k){status.textContent='Groq API key is not configured. Set window.KORONA_GROQ_API_KEY before sending.';return}const user={role:'user',content:text||'Inspect this image and explain or solve the problem shown.',image:ai.image?.data||null};ai.messages.push(user);renderAI();i.value='';send.disabled=true;status.textContent='Thinking…';try{const messages=[{role:'system',content:'You are Korona AI Studio. Answer clearly. When an image is attached, inspect the actual image carefully before answering. For math, English, worksheets, screenshots, diagrams, and photos, extract visible information accurately and explain or solve it. Use prior conversation messages for follow-up questions.'}];ai.messages.forEach(m=>{const content=[];if(m.content)content.push({type:'text',text:m.content});if(m.image)content.push({type:'image_url',image_url:{url:m.image}});messages.push({role:m.role,content:m.image?content:(content[0]?.text||'')})});const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},body:JSON.stringify({model:MODEL,messages,temperature:.2,max_tokens:MAX_TOKENS})});const data=await r.json();if(!r.ok)throw new Error(data?.error?.message||('Groq request failed ('+r.status+')'));const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error('Groq returned no answer.');ai.messages.push({role:'assistant',content:String(answer),image:null});ai.image=null;fClear();status.textContent='Complete · '+MODEL;renderAI()}catch(e){ai.messages.pop();renderAI();status.textContent='AI error · '+e.message}finally{send.disabled=false}}
+function fClear(){const f=$('#kcAiFile');if(f)f.value='';const n=$('#kcFileName');if(n)n.textContent='No image selected'}
+function showPage(name,btn){const map={home:'homePage',games:'gamesPage',apps:'appsPage',proxy:'proxyPage',settings:'settingsPage',account:'accountPage','kc-ai':'kcAiPage'};const p=document.getElementById(map[name]);if(!p)return;$$('.content>.page').forEach(x=>{x.classList.toggle('active',x===p);x.style.display=x===p?'block':'none'});$$('.sidebar-nav .nav-button').forEach(x=>x.classList.toggle('active',x===btn));const c=$('.content');if(c)c.scrollTop=0;if(name==='kc-ai')renderAI()}
+function bindNav(){const nav=$('#koronaSidebar .sidebar-nav');if(!nav)return;$$('.nav-button',nav).forEach(btn=>{if(btn.dataset.kcNav==='1')return;btn.dataset.kcNav='1';btn.addEventListener('click',e=>{const page=btn.dataset.page;if(page==='kc-ai'){e.preventDefault();e.stopImmediatePropagation();showPage('kc-ai',btn)}else if(['home','games','apps','proxy','settings','account'].includes(page)){e.preventDefault();e.stopImmediatePropagation();showPage(page,btn)}},true)});$$('[data-page-jump]').forEach(b=>{if(b.dataset.kcJump)return;b.dataset.kcJump='1';b.addEventListener('click',e=>{const page=b.dataset.pageJump;if(page){e.preventDefault();const target=nav?.querySelector('.nav-button[data-page="'+page+'"]');showPage(page,target)}})});}
+function boot(){cleanLegacy();installCharacter();installAI();buildSettings();syncVars();applyCharacter();bindNav();const obs=new MutationObserver(()=>{if(window.__kcBusy)return;window.__kcBusy=true;try{cleanLegacy();installCharacter();const p=$('#kcAiPage');if(p&&p.dataset.kcBuilt!=='1'){installAI()} }finally{window.__kcBusy=false}});const p=$('#kcAiPage');if(p)p.dataset.kcBuilt='1';obs.observe(document.body,{childList:true,subtree:true});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
 
