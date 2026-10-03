@@ -8141,5 +8141,290 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+<style id="korona-final-stability-css">
+/* FINAL STABILITY PASS — overrides the older customization layers instead of stacking on them. */
+:root{
+  --bg:var(--k-bg)!important;
+  --panel:var(--k-panel)!important;
+  --panel-2:var(--k-panel-2)!important;
+  --text:var(--k-text)!important;
+  --muted:var(--k-muted)!important;
+  --border:var(--k-border)!important;
+  --border-bright:var(--k-accent)!important;
+  --green:var(--k-accent)!important;
+  --accent:var(--k-accent)!important;
+  --ui-scale:var(--k-ui-scale)!important;
+  --character-opacity:1!important;
+  --korona-character-opacity:1!important;
+}
+html,body,#app{width:100%!important;max-width:none!important;}
+body{background:var(--k-bg)!important;color:var(--k-text)!important;}
+body::before,body::after{opacity:0!important;pointer-events:none!important;}
+
+/* No mystery gap above pages. */
+.content{
+  margin-top:0!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
+  min-height:0!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.content>.page{
+  margin-top:0!important;
+  padding-top:0!important;
+  min-height:100%!important;
+  box-sizing:border-box!important;
+}
+#homePage,#gamesPage,#appsPage,#bookmarksPage,#aboutPage,#accountPage,#proxyPage,#settingsPage,#aiPage{
+  margin-top:0!important;
+}
+
+/* The old character engine is disabled. Only #koronaFinalCharacter is allowed to be visible. */
+#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-character:not(#koronaFinalCharacter),.fern-character{display:none!important;visibility:hidden!important;opacity:0!important;}
+#koronaFinalCharacter{
+  position:fixed!important;
+  right:18px!important;
+  bottom:8px!important;
+  width:min(330px,28vw)!important;
+  height:min(500px,68vh)!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  z-index:2147483000!important;
+  pointer-events:none!important;
+  opacity:var(--k-char-opacity)!important;
+  filter:var(--k-char-filter)!important;
+  transform:none!important;
+  display:block!important;
+  background:transparent!important;
+}
+#koronaFinalCharacter.hidden{display:none!important;}
+#koronaCharacterBadgeFinal{
+  position:fixed!important;
+  right:18px!important;
+  bottom:calc(min(500px,68vh) + 14px)!important;
+  z-index:2147483001!important;
+  pointer-events:none!important;
+  opacity:1!important;
+}
+
+/* The opacity variable is reserved exclusively for the character. */
+#app,#app>* ,.content,.content>.page,.topbar,.nav,.korona-sidebar,.browser-page,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,.settings-panel,.settings-section,.game-card,.theme-card,.hero,.panel,.ai-card{
+  opacity:1!important;
+}
+
+/* Make scale actually visible and consistent. */
+#app{
+  zoom:var(--k-ui-scale)!important;
+  width:calc(100% / var(--k-ui-scale))!important;
+  height:calc(100% / var(--k-ui-scale))!important;
+  min-height:calc(100% / var(--k-ui-scale))!important;
+}
+
+/* Make the selected theme propagate into the old and new UI, including buttons. */
+body,
+.korona-sidebar,.nav,.topbar,.online,
+.content,.page,
+.hero,.panel,.settings-panel,.settings-section,
+.theme-card,.game-card,.library-controls,
+.browser-page,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,
+.kai-shell,.kai-history,.kai-compose,.kset-card,.kset-theme,.kset-char{
+  color:var(--k-text)!important;
+  border-color:var(--k-border)!important;
+}
+.korona-sidebar,.nav,.topbar,.online,.settings-panel,.settings-section,.theme-card,.game-card,.panel,.hero,.library-controls,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,.kai-history,.kai-input,.kset-card{
+  background-color:var(--k-panel)!important;
+}
+.korona-sidebar .nav-button,
+.nav .nav-button,
+.korona-large-button,
+button,
+.korona-actions button,
+.theme-card,
+.settings-toggle,
+.proxy-controls button,
+.iframe-toolbar button,
+.browser-toolbar button,
+.browser-tab,
+.new-tab-button,
+.kfb-nav,.kfb-new,.kfb-tab,.kfb-go,
+.kai-button,.kai-upload,.kset-theme,.kset-char,.kset-reset{
+  color:var(--k-text)!important;
+  background-color:var(--k-panel-2)!important;
+  border-color:color-mix(in srgb,var(--k-accent) 42%,var(--k-border))!important;
+}
+button:hover,.nav-button:hover,.theme-card:hover,.kset-theme:hover,.kset-char:hover{
+  border-color:var(--k-accent)!important;
+  color:var(--k-text)!important;
+}
+.nav-button.active,.theme-card.active,.kset-theme.active,.kset-char.active,
+.kfb-tab.active{
+  color:var(--k-text)!important;
+  background-color:color-mix(in srgb,var(--k-accent) 14%,var(--k-panel-2))!important;
+  border-color:var(--k-accent)!important;
+  box-shadow:inset 3px 0 0 var(--k-accent),0 0 18px color-mix(in srgb,var(--k-accent) 16%,transparent)!important;
+}
+.korona-large-button,.kai-button.primary,.kai-send,.kfb-go{
+  background:var(--k-accent)!important;
+  color:#001018!important;
+  border-color:var(--k-accent)!important;
+}
+input,textarea,select,.browser-address,.kfb-address,.kai-input{
+  color:var(--k-text)!important;
+  background-color:var(--k-bg)!important;
+  border-color:color-mix(in srgb,var(--k-accent) 32%,var(--k-border))!important;
+}
+input[type="range"]{accent-color:var(--k-accent)!important;}
+
+/* Settings is its own scroll region. */
+#settingsPage{height:100%!important;overflow:hidden!important;padding:0!important;}
+#settingsPage .kset-shell{
+  height:100%!important;
+  max-height:none!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:0 8px 28px 0!important;
+  box-sizing:border-box!important;
+}
+
+/* AI is one page and fills the available area. */
+#aiPage{height:100%!important;min-height:0!important;overflow:hidden!important;padding:0!important;}
+#aiPage .kai-shell{height:100%!important;min-height:0!important;}
+#aiPage .kai-history{min-height:0!important;overflow:auto!important;}
+
+@media(max-width:800px){
+  #koronaFinalCharacter{width:220px!important;height:360px!important;right:4px!important;bottom:4px!important;}
+  #koronaCharacterBadgeFinal{right:5px!important;bottom:374px!important;}
+}
+</style>
+<script id="korona-final-stability-script">
+(function(){
+  'use strict';
+  const q=(s,r=document)=>r.querySelector(s), qa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  let normalizing=false;
+
+  function removeLegacyCharacter(){
+    ['#koronaCharacterArt','#koronaCharacterBadge'].forEach(sel=>qa(sel).forEach(el=>el.remove()));
+    qa('.korona-character-dock,.fern-character').forEach(el=>el.remove());
+    document.documentElement.style.setProperty('--character-opacity','1');
+    document.documentElement.style.setProperty('--korona-character-opacity','1');
+  }
+
+  function normalizeAINav(){
+    const nav=q('#koronaSidebar .sidebar-nav')||q('.sidebar-nav')||q('.nav');
+    if(!nav)return;
+    const candidates=qa('.nav-button',nav).filter(b=>{
+      const label=(b.textContent||'').trim().toLowerCase();
+      return b.dataset.page==='ai'||b.dataset.page==='ai-studio'||b.id==='koronaAiNav'||b.hasAttribute('data-korona-ai')||label==='ai studio';
+    });
+    if(!candidates.length)return;
+    const keep=candidates[0];
+    candidates.slice(1).forEach(b=>b.remove());
+    /* Clone once: this strips every old addEventListener attached by the previous AI implementations. */
+    if(!keep.dataset.finalNavClone){
+      const clone=keep.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.dataset.page='ai';
+      clone.removeAttribute('data-korona-ai');
+      clone.className='nav-button';
+      clone.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
+      clone.dataset.finalNavClone='1';
+      keep.replaceWith(clone);
+      clone.addEventListener('click',function(e){
+        e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();
+        showPage('ai',clone);
+      },true);
+    }else{
+      keep.dataset.page='ai';
+    }
+  }
+
+  function normalizeAIPages(){
+    const pages=qa('[id*="aiPage" i]');
+    let page=q('#aiPage');
+    if(!page && pages.length){page=pages[0];page.id='aiPage';}
+    pages.forEach(p=>{if(p!==page)p.remove();});
+    if(!page)return;
+    page.hidden=false;
+    page.style.display=page.classList.contains('active')?'block':'none';
+  }
+
+  function showPage(name,button){
+    const id={home:'homePage',games:'gamesPage',apps:'appsPage',proxy:'proxyPage',settings:'settingsPage',account:'accountPage',bookmarks:'bookmarksPage',about:'aboutPage',ai:'aiPage'}[name];
+    const page=id?document.getElementById(id):null;
+    if(!page)return;
+    qa('.content>.page').forEach(p=>{
+      const active=p===page;
+      p.classList.toggle('active',active);
+      p.hidden=!active;
+      p.style.display=active?'block':'none';
+    });
+    qa('.sidebar-nav .nav-button,.nav .nav-button').forEach(b=>b.classList.toggle('active',b===button));
+    if(name==='ai'){
+      normalizeAIPages();
+      page.hidden=false;page.style.display='block';page.classList.add('active');
+    }
+    const content=q('.content');if(content)content.scrollTop=0;
+  }
+
+  function bindNavigation(){
+    const nav=q('#koronaSidebar .sidebar-nav')||q('.sidebar-nav')||q('.nav');
+    if(!nav)return;
+    qa('.nav-button',nav).forEach(btn=>{
+      if(btn.dataset.finalNavBound==='1')return;
+      btn.dataset.finalNavBound='1';
+      btn.addEventListener('click',function(e){
+        const target=this.dataset.page;
+        if(!target)return;
+        e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();
+        showPage(target,this);
+      },true);
+    });
+  }
+
+  function enforce(){
+    if(normalizing)return;
+    normalizing=true;
+    try{
+      removeLegacyCharacter();
+      normalizeAINav();
+      normalizeAIPages();
+      bindNavigation();
+      const app=q('#app');if(app)app.style.zoom=getComputedStyle(document.documentElement).getPropertyValue('--k-ui-scale').trim()||'1';
+      /* Force the final character to remain the only character layer. */
+      const img=q('#koronaFinalCharacter');
+      if(img){if(!window.__koronaCharacterOpacityInitialized){const existing=parseFloat(img.style.opacity);window.__koronaCharacterOpacity=Number.isFinite(existing)?existing:1;window.__koronaCharacterOpacityInitialized=true;}img.style.opacity=String(window.__koronaCharacterOpacity);img.style.zIndex='2147483000';}
+    }finally{normalizing=false;}
+  }
+
+  window.__koronaCharacterOpacity=1;
+  const oldApply=window.applyCharacter;
+  /* applyCharacter is scoped in the previous IIFE, so the final settings handler owns opacity directly. */
+  const opacity=q('#ksetOpacity');
+  if(opacity){
+    opacity.addEventListener('input',function(){
+      window.__koronaCharacterOpacity=Number(this.value)/100;
+      const img=q('#koronaFinalCharacter');
+      if(img)img.style.opacity=String(window.__koronaCharacterOpacity);
+    },true);
+  }
+
+  enforce();
+  setTimeout(enforce,50);
+  setTimeout(enforce,250);
+  setTimeout(enforce,1000);
+  const observer=new MutationObserver(()=>{ if(!normalizing) enforce(); });
+  observer.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
 </body>
 </html>
