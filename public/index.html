@@ -7494,5 +7494,114 @@ body{overflow:hidden!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair);else repair();
 })();
 </script>
+<style id="korona-final-corrections">
+  /* Keep the page shell opaque; only the artwork responds to character opacity. */
+  #app, #app > *, .content, .page, .topbar, .nav, .hero, .browser-shell, .browser-window { opacity: 1 !important; }
+  #koronaCharacterArt { opacity: var(--korona-character-opacity, .42) !important; }
+  #aiPage[hidden], #koronaAiPage[hidden] { display: none !important; }
+  #aiPage.active { display: block !important; }
+</style>
+<script id="korona-final-corrections-script">
+(() => {
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+  function removeDuplicateAI() {
+    $$('#koronaAiPage').forEach((page) => page.remove());
+    $$('[data-korona-ai], .nav button[data-page="ai"]:not(#koronaAiNav)').forEach((button) => button.remove());
+    const finalPage = $('#aiPage');
+    if (finalPage) finalPage.hidden = true;
+  }
+
+  function addCharacters() {
+    if (typeof CHARACTERS === 'undefined') return;
+    const additions = [
+      ['gojo', 'Gojo', 'Limitless', '#9b8cff', '#d8d2ff'],
+      ['naruto', 'Naruto', 'Shinobi', '#f28a22', '#ffd166'],
+      ['hunter', 'Hunter', 'Nen user', '#49b875', '#baf2c2'],
+      ['lebron', 'LeBron', 'King', '#e5b84b', '#6da9ff']
+    ];
+    additions.forEach(([id, name, tag, c1, c2]) => {
+      if (!CHARACTERS.some((character) => character.id === id)) CHARACTERS.push({ id, name, tag, c1, c2 });
+    });
+    const grid = $('.korona-character-grid, .korona-editor-grid');
+    if (grid && !grid.querySelector('[data-char="gojo"]')) {
+      additions.forEach(([id, name, tag, c1, c2]) => {
+        const card = document.createElement('button');
+        card.type = 'button'; card.className = 'korona-char-card'; card.dataset.char = id; card.title = tag;
+        card.innerHTML = '<span class="korona-char-swatch" style="background:linear-gradient(135deg,' + c1 + ',' + c2 + ')"></span><span>' + name + '</span>';
+        card.addEventListener('click', () => {
+          document.body.dataset.character = id;
+          document.documentElement.style.setProperty('--k-char-1', c1);
+          document.documentElement.style.setProperty('--k-char-2', c2);
+          const art = $('#koronaCharacterArt'); if (art) art.alt = name;
+        });
+        grid.appendChild(card);
+      });
+    }
+  }
+
+  async function chooseGroqModel(key, withImage) {
+    const response = await fetch('https://api.groq.com/openai/v1/models', { headers: { Authorization: 'Bearer ' + key } });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error?.message || 'Unable to list Groq models');
+    const models = (payload.data || []).filter((model) => model.active !== false);
+    const vision = models.find((model) => /scout|vision/i.test(model.id));
+    if (withImage && vision) return vision.id;
+    const text = models.find((model) => /gpt-oss|llama|qwen|mixtral/i.test(model.id));
+    if (text) return text.id;
+    if (models[0]) return models[0].id;
+    throw new Error('No active Groq models are available for this key');
+  }
+
+  function repairAI() {
+    removeDuplicateAI();
+    const page = $('#aiPage'), nav = $('.nav, .sidebar-nav');
+    if (!page || !nav) return;
+    const button = $('#koronaAiNav');
+    const show = () => {
+      $$('.page').forEach((item) => { item.hidden = item !== page; item.classList.toggle('active', item === page); });
+      $$('.nav button, .nav-button').forEach((item) => item.classList.toggle('active', item === button));
+      const main = $('.content'); if (main) main.scrollTop = 0;
+    };
+    if (button) { button.onclick = show; }
+    const send = $('#koronaAiSend');
+    if (!send || send.dataset.finalHandler) return;
+    send.dataset.finalHandler = 'true';
+    send.onclick = async () => {
+      const key = window.KORONA_GROQ_API_KEY || '';
+      const prompt = $('#koronaAiPrompt')?.value.trim() || 'Read this image carefully and answer the question step by step.';
+      const answer = $('#koronaAiAnswer'), status = $('#koronaAiStatus'), image = $('#koronaAiPreview');
+      if (!key || key.includes('PASTE_')) { answer.textContent = 'Add your local Groq key in window.KORONA_GROQ_API_KEY near the top of this HTML file.'; return; }
+      answer.textContent = 'Thinking…'; status.textContent = 'Finding an available Groq model…';
+      try {
+        const imageData = image?.src && image.style.display !== 'none' ? image.src : '';
+        const model = await chooseGroqModel(key, Boolean(imageData));
+        const content = imageData ? [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: imageData } }] : prompt;
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key }, body: JSON.stringify({ model, messages: [{ role: 'user', content }], temperature: .2, max_tokens: 1400 }) });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error?.message || 'Groq request failed');
+        answer.textContent = payload.choices?.[0]?.message?.content || 'No answer returned.';
+        status.textContent = 'Complete · ' + model;
+      } catch (error) { answer.textContent = 'AI Studio error: ' + error.message; status.textContent = 'Request failed'; }
+    };
+  }
+
+  function repairOpacity() {
+    const input = $('#koronaCharacterOpacity');
+    if (!input || input.dataset.finalHandler) return;
+    input.dataset.finalHandler = 'true';
+    input.oninput = () => {
+      const value = Number(input.value) / 100;
+      document.documentElement.style.setProperty('--korona-character-opacity', value);
+      document.documentElement.style.setProperty('--character-opacity', 1);
+      const output = $('#koronaOpacityValue'); if (output) output.textContent = input.value + '%';
+    };
+  }
+
+  function boot() { addCharacters(); repairAI(); repairOpacity(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
+})();
+</script>
 </body>
 </html>
