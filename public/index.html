@@ -7319,11 +7319,39 @@ function applyScale(){const s=Math.max(.85,Math.min(1.15,state.scale/100));docum
 function buildCharacterLayer(){ $$('#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-character,.fern-character').forEach(x=>x.remove());const d=document.createElement('div');d.id='korona-clean-character';d.innerHTML='<img alt="" draggable="false">';document.body.appendChild(d);applyChar() }
 function buildSettings(){const p=$('#settingsPage');if(!p)return;const themes=Object.keys(THEMES).map(k=>'<button type="button" class="k-theme" data-theme="'+k+'"><span class="k-theme-swatch" style="background:'+THEMES[k][5]+'"></span>'+(k==='korona'?'Korona':k[0].toUpperCase()+k.slice(1))+'</button>').join('');const chars=Object.entries(CHARS).map(([id,c])=>'<button type="button" class="k-character-choice" data-char="'+id+'">'+(id==='none'?'<div style="height:105px;display:grid;place-items:center;background:var(--k-bg2);border-radius:7px;margin-bottom:7px">None</div>':'<img src="'+art(id)+'" alt="'+c[0]+'" loading="eager">')+'<strong>'+c[0]+'</strong><span>'+c[1]+'</span></button>').join('');p.innerHTML='<div class="k-settings"><h2>Settings</h2><p class="sub">Customize Korona without changing the rest of the application.</p><section class="k-setting-section"><h3>Theme</h3><p>Changes the entire interface immediately.</p><div class="k-theme-grid">'+themes+'</div></section><section class="k-setting-section"><h3>Characters</h3><p>Character identity and visual effects are independent. Opacity only affects the artwork.</p><div class="k-character-grid">'+chars+'</div></section><section class="k-setting-section"><h3>Interface</h3><div class="k-controls"><div class="k-control"><label>Interface scale <output id="kScaleOut">'+state.scale+'%</output></label><input id="kScale" type="range" min="85" max="115" value="'+state.scale+'"></div><div class="k-control"><label>Character opacity <output id="kOpacityOut">'+state.opacity+'%</output></label><input id="kOpacity" type="range" min="0" max="100" value="'+state.opacity+'"></div><div class="k-control"><label>Accent color</label><input id="kAccent" type="color" value="'+(state.accent||THEMES[state.theme][5])+'"></div></div></section></div>';$$('.k-theme',p).forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));$$('.k-character-choice',p).forEach(b=>b.onclick=()=>{state.char=b.dataset.char;applyChar()});$('#kScale').oninput=e=>{state.scale=+e.target.value;applyScale()};$('#kOpacity').oninput=e=>{state.opacity=+e.target.value;$('#kOpacityOut').textContent=state.opacity+'%';applyChar()};$('#kAccent').oninput=e=>{state.accent=e.target.value;localStorage.setItem('korona_clean_accent',state.accent);applyTheme(state.theme)};applyTheme(state.theme);applyScale();applyChar()}
 
-const ai={messages:[],image:null};
+const ai=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
 function buildAI(){ $$('#aiPage,#koronaAiPage').forEach(x=>x.remove());const page=document.createElement('section');page.id='aiPage';page.className='page';page.innerHTML=`<div class="kai-shell"><div class="kai-head"><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Ask questions, upload screenshots, or continue a conversation.</p></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…"></textarea><img id="kaiPreview" class="kai-preview" alt="Attached image preview"><div class="kai-actions"><label class="kai-file">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button type="button" class="primary" id="kaiSend">Send</button><button type="button" id="kaiNew">New Chat</button><span class="kai-status" id="kaiStatus">Qwen 3.8 27B · vision + text</span></div></div></div>`;$('.content').appendChild(page);$('#kaiFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{ai.image=r.result;$('#kaiPreview').src=ai.image;$('#kaiPreview').classList.add('show')};r.readAsDataURL(f)};$('#kaiNew').onclick=()=>{ai.messages=[];ai.image=null;$('#kaiPrompt').value='';$('#kaiFile').value='';$('#kaiPreview').classList.remove('show');renderAI();$('#kaiStatus').textContent='New chat · Qwen 3.8 27B'};$('#kaiSend').onclick=sendAI;$('#kaiPrompt').onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendAI()}};renderAI()}
-function renderAI(){const h=$('#kaiHistory');if(!h)return;if(!ai.messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.</div>';return}h.innerHTML=ai.messages.map(m=>`<div class="kai-msg ${m.role}"><div class="kai-bubble">${escapeHTML(m.content)}${m.image?`<img src="${m.image}" alt="Attached image">`:''}</div></div>`).join('');h.scrollTop=h.scrollHeight}
-function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function sendAI(){const input=$('#kaiPrompt');const text=input.value.trim();if(!text&&!ai.image)return;const turn={role:'user',content:text||'Please analyze this image.',image:ai.image};ai.messages.push(turn);input.value='';renderAI();$('#kaiStatus').textContent='Thinking…';const key=window.KORONA_GROQ_API_KEY||'';if(!key){ai.messages.push({role:'assistant',content:'AI error: Groq API key is not configured.'});renderAI();$('#kaiStatus').textContent='Configuration error';return}const messages=ai.messages.map(m=>({role:m.role,content:m.image?[{type:'text',text:m.content},{type:'image_url',image_url:{url:m.image}}]:m.content}));try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'qwen/qwen3.8-27b',messages,temperature:.2,max_tokens:512})});const data=await res.json();if(!res.ok)throw new Error(data.error?.message||`Groq HTTP ${res.status}`);ai.messages.push({role:'assistant',content:data.choices?.[0]?.message?.content||'No response returned.'});renderAI();$('#kaiStatus').textContent='Qwen 3.8 27B · ready'}catch(e){ai.messages.push({role:'assistant',content:'AI error · '+e.message});renderAI();$('#kaiStatus').textContent='Request failed'}}
+function renderAI(){
+ const h=$('#kaiHistory'); if(!h)return;
+ if(!ai.messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.</div>';return}
+ h.innerHTML=ai.messages.map((m,i)=>`<div class="kai-msg ${m.role}"><div class="kai-bubble"><div class="kai-markdown">${renderMarkdown(m.content||'')}</div>${m.image?`<div class="kai-sent-image"><img src="${m.image}" alt="Image attached to this message"><button type="button" class="kai-image-remove" data-remove-turn="${i}" aria-label="Remove image from this message">×</button></div>`:''}</div></div>`).join('');
+ h.scrollTop=h.scrollHeight;
+ $$('[data-remove-turn]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.removeTurn);if(ai.messages[i]){ai.messages[i].image=null;renderAI()}});
+}
+function renderMarkdown(src){
+ let s=String(src??'').replace(/\r\n?/g,'\n');
+ const blocks=[];
+ s=s.replace(/```([\w+-]*)\n?([\s\S]*?)```/g,(_,lang,code)=>{const i=blocks.length;blocks.push('<pre><code>'+escapeHTML(code.replace(/\n$/,''))+'</code></pre>');return `@@CODE${i}@@`});
+ s=escapeHTML(s);
+ s=s.replace(/@@CODE(\d+)@@/g,(_,i)=>blocks[Number(i)]);
+ s=s.replace(/^###\s+(.+)$/gm,'<h4>$1</h4>').replace(/^##\s+(.+)$/gm,'<h3>$1</h3>').replace(/^#\s+(.+)$/gm,'<h2>$1</h2>');
+ s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+ s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+ s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>');
+ s=s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>').replace(/(?<!_)_([^_\n]+)_(?!_)/g,'<em>$1</em>');
+ const lines=s.split('\n'),out=[];let list=[];
+ const flush=()=>{if(list.length){out.push('<ul>'+list.join('')+'</ul>');list=[]}};
+ for(const line of lines){
+   if(/^\s*[-*]\s+/.test(line)){list.push('<li>'+line.replace(/^\s*[-*]\s+/,'')+'</li>');continue}
+   if(/^\s*\d+\.\s+/.test(line)){list.push('<li>'+line.replace(/^\s*\d+\.\s+/,'')+'</li>');continue}
+   flush();
+   if(!line.trim()){out.push('');continue}
+   if(/^<(h[234]|pre)>/.test(line)){out.push(line);continue}
+   out.push('<p>'+line+'</p>');
+ }
+ flush();
+ return out.join('');
+}
 function nav(){const sidebar=$('.sidebar-nav');if(!sidebar)return;$$('.sidebar-nav .nav-button').forEach(b=>b.removeAttribute('data-korona-bound'));if(!sidebar.querySelector('[data-page="ai"]')){const b=document.createElement('button');b.type='button';b.className='nav-button';b.dataset.page='ai';b.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';sidebar.appendChild(b)}const pages={home:'homePage',games:'gamesPage',apps:'appsPage',proxy:'proxyPage',settings:'settingsPage',account:'accountPage',ai:'aiPage'};const buttons=$$('.sidebar-nav .nav-button');buttons.forEach(b=>b.onclick=()=>{const id=pages[b.dataset.page];if(!id)return;buttons.forEach(x=>x.classList.toggle('active',x===b));Object.values(pages).forEach(pid=>{const p=$('#'+pid);if(p)p.classList.toggle('active',pid===id)});if(id==='settingsPage'){$('#settingsPage').scrollTop=0}if(id==='aiPage')$('#aiPage').scrollTop=0});}
 function cleanLegacy(){// Remove duplicate AI controls/pages produced by earlier repair scripts.
 $$('[data-korona-ai],#koronaAiPage').forEach(x=>x.remove());$$('.nav-button[data-page="ai"]').forEach((x,i)=>{if(i>0)x.remove()});
@@ -7369,18 +7397,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const $$=(s,r=document)=>[...r.querySelectorAll(s)],$=(s,r=document)=>r.querySelector(s);
 /* Real image assets. These are remote image files, not generated SVG portraits. */
 const REAL_ART={
- gojo:'https://commons.wikimedia.org/wiki/Special:FilePath/Sketch_of_gojo_satoru.jpg',
- naruto:'https://commons.wikimedia.org/wiki/Special:FilePath/Bonnet_de_nuit_naruto.svg',
- hunter:'https://commons.wikimedia.org/wiki/Special:FilePath/Hunter_x_Hunter.png',
+ gojo:'https://risibank.fr/cache/medias/0/40/4096/409621/full.png',
+ naruto:'https://upload.wikimedia.org/wikipedia/en/9/94/Naruto_Uzumaki.png',
+ hunter:'https://upload.wikimedia.org/wikipedia/en/3/3a/Hunter_x_Hunter.png',
  lebron:'https://commons.wikimedia.org/wiki/Special:FilePath/LeBron_James.jpg',
- miku:'https://static.wikia.nocookie.net/vocaloid/images/f/f9/Miku_Chinese.png/revision/latest?cb=20220327221551',
+ miku:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hatsune_Miku.svg',
  teto:'https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834',
- neru:'https://commons.wikimedia.org/wiki/Special:FilePath/Cosplayer_of_Akihiko_Neru.jpg',
- luka:'https://commons.wikimedia.org/wiki/Special:FilePath/Vocaloid_megurine_luka_logo.png',
- rin:'https://commons.wikimedia.org/wiki/Special:FilePath/Cosplayer_of_Kagamine_Rin_20090726.jpg',
- len:'https://commons.wikimedia.org/wiki/Special:FilePath/Cosplayer_of_Kagamine_Len_20190413b.jpg',
- kaito:'https://commons.wikimedia.org/wiki/Special:FilePath/Vocaloid_kaito_logo.png',
- meiko:'https://commons.wikimedia.org/wiki/Special:FilePath/Vocaloid_meiko_logo.png'
+ neru:'https://commons.wikimedia.org/wiki/Special:FilePath/Akita_Neru.jpg',
+ luka:'https://p7.hiclipart.com/preview/985/96/2/megurine-luka-vocaloid-kagamine-rin-len-utau-anime-megurine-luka.jpg',
+ rin:'https://www.pikpng.com/pngl/m/445-4458790_rin-kagamine-transparent-background-png-download-rin-kagamine.png',
+ len:'https://www.kindpng.com/picc/m/440-4406188_len-kagamine-transparent-hd-png-download.png',
+ kaito:'https://www.pngkit.com/png/detail/735-7358172_kaito.png',
+ meiko:'https://p7.hiclipart.com/preview/190/193/202/meiko-vocaloid-kaito-kagamine-rin-len-crypton-future-media-hatsune-miku.jpg'
 };
 /* Replace the synthetic artwork function with real image URLs. */
 window.KORONA_REAL_CHARACTER_ART=REAL_ART;
@@ -7416,6 +7444,89 @@ function browserPolish(){const t=$('.browser-toolbar');if(!t||t.dataset.polished
 function start(){dots();browserPolish();bindCharacters();setupAttachment();setCharacterImage();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 setInterval(()=>{bindCharacters();setCharacterImage();},700);
+})();
+</script>
+
+<style id="korona-final-polish-v3">
+/* Background is deliberately behind Korona, not hidden behind an opaque body. */
+html,body{background:transparent!important}
+#koronaDotsBackground{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;z-index:0!important;display:block!important;pointer-events:none!important;opacity:.72!important}
+#app{position:relative!important;z-index:1!important;background:transparent!important}
+/* Character picker: image-only cards, no descriptions, no old swatch/icon. */
+.k-character-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))!important;gap:12px!important}
+.k-character-choice{padding:7px!important;min-height:150px!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important;align-items:stretch!important;overflow:hidden!important;background:var(--k-panel)!important;border:1px solid var(--k-border)!important}
+.k-character-choice img{width:100%!important;height:128px!important;margin:0!important;object-fit:contain!important;background:transparent!important;border-radius:6px!important}
+.k-character-choice strong{display:block!important;margin:5px 2px 1px!important;font-size:11px!important;text-align:center!important}
+.k-character-choice span{display:none!important}
+.k-character-choice[data-char="none"]{display:grid!important;place-items:center!important;min-height:150px!important}
+.k-character-choice[data-char="none"]::before{content:'NONE';font-size:12px;font-weight:900;letter-spacing:.16em;color:var(--k-muted)}
+.k-character-choice[data-char="none"]>*{display:none!important}
+#korona-clean-character{z-index:50!important}
+#korona-clean-character:not(.visible){display:none!important}
+#korona-clean-character img{background:transparent!important}
+/* AI Markdown */
+.kai-markdown{font-size:14px;line-height:1.7;color:inherit}
+.kai-markdown p{margin:0 0 10px}.kai-markdown p:last-child{margin-bottom:0}
+.kai-markdown h2,.kai-markdown h3,.kai-markdown h4{margin:14px 0 7px;line-height:1.25;color:var(--k-text,#fff)}
+.kai-markdown h2{font-size:20px}.kai-markdown h3{font-size:17px}.kai-markdown h4{font-size:15px}
+.kai-markdown strong{font-weight:850}.kai-markdown em{font-style:italic}
+.kai-markdown code{padding:2px 6px;border:1px solid var(--k-border);background:rgba(0,0,0,.28);border-radius:5px;font:12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace}
+.kai-markdown pre{margin:10px 0;padding:12px 14px;overflow:auto;border:1px solid var(--k-border);background:#070a0f;border-radius:8px;white-space:pre}
+.kai-markdown pre code{padding:0;border:0;background:transparent;border-radius:0;color:#dfe8ef}
+.kai-markdown ul{margin:7px 0 10px 20px;padding:0}.kai-markdown li{margin:3px 0}.kai-markdown a{color:var(--k-accent,#00e5ff);text-decoration:underline}
+.kai-sent-image{position:relative;display:inline-block;margin-top:10px;max-width:360px}.kai-sent-image img{display:block;max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--k-border)}
+.kai-image-remove,.kai-attachment button{position:absolute;right:7px;top:7px;width:28px;height:28px;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(0,0,0,.72);color:#fff;cursor:pointer;font-size:18px;line-height:1}
+.kai-attachment{display:none;position:relative;align-items:center;gap:9px;margin-top:8px;padding:7px 42px 7px 7px;border:1px solid var(--k-border);background:var(--k-panel);border-radius:8px}
+.kai-attachment.show{display:flex}.kai-attachment img{width:46px;height:46px;object-fit:cover;border-radius:5px}.kai-attachment span{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+<script id="korona-final-polish-v3-script">
+(()=>{
+ 'use strict';
+ const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+ const CHAR_ART={
+  none:'',
+  gojo:'https://risibank.fr/cache/medias/0/40/4096/409621/full.png',
+  naruto:'https://upload.wikimedia.org/wikipedia/en/9/94/Naruto_Uzumaki.png',
+  hunter:'https://upload.wikimedia.org/wikipedia/en/3/3a/Hunter_x_Hunter.png',
+  lebron:'https://commons.wikimedia.org/wiki/Special:FilePath/LeBron_James.jpg',
+  miku:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hatsune_Miku.svg',
+  teto:'https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834',
+  neru:'https://commons.wikimedia.org/wiki/Special:FilePath/Akita_Neru.jpg',
+  luka:'https://p7.hiclipart.com/preview/985/96/2/megurine-luka-vocaloid-kagamine-rin-len-utau-anime-megurine-luka.jpg',
+  rin:'https://www.pikpng.com/pngl/m/445-4458790_rin-kagamine-transparent-background-png-download-rin-kagamine.png',
+  len:'https://www.kindpng.com/picc/m/440-4406188_len-kagamine-transparent-hd-png-download.png',
+  kaito:'https://www.pngkit.com/png/detail/735-7358172_kaito.png',
+  meiko:'https://p7.hiclipart.com/preview/190/193/202/meiko-vocaloid-kaito-kagamine-rin-len-crypton-future-media-hatsune-miku.jpg'
+ };
+ const NAMES={none:'None',gojo:'Gojo',naruto:'Naruto',hunter:'Hunter',lebron:'LeBron James',miku:'Miku',teto:'Teto',neru:'Neru',luka:'Luka',rin:'Rin',len:'Len',kaito:'Kaito',meiko:'Meiko'};
+ function characterGrid(){
+  const grid=$('.k-character-grid');if(!grid)return;
+  const ids=Object.keys(NAMES);
+  grid.innerHTML=ids.map(id=>`<button type="button" class="k-character-choice" data-char="${id}" aria-label="Select ${NAMES[id]}">${id==='none'?'':`<img src="${CHAR_ART[id]}" alt="${NAMES[id]}" loading="eager" referrerpolicy="no-referrer">`}<strong>${NAMES[id]}</strong></button>`).join('');
+  const selected=localStorage.getItem('korona_clean_char_v3')||'none';
+  $$('.k-character-choice',grid).forEach(b=>{b.classList.toggle('active',b.dataset.char===selected);b.onclick=()=>{localStorage.setItem('korona_clean_char_v3',b.dataset.char);localStorage.removeItem('korona_clean_char');document.documentElement.dataset.koronaCharacter=b.dataset.char;applyVisibleCharacter(b.dataset.char);$$('.k-character-choice',grid).forEach(x=>x.classList.toggle('active',x===b));}});
+ }
+ function applyVisibleCharacter(id){
+  const box=$('#korona-clean-character'),img=box&&$('img',box);if(!box||!img)return;
+  if(!id||id==='none'){box.classList.remove('visible');box.style.display='none';img.removeAttribute('src');return}
+  img.src=CHAR_ART[id]||'';img.alt=NAMES[id]||id;box.style.display='flex';box.classList.add('visible');
+ }
+ function normalizeCharacter(){
+  let id=localStorage.getItem('korona_clean_char_v3');
+  if(!Object.prototype.hasOwnProperty.call(NAMES,id))id='none';
+  document.documentElement.dataset.koronaCharacter=id;applyVisibleCharacter(id);
+ }
+ function attachment(){
+  const file=$('#kaiFile');if(!file||file.dataset.v3)return;file.dataset.v3='1';
+  let wrap=$('#kaiAttachment');
+  if(!wrap){wrap=document.createElement('div');wrap.id='kaiAttachment';wrap.className='kai-attachment';wrap.innerHTML='<img id="kaiAttachmentThumb" alt="Selected image"><span id="kaiAttachmentName"></span><button type="button" id="kaiRemoveAttachment" aria-label="Remove attached image">×</button>';file.parentElement.appendChild(wrap)}
+  file.onchange=()=>{const f=file.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{if(typeof ai!=='undefined')ai.image=r.result;$('#kaiAttachmentThumb').src=r.result;$('#kaiAttachmentName').textContent=f.name;wrap.classList.add('show')};r.readAsDataURL(f)};
+  $('#kaiRemoveAttachment').onclick=()=>{if(typeof ai!=='undefined')ai.image=null;file.value='';wrap.classList.remove('show');const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}};
+ }
+ function cleanStaleTeto(){if(!localStorage.getItem('korona_clean_char_v3')){localStorage.removeItem('korona_clean_char');localStorage.removeItem('korona_character');}}
+ function init(){cleanStaleTeto();characterGrid();normalizeCharacter();attachment();setTimeout(characterGrid,300);setTimeout(normalizeCharacter,300);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+ let gridSig=''; const mo=new MutationObserver(()=>{const g=$('.k-character-grid');if(g){const sig=g.children.length+'|'+g.textContent.length;if(sig!==gridSig){gridSig=sig;characterGrid();normalizeCharacter()}}if($('#kaiFile'))attachment()});mo.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 </body></html>
