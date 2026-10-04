@@ -7336,4 +7336,86 @@ function boot(){cleanLegacy();buildAI();buildSettings();buildCharacterLayer();na
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
+
+<style id="korona-v2-polish">
+/* ===== KORONA V2 POLISH ===== */
+#koronaDotsBackground{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;z-index:0!important;pointer-events:none!important;opacity:.58!important}
+#app{position:relative!important;z-index:1!important}
+#korona-clean-character{z-index:50!important;pointer-events:none!important;position:fixed!important;right:20px!important;bottom:0!important;width:min(320px,25vw)!important;height:min(520px,58vh)!important;display:flex!important;align-items:flex-end!important;justify-content:flex-end!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+#korona-clean-character img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:bottom right!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;opacity:var(--korona-character-opacity,.72)!important;filter:none!important}
+/* AI formatting */
+.kai-bubble{white-space:normal!important;line-height:1.62!important;text-align:left!important}
+.kai-markdown p{margin:.45em 0!important}.kai-markdown p:first-child{margin-top:0!important}.kai-markdown p:last-child{margin-bottom:0!important}
+.kai-markdown pre{margin:12px 0!important;padding:14px 16px!important;overflow:auto!important;background:#070a0d!important;border:1px solid color-mix(in srgb,var(--green) 35%,transparent)!important;border-radius:10px!important}
+.kai-markdown pre code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace!important;font-size:12px!important;white-space:pre!important;color:#d9fbe8!important}
+.kai-markdown code:not(pre code){padding:2px 6px!important;border-radius:5px!important;background:color-mix(in srgb,var(--green) 12%,var(--bg-light))!important;color:var(--green)!important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace!important}
+.kai-markdown strong{font-weight:800!important}.kai-markdown em{font-style:italic!important}.kai-markdown ul,.kai-markdown ol{margin:.5em 0 .7em 22px!important}.kai-markdown li{margin:3px 0!important}
+.kai-image-wrap{position:relative!important;display:inline-block!important;margin-top:10px!important;max-width:100%!important}.kai-image-wrap img{display:block!important;max-width:280px!important;max-height:220px!important;object-fit:contain!important;border-radius:9px!important}.kai-remove-image{position:absolute!important;right:6px!important;top:6px!important;width:27px!important;height:27px!important;border:1px solid rgba(255,255,255,.22)!important;background:rgba(0,0,0,.72)!important;color:#fff!important;border-radius:50%!important;cursor:pointer!important;line-height:25px!important;padding:0!important}.kai-attachment{display:none!important;align-items:center!important;gap:8px!important;margin-top:8px!important;padding:7px 9px!important;border:1px solid color-mix(in srgb,var(--green) 30%,transparent)!important;background:color-mix(in srgb,var(--green) 7%,var(--bg-light))!important;border-radius:8px!important}.kai-attachment.show{display:flex!important}.kai-attachment img{width:48px!important;height:48px!important;object-fit:cover!important;border-radius:6px!important}.kai-attachment button{margin-left:auto!important;width:28px!important;height:28px!important;border:0!important;background:transparent!important;color:var(--muted)!important;cursor:pointer!important;font-size:18px!important}
+/* Completely new browser toolbar */
+.browser-window{display:flex!important;flex-direction:column!important;min-height:0!important;height:100%!important;overflow:hidden!important}
+.browser-toolbar{display:grid!important;grid-template-columns:auto auto auto auto minmax(0,1fr) auto auto!important;gap:7px!important;align-items:center!important;padding:9px 10px!important;background:linear-gradient(180deg,color-mix(in srgb,var(--bg-light) 96%,transparent),var(--bg))!important;border-bottom:1px solid color-mix(in srgb,var(--green) 22%,transparent)!important}
+.browser-toolbar:before{content:'K';display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--green);color:var(--bg);font-weight:900;box-shadow:0 0 18px color-mix(in srgb,var(--green) 25%,transparent)}
+.browser-address{height:42px!important;min-width:0!important;border:1px solid color-mix(in srgb,var(--green) 26%,var(--text))!important;border-radius:13px!important;background:color-mix(in srgb,var(--bg) 76%,var(--bg-light))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 4px 18px rgba(0,0,0,.18)!important;padding:0 7px 0 12px!important;transition:border-color .18s,box-shadow .18s!important}
+.browser-address:focus-within{border-color:var(--green)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 12%,transparent),0 5px 22px rgba(0,0,0,.2)!important}
+.browser-address .address-lock{font-size:13px!important;color:var(--green)!important;opacity:.9!important}.browser-address input{font-size:13px!important}.browser-address button{height:32px!important;width:32px!important;border-radius:9px!important;background:var(--green)!important;color:var(--bg)!important;font-weight:900!important}
+.browser-nav-button{height:34px!important;width:34px!important;border-radius:10px!important;border:1px solid transparent!important;background:transparent!important}.browser-nav-button:hover{border-color:color-mix(in srgb,var(--green) 24%,transparent)!important;background:color-mix(in srgb,var(--green) 8%,var(--bg-light))!important;color:var(--green)!important}
+.iframe-container{flex:1 1 0!important;min-height:0!important;height:auto!important;width:100%!important;max-width:none!important;position:relative!important;overflow:hidden!important}
+.browser-frames{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;overflow:hidden!important}
+.browser-frames iframe,.korona-browser-frame{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;border:0!important;margin:0!important;padding:0!important}
+</style>
+<script id="korona-v2-polish-script">
+(()=>{
+'use strict';
+const $$=(s,r=document)=>[...r.querySelectorAll(s)],$=(s,r=document)=>r.querySelector(s);
+/* Real image assets. These are remote image files, not generated SVG portraits. */
+const REAL_ART={
+ gojo:'https://commons.wikimedia.org/wiki/Special:FilePath/Sketch_of_gojo_satoru.jpg',
+ naruto:'https://commons.wikimedia.org/wiki/Special:FilePath/Bonnet_de_nuit_naruto.svg',
+ hunter:'https://commons.wikimedia.org/wiki/Special:FilePath/Hunter_x_Hunter.png',
+ lebron:'https://commons.wikimedia.org/wiki/Special:FilePath/LeBron_James.jpg',
+ miku:'https://static.wikia.nocookie.net/vocaloid/images/f/f9/Miku_Chinese.png/revision/latest?cb=20220327221551',
+ teto:'https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834',
+ neru:'https://commons.wikimedia.org/wiki/Special:FilePath/Cosplayer_of_Akihiko_Neru.jpg',
+ luka:'https://commons.wikimedia.org/wiki/Special:FilePath/Vocaloid_megurine_luka_logo.png',
+ rin:'https://commons.wikimedia.org/wiki/Special:FilePath/Cosplayer_of_Kagamine_Rin_20090726.jpg',
+ len:'https://commons.wikimedia.org/wiki/Special:FilePath/Cosplayer_of_Kagamine_Len_20190413b.jpg',
+ kaito:'https://commons.wikimedia.org/wiki/Special:FilePath/Vocaloid_kaito_logo.png',
+ meiko:'https://commons.wikimedia.org/wiki/Special:FilePath/Vocaloid_meiko_logo.png'
+};
+/* Replace the synthetic artwork function with real image URLs. */
+window.KORONA_REAL_CHARACTER_ART=REAL_ART;
+const oldArt=window.art;
+/* buildCharacterLayer uses applyChar; patch the visible image after every character selection. */
+function setCharacterImage(){const box=$('#korona-clean-character'),img=box&&$('img',box);if(!img)return;const id=(window.__koronaCharacterState&&window.__koronaCharacterState.char)||localStorage.getItem('korona_clean_char')||'none';if(id==='none'){box.style.display='none';img.removeAttribute('src');return}box.style.display='flex';img.src=REAL_ART[id]||'';img.alt=(window.CHARS&&window.CHARS[id]?window.CHARS[id][0]:id)+' character';img.onerror=()=>{img.style.display='none'};img.onload=()=>{img.style.display='block'};}
+/* Preserve current character state while exposing it for the real-image layer. */
+const syncCharState=()=>{try{const raw=localStorage.getItem('korona_clean_char');window.__koronaCharacterState={char:raw||'none'}}catch{window.__koronaCharacterState={char:'none'}}setCharacterImage()};
+const watch=new MutationObserver(()=>setTimeout(setCharacterImage,0));
+watch.observe(document.body,{childList:true,subtree:true});
+/* Rebind character cards so choosing a character swaps the actual picture. */
+function bindCharacters(){ $$('.k-character-choice').forEach(b=>{if(b.dataset.realBound)return;b.dataset.realBound='1';b.addEventListener('click',()=>{window.__koronaCharacterState={char:b.dataset.char};localStorage.setItem('korona_clean_char',b.dataset.char);setTimeout(setCharacterImage,20)})});syncCharState(); }
+/* Markdown renderer: fenced code, inline code, bold, italics, headings, lists and links. */
+function md(src){
+ let s=String(src??'').replace(/\r\n?/g,'\n');
+ const blocks=[];s=s.replace(/```([\w+-]*)\n?([\s\S]*?)```/g,(_,lang,code)=>{const i=blocks.length;blocks.push('<pre><code>'+esc(code.replace(/\n$/,''))+'</code></pre>');return '\u0000B'+i+'\u0000'});
+ s=esc(s);s=s.replace(/\u0000B(\d+)\u0000/g,(_,i)=>blocks[+i]);
+ s=s.replace(/^### (.+)$/gm,'<h4>$1</h4>').replace(/^## (.+)$/gm,'<h3>$1</h3>').replace(/^# (.+)$/gm,'<h2>$1</h2>');
+ s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>').replace(/\*([^*\n]+)\*/g,'<em>$1</em>').replace(/_([^_\n]+)_/g,'<em>$1</em>');
+ s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+ const lines=s.split('\n'),out=[];let list=null;
+ for(const line of lines){if(/^\s*[-*]\s+/.test(line)){if(!list){list=[]}list.push('<li>'+line.replace(/^\s*[-*]\s+/,'')+'</li>');continue}if(/^\s*\d+\.\s+/.test(line)){if(!list){list=[]}list.push('<li>'+line.replace(/^\s*\d+\.\s+/,'')+'</li>');continue}if(list){out.push('<ul>'+list.join('')+'</ul>');list=null}if(!line.trim()){out.push('');continue}if(/^<h[234]>/.test(line)||/^<pre>/.test(line)){out.push(line);continue}out.push('<p>'+line+'</p>')}
+ if(list)out.push('<ul>'+list.join('')+'</ul>');return out.join('');
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+/* Replace AI renderer with formatted Markdown and removable image controls. */
+function renderBetterAI(){const h=$('#kaiHistory');if(!h)return;if(!window.ai||!ai.messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.</div>';return}h.innerHTML=ai.messages.map((m,i)=>'<div class="kai-msg '+m.role+'"><div class="kai-bubble"><div class="kai-markdown">'+md(m.content)+'</div>'+(m.image?'<div class="kai-image-wrap"><img src="'+m.image+'" alt="Attached image"><button class="kai-remove-image" type="button" data-remove-img="'+i+'" title="Remove image from this turn">×</button></div>':'')+'</div></div>').join('');h.scrollTop=h.scrollHeight;$$('[data-remove-img]').forEach(b=>b.onclick=()=>{const i=+b.dataset.removeImg;if(ai.messages[i]){ai.messages[i].image=null;renderBetterAI()}})}
+function setupAttachment(){const file=$('#kaiFile'),preview=$('#kaiPreview');if(!file||file.dataset.polished)return;file.dataset.polished='1';let old=file;const wrap=document.createElement('div');wrap.className='kai-attachment';wrap.id='kaiAttachment';wrap.innerHTML='<img id="kaiAttachmentThumb" alt="Selected image"><span id="kaiAttachmentName">Image attached</span><button type="button" id="kaiRemoveAttachment" title="Remove attached image">×</button>';old.parentElement.insertAdjacentElement('afterend',wrap);old.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{ai.image=r.result;$('#kaiAttachmentThumb').src=ai.image;$('#kaiAttachmentName').textContent=f.name;wrap.classList.add('show');if(preview)preview.classList.remove('show')};r.readAsDataURL(f)};$('#kaiRemoveAttachment').onclick=()=>{ai.image=null;old.value='';wrap.classList.remove('show')};}
+/* Background dots + connecting lines */
+function dots(){if($('#koronaDotsBackground'))return;const c=document.createElement('canvas');c.id='koronaDotsBackground';document.body.prepend(c);const x=c.getContext('2d');let pts=[],w=0,h=0;function resize(){w=c.width=innerWidth*devicePixelRatio;h=c.height=innerHeight*devicePixelRatio;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';pts=Array.from({length:Math.min(105,Math.max(45,Math.floor(innerWidth*innerHeight/18000)))},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.16*devicePixelRatio,vy:(Math.random()-.5)*.16*devicePixelRatio}))}function frame(){x.clearRect(0,0,w,h);const accent=getComputedStyle(document.documentElement).getPropertyValue('--green').trim()||'#62e6a5';for(let i=0;i<pts.length;i++){const p=pts[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;for(let j=i+1;j<pts.length;j++){const q=pts[j],dx=p.x-q.x,dy=p.y-q.y,d=Math.hypot(dx,dy);if(d<125*devicePixelRatio){x.globalAlpha=(1-d/(125*devicePixelRatio))*.18;x.strokeStyle=accent;x.lineWidth=devicePixelRatio;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke()}}x.globalAlpha=.48;x.fillStyle=accent;x.beginPath();x.arc(p.x,p.y,1.35*devicePixelRatio,0,Math.PI*2);x.fill()}x.globalAlpha=1;requestAnimationFrame(frame)}addEventListener('resize',resize);resize();frame()}
+/* New browser chrome: make the address field feel like a command/search bar while retaining existing IDs/events. */
+function browserPolish(){const t=$('.browser-toolbar');if(!t||t.dataset.polished)return;t.dataset.polished='1';const a=$('.browser-address');if(a){const lock=$('.address-lock',a);if(lock)lock.textContent='⌕';const input=$('#urlInput',a);if(input)input.placeholder='Search the web or enter a URL';const go=$('#searchButton',a);if(go)go.textContent='↗'}const fs=$('#browserFullscreen');if(fs)fs.textContent='⛶'}
+function start(){dots();browserPolish();bindCharacters();setupAttachment();setCharacterImage();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+setInterval(()=>{bindCharacters();setCharacterImage();},700);
+})();
+</script>
 </body></html>
