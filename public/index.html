@@ -3830,7 +3830,6 @@ body.korona-auth-unlocked #app {
         <button class="nav-button" data-page="proxy"><span class="sidebar-icon">◎</span><span>Browser</span></button>
         <button class="nav-button" data-page="settings"><span class="sidebar-icon">⚙</span><span>Settings</span></button>
         <button class="nav-button" data-page="account"><span class="sidebar-icon">♙</span><span>Account</span></button>
-        <button class="nav-button" data-page="ai" onclick="window.__koronaShowAI && window.__koronaShowAI(); return false;"><span class="sidebar-icon">✦</span><span>AI Studio</span></button>
       </nav>
       <div class="sidebar-bottom"><div class="sidebar-status"><span></span> online</div><div class="sidebar-version">Korona v2.1</div></div>
     </aside>
@@ -3963,14 +3962,6 @@ body.korona-auth-unlocked #app {
           <div class="section-header"><div class="eyebrow">KORONA ACCOUNT</div><h2>Account</h2><p>Your Korona identity and local browser preferences.</p></div>
           <div class="account-card"><div class="account-avatar">K</div><div class="account-details"><span class="account-label">Korona ID</span><strong id="accountUserId">Not signed in</strong><small id="accountUserName">Your account information will appear here.</small></div></div>
           <div class="account-card compact"><div><strong>Browser session</strong><small>Authentication is checked against your Korona account.</small></div><span class="account-online-dot"></span></div>
-        </section>
-
-        <section class="page" id="aiPage" data-static-ai="true">
-          <div class="kai-shell">
-            <div class="kai-head"><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Ask questions, upload screenshots, or continue a conversation.</p></div>
-            <div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div>
-            <div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything..."></textarea><div class="kai-actions"><label class="kai-file">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button type="button" class="primary" id="kaiSend">Send</button><button type="button" id="kaiNew">New Chat</button><span class="kai-status" id="kaiStatus">AI Studio ready</span></div></div>
-          </div>
         </section>
 
         <!-- =================================================
@@ -7537,21 +7528,5 @@ html,body{background:transparent!important}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  let gridSig=''; const mo=new MutationObserver(()=>{const g=$('.k-character-grid');if(g){const sig=g.children.length+'|'+g.textContent.length;if(sig!==gridSig){gridSig=sig;characterGrid();normalizeCharacter()}}if($('#kaiFile'))attachment()});mo.observe(document.body,{childList:true,subtree:true});
 })();
-  </script>
-  <script>
-    window.__koronaShowAI = function () {
-      var pages = document.querySelectorAll('.content > .page');
-      pages.forEach(function (page) { page.classList.toggle('active', page.id === 'aiPage'); });
-      document.querySelectorAll('.sidebar-nav .nav-button').forEach(function (button) {
-        button.classList.toggle('active', button.dataset.page === 'ai');
-      });
-      var aiPage = document.getElementById('aiPage');
-      if (aiPage) aiPage.scrollTop = 0;
-    };
-    document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('.sidebar-nav .nav-button[data-page="ai"]').forEach(function (button) {
-        button.addEventListener('click', window.__koronaShowAI);
-      });
-    });
-  </script>
-  </body></html>
+</script>
+</body></html>
