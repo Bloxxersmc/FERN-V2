@@ -10,7 +10,7 @@
 
     <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
     <script>
-        window.KORONA_GROQ_API_KEY = "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";
+        window.KORONA_GROQ_API_KEY = "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";
     </script>
 
     <!-- Scramjet -->
@@ -7242,671 +7242,98 @@ body.no-animations #koronaNetwork { opacity:0.35!important; }
 })();
 </script>
 
-<style id="korona-premium-overhaul">
-/* Premium single-file layer: preserves the existing auth and Scramjet systems. */
-.content{height:calc(100vh - 100px)!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:var(--green) transparent;padding-bottom:90px!important}
-#settingsPage,#aiPage{min-height:max-content!important;padding-bottom:120px!important}
-#koronaAiPage{display:none}
-.ai-shell{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:18px;max-width:1180px}
-.ai-card{padding:24px;border:1px solid var(--border);background:color-mix(in srgb,var(--panel) 88%,transparent);border-radius:18px;box-shadow:0 18px 55px rgba(0,0,0,.2)}
-.ai-card h3{margin:0 0 7px;color:var(--text)}
-.ai-card p{color:var(--muted);font-size:13px;line-height:1.55}
-.ai-input,.ai-upload{width:100%;margin-top:14px;padding:14px;color:var(--text);background:color-mix(in srgb,var(--bg) 86%,transparent);border:1px solid var(--border);border-radius:11px;font:inherit}
-.ai-input{min-height:125px;resize:vertical}
-.ai-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-.ai-button{padding:11px 15px;color:var(--text);background:color-mix(in srgb,var(--green) 12%,transparent);border:1px solid var(--border-bright);border-radius:10px;cursor:pointer;font-weight:800}
-.ai-button:hover{background:color-mix(in srgb,var(--green) 22%,transparent)}
-.ai-preview{min-height:180px;margin-top:14px;display:grid;place-items:center;border:1px dashed var(--border-bright);border-radius:12px;color:var(--muted);overflow:hidden}
-.ai-preview img{display:block;max-width:100%;max-height:280px;object-fit:contain}
-.ai-note{font-size:11px!important;color:var(--muted)!important}
-.settings-enhanced{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
-.settings-control{padding:14px;border:1px solid var(--border);border-radius:12px;background:color-mix(in srgb,var(--bg) 70%,transparent)}
-.settings-control label{display:flex;justify-content:space-between;gap:12px;color:var(--text);font-size:12px;font-weight:800}
-.settings-control input[type=range]{width:100%;accent-color:var(--green);margin-top:12px}
-.settings-control select,.settings-control input[type=color]{width:100%;margin-top:10px;color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px}
-.korona-character-dock{position:fixed;right:18px;bottom:18px;z-index:8;display:flex;gap:8px;align-items:end;pointer-events:none}
-.korona-character{pointer-events:auto;min-width:74px;padding:10px 9px;color:var(--text);background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--border);border-radius:12px;text-align:center;font-size:11px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.25)}
-.korona-character .avatar{display:grid;place-items:center;width:38px;height:38px;margin:0 auto 6px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));color:var(--bg);font-size:16px}
-@media(max-width:720px){.ai-shell{grid-template-columns:1fr}.korona-character-dock{right:10px;bottom:10px;transform:scale(.86);transform-origin:bottom right}}
-</style>
-<script id="korona-premium-overhaul-script">
-(()=>{
-  const boot=()=>{
-    const nav=document.querySelector('.nav');
-    if(nav&&!nav.querySelector('[data-korona-ai]')){
-      const b=document.createElement('button'); b.type='button'; b.dataset.koronaAi=''; b.innerHTML='<span class="nav-symbol">✦</span>AI'; nav.appendChild(b);
-      b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('koronaAiPage').style.display='block';});
-    }
-    const app=document.getElementById('app')||document.body;
-    if(!document.getElementById('koronaAiPage')){
-      const page=document.createElement('main'); page.id='koronaAiPage'; page.className='page'; page.innerHTML=`<div class="section-header"><div><div class="eyebrow">PRIVATE CREATIVE DESK</div><h2>AI studio</h2><p>Describe an image, or upload one for free image-to-text analysis.</p></div></div><div class="ai-shell"><section class="ai-card"><h3>Image understanding</h3><p>Upload a reference image. This HTML-only build previews it locally and prepares it for a secure server route.</p><input class="ai-upload" id="koronaImageUpload" type="file" accept="image/*"><div class="ai-preview" id="koronaImagePreview">No image selected</div></section><section class="ai-card"><h3>Prompt workspace</h3><p>Write a prompt for your Groq-backed server endpoint. Your API key is never placed in this file.</p><textarea class="ai-input" id="koronaAiPrompt" placeholder="Describe what you want to understand or create..."></textarea><div class="ai-actions"><button class="ai-button" id="koronaAiRun" type="button">Prepare request</button><button class="ai-button" id="koronaAiClear" type="button">Clear</button></div><p class="ai-note" id="koronaAiStatus">Endpoint status: waiting for a secure server route.</p></section></div>`; app.appendChild(page);
-      document.getElementById('koronaImageUpload').addEventListener('change',e=>{const file=e.target.files[0],preview=document.getElementById('koronaImagePreview');if(!file)return;const url=URL.createObjectURL(file);preview.innerHTML='<img alt="Selected image preview" src="'+url+'">';});
-      document.getElementById('koronaAiClear').addEventListener('click',()=>{document.getElementById('koronaAiPrompt').value='';document.getElementById('koronaAiStatus').textContent='Endpoint status: waiting for a secure server route.';});
-      document.getElementById('koronaAiRun').addEventListener('click',()=>document.getElementById('koronaAiStatus').textContent='Ready: connect this button to a server route that reads GROQ_API_KEY from environment variables.');
-    }
-    const settings=document.querySelector('#settingsPage .settings-panel');
-    if(settings&&!settings.querySelector('.settings-enhanced')){const box=document.createElement('section');box.className='settings-section';box.innerHTML='<h3>Character & interface controls</h3><p>These controls affect the existing rendered characters without touching auth or proxy behavior.</p><div class="settings-enhanced"><div class="settings-control"><label for="koronaCharacterOpacity">Character opacity <output id="koronaOpacityValue">100%</output></label><input id="koronaCharacterOpacity" type="range" min="0" max="100" value="100"></div><div class="settings-control"><label for="koronaUiScale">Interface scale <output id="koronaScaleValue">100%</output></label><input id="koronaUiScale" type="range" min="85" max="115" value="100"></div><div class="settings-control"><label for="koronaAccent">Accent color</label><input id="koronaAccent" type="color" value="#00ff66"></div><div class="settings-control"><label for="koronaButtonStyle">Button texture</label><select id="koronaButtonStyle"><option value="sharp">Sharp</option><option value="soft">Soft</option><option value="smooth">Smooth</option></select></div></div>';settings.appendChild(box);const opacity=document.getElementById('koronaCharacterOpacity');opacity.addEventListener('input',()=>{document.documentElement.style.setProperty('--character-opacity',opacity.value/100);document.getElementById('koronaOpacityValue').value=opacity.value+'%';document.querySelectorAll('.vocaloid,.character,.korona-character,.fern-character,[data-character]').forEach(el=>el.style.opacity=opacity.value/100)});const scale=document.getElementById('koronaUiScale');scale.addEventListener('input',()=>{document.documentElement.style.setProperty('--ui-scale',scale.value/100);document.getElementById('koronaScaleValue').value=scale.value+'%'});document.getElementById('koronaAccent').addEventListener('input',e=>document.documentElement.style.setProperty('--green',e.target.value));document.getElementById('koronaButtonStyle').addEventListener('change',e=>document.body.dataset.buttonStyle=e.target.value)}
-  }; if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();
-</script>
-<style id="korona-corrective-overhaul">
-  /* Keep the original auth/proxy systems intact while making the shell readable and themeable. */
-  :root { --ui-scale: 1; --character-opacity: 1; --korona-accent: #9b8cff; }
-  body { background: #0b0c12 !important; color: #eef0f7; }
-  body::before, body::after, #bgCanvas { opacity: 0 !important; }
-  #app { zoom: var(--ui-scale); min-height: 100vh; }
-  .content { overflow-x: hidden !important; overflow-y: auto !important; min-height: calc(100vh - 92px) !important; height: auto !important; padding-bottom: 140px !important; }
-  .page { min-height: calc(100vh - 130px) !important; }
-  #settingsPage, #koronaAiPage { overflow: visible !important; }
-  #koronaCharacterArt { opacity: var(--character-opacity) !important; transition: opacity .2s ease; pointer-events: none; }
-  #koronaCharacterBadge, .korona-character-dock, .korona-character { opacity: var(--character-opacity) !important; }
-  .browser-window { min-height: min(720px, calc(100vh - 210px)); border: 1px solid rgba(155,140,255,.42) !important; background: #10121b !important; box-shadow: 0 22px 70px rgba(0,0,0,.42) !important; }
-  .browser-tabs { min-height: 48px; padding: 7px 10px !important; background: #151827 !important; border-bottom: 1px solid rgba(155,140,255,.25) !important; }
-  .browser-toolbar { padding: 10px 12px !important; background: #0e1018 !important; border-bottom: 1px solid rgba(255,255,255,.08) !important; }
-  .browser-address { min-height: 40px; border-radius: 12px !important; background: #191c29 !important; border-color: rgba(155,140,255,.38) !important; }
-  .browser-newtab { background: radial-gradient(circle at 50% 15%, rgba(155,140,255,.16), transparent 36%), #0d0f17 !important; }
-  .browser-newtab h3 { font-size: 34px !important; letter-spacing: -.04em; }
-  .newtab-k { border-color: #9b8cff !important; color: #c8c0ff !important; background: #171a28 !important; box-shadow: 0 0 30px rgba(155,140,255,.2); }
-  .ai-shell { max-width: 1180px; }
-  #koronaAiPage { display: none; }
-  .korona-ai-ready { display: block !important; }
-  .settings-enhanced { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .settings-control input[type=color] { min-height: 44px; cursor: pointer; }
-  .settings-control input[type=range] { cursor: pointer; }
-  @media (max-width: 760px) { #app { zoom: 1 !important; } .browser-window { min-height: 560px; } }
-</style>
-<script id="korona-corrective-overhaul-script">
-(() => {
-  const root = document.documentElement;
-  const set = (name, value) => root.style.setProperty(name, value);
-  const pageIds = ['homePage','gamesPage','appsPage','proxyPage','settingsPage','accountPage','koronaAiPage'];
-  const showPage = (id, button) => {
-    pageIds.forEach((pageId) => { const page = document.getElementById(pageId); if (page) page.classList.toggle('active', pageId === id); });
-    document.querySelectorAll('.nav button, .nav-button').forEach((item) => item.classList.remove('active'));
-    if (button) button.classList.add('active');
-    const ai = document.getElementById('koronaAiPage');
-    if (ai) ai.classList.toggle('korona-ai-ready', id === 'koronaAiPage');
-  };
-  const addGojo = () => {
-    if (typeof CHARACTERS === 'undefined' || CHARACTERS.some((character) => character.id === 'gojo')) return;
-    CHARACTERS.push({ id: 'gojo', name: 'Gojo', tag: 'Limitless', c1: '#9b8cff', c2: '#d8d2ff' });
-    if (typeof CHARACTER_ART !== 'undefined') CHARACTER_ART.gojo = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#9b8cff"/><stop offset="1" stop-color="#20253b"/></linearGradient></defs><rect width="320" height="420" rx="34" fill="url(#g)"/><circle cx="160" cy="150" r="82" fill="#f0d0bd"/><path d="M72 145c4-92 168-116 184 0-34-42-121-45-184 0Z" fill="#eef2ff"/><rect x="87" y="136" width="146" height="32" rx="16" fill="#111522"/><path d="M110 250h100l42 170H68Z" fill="#111522"/><path d="M122 240h76v52h-76Z" fill="#f0d0bd"/></svg>');
-  };
-  const boot = () => {
-    addGojo();
-    const nav = document.querySelector('.nav, .sidebar-nav');
-    if (nav && !document.querySelector('[data-korona-ai]')) {
-      const button = document.createElement('button');
-      button.type = 'button'; button.dataset.koronaAi = 'true'; button.className = 'nav-button';
-      button.innerHTML = '<span class="nav-symbol">✦</span><span>AI Studio</span>';
-      nav.appendChild(button);
-      button.addEventListener('click', () => showPage('koronaAiPage', button));
-    }
-    if (!document.getElementById('koronaAiPage')) {
-      const page = document.createElement('section'); page.id = 'koronaAiPage'; page.className = 'page';
-      page.innerHTML = '<div class="section-header"><div><div class="eyebrow">LOCAL AI LAB</div><h2>AI Studio</h2><p>Upload an image and prepare a free image-to-text request.</p></div></div><div class="ai-shell"><section class="ai-card"><h3>Image input</h3><p>The image is previewed locally in this single-file build.</p><input class="ai-upload" id="koronaImageUpload" type="file" accept="image/*"><div class="ai-preview" id="koronaImagePreview">No image selected</div></section><section class="ai-card"><h3>Prompt</h3><textarea class="ai-input" id="koronaAiPrompt" placeholder="What should the AI identify or describe?"></textarea><div class="ai-actions"><button class="ai-button" id="koronaAiRun" type="button">Analyze image</button><button class="ai-button" id="koronaAiClear" type="button">Clear</button></div><p class="ai-note" id="koronaAiStatus">Local preview ready. Connect your own server route for Groq requests.</p></section></div>';
-      (document.querySelector('.content') || document.getElementById('app') || document.body).appendChild(page);
-      document.getElementById('koronaImageUpload').addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; const url = URL.createObjectURL(file); document.getElementById('koronaImagePreview').innerHTML = '<img alt="Selected image preview" src="' + url + '">'; });
-      document.getElementById('koronaAiRun').addEventListener('click', () => { document.getElementById('koronaAiStatus').textContent = 'Image queued for your local Groq vision endpoint.'; });
-      document.getElementById('koronaAiClear').addEventListener('click', () => { document.getElementById('koronaAiPrompt').value = ''; document.getElementById('koronaAiStatus').textContent = 'Local preview ready. Connect your own server route for Groq requests.'; });
-    }
-    const opacity = document.getElementById('koronaCharacterOpacity');
-    if (opacity && !opacity.dataset.fixed) { opacity.dataset.fixed = 'true'; opacity.addEventListener('input', () => { set('--character-opacity', opacity.value / 100); const output = document.getElementById('koronaOpacityValue'); if (output) output.textContent = opacity.value + '%'; }); }
-    const scale = document.getElementById('koronaUiScale');
-    if (scale && !scale.dataset.fixed) { scale.dataset.fixed = 'true'; scale.addEventListener('input', () => { set('--ui-scale', scale.value / 100); const output = document.getElementById('koronaScaleValue'); if (output) output.textContent = scale.value + '%'; }); }
-    const accent = document.getElementById('koronaAccent');
-    if (accent && !accent.dataset.fixed) { accent.dataset.fixed = 'true'; accent.addEventListener('input', (event) => { set('--green', event.target.value); set('--green-soft', event.target.value); set('--korona-accent', event.target.value); }); }
-    const colorButton = document.getElementById('koronaUseCharColors');
-    if (colorButton && !colorButton.dataset.fixed) { colorButton.dataset.fixed = 'true'; colorButton.addEventListener('click', () => { set('--green', 'var(--k-char-1)'); set('--green-soft', 'var(--k-char-2)'); }); }
-  };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
-})();
-</script>
-<!-- KORONA CUSTOM STUDIO + BROWSER OVERHAUL -->
-<style id="korona-custom-browser-overhaul">
-  :root{--k-accent:#a9ff68;--k-accent-2:#8b7cff;--k-ink:#f5f7ff;--k-muted:#9aa3b8;--k-surface:#101522;--k-surface-2:#151c2c;--k-line:rgba(255,255,255,.1)}
-  body{background:#080b13!important;color:var(--k-ink)!important;overflow:hidden}
-  body::before,body::after,#fernMistTexture,#fernSkyDecor,#fernWebGLAurora{display:none!important}
-  .topbar{background:#0d111c!important;border:1px solid var(--k-line)!important;border-radius:14px!important;box-shadow:0 14px 40px rgba(0,0,0,.3)!important}
-  .nav{background:#111827!important;border:1px solid var(--k-line)!important;border-radius:10px!important}
-  .nav button{border-radius:7px!important;color:var(--k-muted)!important}
-  .nav button.active{background:var(--k-accent)!important;color:#10150d!important;box-shadow:none!important}
-  main{height:calc(100vh - 94px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding-bottom:50px!important}
-  .page{max-width:1400px!important;margin:0 auto!important}
-  .page.active{display:block!important}
-  .hero,.settings-section,.joke-card,.bookmarks-panel,.about-card,.account-card,.game-card{border-radius:12px!important;background:var(--k-surface)!important;border:1px solid var(--k-line)!important;box-shadow:0 10px 30px rgba(0,0,0,.2)!important;backdrop-filter:none!important}
-  .game-card:hover{transform:translateY(-3px)!important;border-color:var(--k-accent)!important}
-  .iframe-container{border-radius:12px!important;background:#090c13!important;border:1px solid var(--k-line)!important}
-  .browser-shell{background:#0b0f18!important;border:1px solid var(--k-line)!important;border-radius:16px!important;box-shadow:0 20px 60px rgba(0,0,0,.35)!important;overflow:hidden}
-  .browser-chrome{background:#111827!important;border-bottom:1px solid var(--k-line)!important}
-  .browser-tab{background:#182238!important;border:1px solid transparent!important;border-radius:8px 8px 0 0!important;color:var(--k-muted)!important}
-  .browser-tab.active{background:#0b0f18!important;color:var(--k-ink)!important;border-color:var(--k-line)!important;border-bottom-color:#0b0f18!important}
-  .browser-toolbar{background:#0d1320!important;padding:10px!important;gap:8px!important}
-  .browser-nav-button,.new-tab-button{background:#182238!important;border:1px solid var(--k-line)!important;border-radius:8px!important;color:var(--k-ink)!important}
-  .browser-address{background:#080b13!important;border:1px solid var(--k-line)!important;border-radius:9px!important}
-  .browser-address input{color:var(--k-ink)!important}
-  .browser-newtab{background:radial-gradient(circle at 75% 20%,rgba(169,255,104,.12),transparent 28%),#080b13!important}
-  .browser-newtab .newtab-k{background:var(--k-accent)!important;color:#10150d!important;border-radius:12px!important}
-  #koronaAiPage{display:none;padding:28px 4vw 80px;min-height:100%}
-  #koronaAiPage.active{display:block!important}
-  .studio-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}
-  .studio-kicker{color:var(--k-accent);font:700 11px/1.2 ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase}
-  .studio-head h2{margin:8px 0 5px;font-size:clamp(32px,5vw,58px);letter-spacing:-.05em}
-  .studio-head p{color:var(--k-muted);margin:0;max-width:620px}
-  .studio-badge{padding:9px 12px;border:1px solid rgba(169,255,104,.3);border-radius:999px;color:var(--k-accent);font-size:12px;white-space:nowrap}
-  .studio-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:16px}
-  .studio-card{background:var(--k-surface);border:1px solid var(--k-line);border-radius:14px;padding:18px;min-width:0}
-  .studio-card h3{margin:0 0 6px;font-size:16px}.studio-card>p{color:var(--k-muted);font-size:13px;margin:0 0 16px}
-  .studio-drop{min-height:250px;border:1px dashed rgba(169,255,104,.45);border-radius:11px;display:grid;place-items:center;text-align:center;padding:22px;cursor:pointer;background:rgba(169,255,104,.025)}
-  .studio-drop.dragging,.studio-drop:hover{background:rgba(169,255,104,.08);border-color:var(--k-accent)}
-  .studio-drop strong{display:block;font-size:18px;margin-bottom:8px}.studio-drop span{color:var(--k-muted);font-size:12px}
-  .studio-preview{max-width:100%;max-height:245px;border-radius:8px;display:none;margin:auto}.studio-preview.ready{display:block}.studio-drop.has-image .upload-copy{display:none}
-  .studio-input{width:100%;min-height:125px;resize:vertical;background:#080b13;color:var(--k-ink);border:1px solid var(--k-line);border-radius:10px;padding:13px;font:inherit;outline:none}
-  .studio-input:focus{border-color:var(--k-accent)}.studio-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-  .studio-button{border:1px solid var(--k-line);background:#182238;color:var(--k-ink);border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:700}.studio-button.primary{background:var(--k-accent);color:#10150d;border-color:var(--k-accent)}
-  .studio-output{min-height:184px;white-space:pre-wrap;line-height:1.6;color:#dce3f4;background:#080b13;border:1px solid var(--k-line);border-radius:10px;padding:14px;font-size:14px;overflow:auto}.studio-output.empty{color:var(--k-muted)}
-  @media(max-width:800px){.studio-grid{grid-template-columns:1fr}.studio-head{display:block}.studio-badge{display:inline-block;margin-top:15px}}
-</style>
-<script>
-(function(){
-  const nav=document.querySelector('.nav');
-  const anchor=nav?.querySelector('[data-page="settings"],.nav-button:last-child');
-  if(nav&&!document.querySelector('[data-page="ai"]')){
-    const b=document.createElement('button');b.className='nav-button';b.dataset.page='ai';b.type='button';b.textContent='AI Studio';b.setAttribute('aria-label','AI Studio');
-    nav.appendChild(b);
-  }
-  const main=document.querySelector('main'); if(!main||document.getElementById('koronaAiPage')) return;
-  const page=document.createElement('section');page.className='page';page.id='koronaAiPage';page.innerHTML=`
-    <div class="studio-head"><div><div class="studio-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Upload a screenshot or photo, or just type a question. Korona can read the image, solve math, explain English, and answer normal text questions.</p></div><span class="studio-badge">VISION + TEXT ASSISTANT</span></div>
-    <div class="studio-grid"><div class="studio-card"><h3>Give Korona something to read</h3><p>Images are sent to the configured vision model only when you press Analyze.</p><label class="studio-drop" id="studioDrop" for="studioFile"><div class="upload-copy"><strong>Drop an image here</strong><span>or click to choose a PNG, JPG, or WEBP</span></div><img class="studio-preview" id="studioPreview" alt="Selected image preview"></label><input id="studioFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><textarea class="studio-input" id="studioPrompt" placeholder="Ask a question, or leave blank for a general explanation..."></textarea><div class="studio-actions"><button class="studio-button primary" id="studioAnalyze" type="button">Ask Korona</button><button class="studio-button" id="studioClear" type="button">Clear</button></div></div><div class="studio-card"><h3>Korona's answer</h3><p>Responses appear here and stay on this page while you work.</p><div class="studio-output empty" id="studioOutput">Your answer will appear here.</div></div></div>`;
-  main.appendChild(page);
-  const style=document.createElement('style');style.textContent='.nav-button[data-page="ai"]{color:var(--k-accent)!important}';document.head.appendChild(style);
-  const file=document.getElementById('studioFile'),drop=document.getElementById('studioDrop'),preview=document.getElementById('studioPreview'),prompt=document.getElementById('studioPrompt'),out=document.getElementById('studioOutput');let imageData='';
-  function choose(f){if(!f||!f.type.startsWith('image/'))return;const r=new FileReader();r.onload=()=>{imageData=r.result;preview.src=imageData;preview.classList.add('ready');drop.classList.add('has-image')};r.readAsDataURL(f)}
-  file.onchange=()=>choose(file.files[0]);['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('dragging')}));['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('dragging')}));drop.addEventListener('drop',e=>choose(e.dataTransfer.files[0]));
-  document.getElementById('studioClear').onclick=()=>{imageData='';file.value='';preview.src='';preview.classList.remove('ready');drop.classList.remove('has-image');prompt.value='';out.textContent='Your answer will appear here.';out.classList.add('empty')};
-  document.getElementById('studioAnalyze').onclick=async()=>{const question=prompt.value.trim()||'Read this image carefully and explain what it contains. Solve any visible problem step by step.';if(!imageData&&!question){return}out.classList.remove('empty');out.textContent='Reading image and thinking...';try{const key=window.KORONA_GROQ_API_KEY||'';if(!key||key.includes('PASTE_'))throw new Error('Add your local Groq key to window.KORONA_GROQ_API_KEY near the top of this HTML file.');const content=[{type:'text',text:question}];if(imageData)content.push({type:'image_url',image_url:{url:imageData}});const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:window.KORONA_GROQ_MODEL||'meta-llama/llama-4-maverick-17b-128e-instruct',messages:[{role:'user',content}],temperature:.2,max_tokens:1200})});const data=await res.json();if(!res.ok)throw new Error(data.error?.message||'Groq request failed');out.textContent=data.choices?.[0]?.message?.content||'No answer returned.'}catch(e){out.textContent='AI Studio error: '+e.message}}
-  document.addEventListener('click',e=>{const b=e.target.closest('.nav-button[data-page="ai"]');if(!b)return;document.querySelectorAll('.nav-button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('main>.page').forEach(x=>x.classList.remove('active'));page.classList.add('active');main.scrollTop=0});
-})();
-</script>
-<style id="korona-final-layout-fixes">
-  /* Keep each view inside the available workspace without clipping its controls. */
-  main { min-height: 0 !important; overflow-x: hidden !important; overflow-y: auto !important; }
-  #settingsPage, #settingsPage.active { height: auto !important; min-height: 100% !important; overflow: visible !important; padding-bottom: 120px !important; }
-  #settingsPage .settings-panel, #settingsPage .settings-section { overflow: visible !important; }
-  #proxyPage.active { min-height: 0 !important; }
-  #proxyPage .iframe-container { height: calc(100vh - 245px) !important; min-height: 520px !important; width: 100% !important; }
-  #proxyPage .iframe-container > iframe, #proxyPage .iframe-container .korona-browser-frame, #proxyPage #browserFrames, #proxyPage #iframeWindow { width: 100% !important; height: 100% !important; min-width: 0 !important; min-height: 0 !important; display: block !important; }
-  #proxyPage .browser-shell, #proxyPage .browser-chrome, #proxyPage .browser-toolbar { width: 100% !important; max-width: none !important; }
-  #proxyPage .browser-toolbar { display: flex !important; align-items: center !important; }
-  #proxyPage .browser-address { flex: 1 1 auto !important; min-width: 0 !important; }
-  #proxyPage .browser-address input, #proxyPage #urlInput { width: 100% !important; min-width: 0 !important; }
-  #koronaAiPage { overflow: visible !important; }
-  @media (max-width: 700px) { #proxyPage .iframe-container { height: calc(100vh - 330px) !important; min-height: 360px !important; } }
-</style>
-<style id="korona-repair-overhaul">
-/* Final repair pass: keep auth/proxy logic intact while giving the shell its own layout. */
-:root{--korona-accent:var(--green,#e63994);--korona-scale:1}
-html,body{min-height:100%;background:#070912!important;color:var(--text,#eef4ff)!important}
-body{overflow:hidden!important}
-#app{height:100dvh!important;min-height:0!important}
-.content{height:calc(100dvh - 58px)!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:28px clamp(18px,3vw,48px) 64px!important;scrollbar-gutter:stable}
-.page{min-height:100%!important;height:auto!important}
-#settingsPage .settings-panel,#settingsPage .settings-section{overflow:visible!important}
-#settingsPage{overflow:visible!important}
-#proxyPage{display:flex!important;flex-direction:column!important;min-height:100%!important}
-#proxyPage .hero{flex:0 0 auto!important}
-#proxyPage .iframe-container{width:100%!important;max-width:none!important;height:clamp(520px,calc(100dvh - 300px),calc(100dvh - 180px))!important;min-height:520px!important;flex:1 1 auto!important}
-#proxyPage .iframe-container iframe,.korona-browser-frame,#iframeWindow{display:block!important;width:100%!important;height:100%!important;min-height:100%!important;max-width:none!important}
-#urlInput{min-height:46px!important;width:100%!important;border-radius:12px!important;padding-inline:16px!important}
-.proxy-controls{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:12px!important;align-items:center!important}
-#aiPage{min-height:100%!important}
-.korona-ai-shell{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;max-width:1180px;margin:auto}
-.korona-ai-card{background:#101524;border:1px solid #273249;border-radius:18px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
-.korona-ai-card h2{margin:0 0 6px;color:#fff}.korona-ai-card p{color:#98a5ba}
-.korona-ai-input{width:100%;min-height:130px;resize:vertical;background:#080c16!important;border:1px solid #303c56!important;color:#fff!important;border-radius:12px!important;padding:14px!important}
-.korona-ai-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.korona-ai-actions button,.korona-ai-upload{border:1px solid #354665;background:#18243b;color:#dce8ff;border-radius:10px;padding:10px 14px;cursor:pointer}.korona-ai-actions button.primary{background:var(--korona-accent);color:#fff;border-color:transparent}.korona-ai-preview{max-width:100%;max-height:180px;border-radius:10px;margin-top:12px;display:none}.korona-ai-answer{white-space:pre-wrap;line-height:1.65;color:#ecf2ff;background:#080c16;border:1px solid #273249;border-radius:12px;padding:16px;min-height:130px;margin-top:16px}
-@media(max-width:800px){.korona-ai-shell{grid-template-columns:1fr}.content{padding-inline:14px!important}.proxy-controls{grid-template-columns:1fr!important}}
-</style>
-<script>
-(function(){
-  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-  function addAiTab(){
-    const nav=$('.nav,.sidebar-nav'); if(!nav||$('#koronaAiNav')) return;
-    const b=document.createElement('button'); b.id='koronaAiNav'; b.className='nav-button'; b.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>'; nav.appendChild(b);
-    const main=$('.content')||$('#app'); if(!main||$('#aiPage')) return;
-    const page=document.createElement('section'); page.id='aiPage'; page.className='page'; page.hidden=true;
-    page.innerHTML='<div class="section-header"><div><div class="eyebrow">KORONA LABS</div><h2>AI Studio</h2><p>Ask questions, solve problems, or send an image for reading.</p></div></div><div class="korona-ai-shell"><div class="korona-ai-card"><h2>Ask Korona</h2><p>Text and image questions are handled in one conversation.</p><textarea id="koronaAiPrompt" class="korona-ai-input" placeholder="Type a question, paste an exercise, or describe what you need..."></textarea><div class="korona-ai-actions"><label class="korona-ai-upload" for="koronaAiFile">Upload image</label><input id="koronaAiFile" type="file" accept="image/*" hidden><button id="koronaAiSend" class="primary">Ask AI</button><button id="koronaAiClear">Clear</button></div><img id="koronaAiPreview" class="korona-ai-preview" alt="Selected image preview"><div id="koronaAiAnswer" class="korona-ai-answer">Your answer will appear here.</div></div><aside class="korona-ai-card"><h2>How it works</h2><p>Images are sent as visual context when your Groq account exposes a vision model. Text-only questions use a fast general model.</p><p id="koronaAiStatus">Ready</p></aside></div>';
-    main.appendChild(page);
-    const show=()=>{ $$('.page').forEach(p=>{p.hidden=p!==page;p.classList.toggle('active',p===page)}); $$('.nav-button').forEach(x=>x.classList.remove('active')); b.classList.add('active') };
-    b.addEventListener('click',show);
-    let imageData=''; const file=$('#koronaAiFile'); const preview=$('#koronaAiPreview');
-    file.addEventListener('change',()=>{const f=file.files&&file.files[0]; if(!f)return; const reader=new FileReader(); reader.onload=()=>{imageData=reader.result;preview.src=imageData;preview.style.display='block'};reader.readAsDataURL(f)});
-    $('#koronaAiClear').onclick=()=>{$('#koronaAiPrompt').value='';$('#koronaAiAnswer').textContent='Your answer will appear here.';imageData='';preview.removeAttribute('src');preview.style.display='none'};
-    $('#koronaAiSend').onclick=async()=>{const prompt=$('#koronaAiPrompt').value.trim()||'Read this image and explain what it shows.';const answer=$('#koronaAiAnswer'),status=$('#koronaAiStatus');answer.textContent='Thinking…';status.textContent='Connecting to Groq…';const key=window.KORONA_GROQ_API_KEY;if(!key||key.includes('PASTE_')){answer.textContent='Add your local Groq key to window.KORONA_GROQ_API_KEY near the top of this HTML file.';status.textContent='Local key not configured';return}try{let model='llama-3.3-70b-versatile';if(imageData){try{const mr=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+key}});const md=await mr.json();const vision=(md.data||[]).map(x=>x.id).find(id=>/vision|scout/i.test(id));if(vision)model=vision}catch(_){}}const content=imageData?[{type:'text',text:prompt},{type:'image_url',image_url:{url:imageData}}]:prompt;const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({model,messages:[{role:'user',content}],temperature:.2,max_tokens:1200})});const data=await res.json();if(!res.ok)throw new Error(data.error?.message||'Groq request failed');answer.textContent=data.choices?.[0]?.message?.content||'No answer returned.';status.textContent='Complete · '+model}catch(e){answer.textContent='AI Studio error: '+e.message;status.textContent='Request failed'}};
-  }
-  function repair(){
-    addAiTab();
-    const settings=$('#settingsPage'); if(settings){settings.style.overflow='visible';const panel=$('.settings-panel',settings);if(panel){panel.style.maxHeight='none';panel.style.overflow='visible'}}
-    $$('input[type=range]').forEach(input=>{if(input.dataset.koronaBound)return;input.dataset.koronaBound='1';input.addEventListener('input',()=>{document.documentElement.style.setProperty('--korona-scale',input.value||1)})});
-    document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,[contenteditable=true]'))return},true);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair);else repair();
-})();
-</script>
-<style id="korona-final-corrections">
-  /* Keep the page shell opaque; only the artwork responds to character opacity. */
-  #app, #app > *, .content, .page, .topbar, .nav, .hero, .browser-shell, .browser-window { opacity: 1 !important; }
-  #koronaCharacterArt { opacity: var(--korona-character-opacity, .42) !important; }
-  #aiPage[hidden], #koronaAiPage[hidden] { display: none !important; }
-  #aiPage.active { display: block !important; }
-</style>
-<script id="korona-final-corrections-script">
-(() => {
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-
-  function removeDuplicateAI() {
-    $$('#koronaAiPage').forEach((page) => page.remove());
-    $$('[data-korona-ai], .nav button[data-page="ai"]:not(#koronaAiNav)').forEach((button) => button.remove());
-    const finalPage = $('#aiPage');
-    if (finalPage) finalPage.hidden = true;
-  }
-
-  function addCharacters() {
-    if (typeof CHARACTERS === 'undefined') return;
-    const additions = [
-      ['gojo', 'Gojo', 'Limitless', '#9b8cff', '#d8d2ff'],
-      ['naruto', 'Naruto', 'Shinobi', '#f28a22', '#ffd166'],
-      ['hunter', 'Hunter', 'Nen user', '#49b875', '#baf2c2'],
-      ['lebron', 'LeBron', 'King', '#e5b84b', '#6da9ff']
-    ];
-    additions.forEach(([id, name, tag, c1, c2]) => {
-      if (!CHARACTERS.some((character) => character.id === id)) CHARACTERS.push({ id, name, tag, c1, c2 });
-    });
-    const grid = $('.korona-character-grid, .korona-editor-grid');
-    if (grid && !grid.querySelector('[data-char="gojo"]')) {
-      additions.forEach(([id, name, tag, c1, c2]) => {
-        const card = document.createElement('button');
-        card.type = 'button'; card.className = 'korona-char-card'; card.dataset.char = id; card.title = tag;
-        card.innerHTML = '<span class="korona-char-swatch" style="background:linear-gradient(135deg,' + c1 + ',' + c2 + ')"></span><span>' + name + '</span>';
-        card.addEventListener('click', () => {
-          document.body.dataset.character = id;
-          document.documentElement.style.setProperty('--k-char-1', c1);
-          document.documentElement.style.setProperty('--k-char-2', c2);
-          const art = $('#koronaCharacterArt'); if (art) art.alt = name;
-        });
-        grid.appendChild(card);
-      });
-    }
-  }
-
-  async function chooseGroqModel(key, withImage) {
-    const response = await fetch('https://api.groq.com/openai/v1/models', { headers: { Authorization: 'Bearer ' + key } });
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error?.message || 'Unable to list Groq models');
-    const models = (payload.data || []).filter((model) => model.active !== false);
-    const vision = models.find((model) => /scout|vision/i.test(model.id));
-    if (withImage && vision) return vision.id;
-    const text = models.find((model) => /gpt-oss|llama|qwen|mixtral/i.test(model.id));
-    if (text) return text.id;
-    if (models[0]) return models[0].id;
-    throw new Error('No active Groq models are available for this key');
-  }
-
-  function repairAI() {
-    removeDuplicateAI();
-    const page = $('#aiPage'), nav = $('.nav, .sidebar-nav');
-    if (!page || !nav) return;
-    const button = $('#koronaAiNav');
-    const show = () => {
-      $$('.page').forEach((item) => { item.hidden = item !== page; item.classList.toggle('active', item === page); });
-      $$('.nav button, .nav-button').forEach((item) => item.classList.toggle('active', item === button));
-      const main = $('.content'); if (main) main.scrollTop = 0;
-    };
-    if (button) { button.onclick = show; }
-    const send = $('#koronaAiSend');
-    if (!send || send.dataset.finalHandler) return;
-    send.dataset.finalHandler = 'true';
-    send.onclick = async () => {
-      const key = window.KORONA_GROQ_API_KEY || '';
-      const prompt = $('#koronaAiPrompt')?.value.trim() || 'Read this image carefully and answer the question step by step.';
-      const answer = $('#koronaAiAnswer'), status = $('#koronaAiStatus'), image = $('#koronaAiPreview');
-      if (!key || key.includes('PASTE_')) { answer.textContent = 'Add your local Groq key in window.KORONA_GROQ_API_KEY near the top of this HTML file.'; return; }
-      answer.textContent = 'Thinking…'; status.textContent = 'Finding an available Groq model…';
-      try {
-        const imageData = image?.src && image.style.display !== 'none' ? image.src : '';
-        const model = await chooseGroqModel(key, Boolean(imageData));
-        const content = imageData ? [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: imageData } }] : prompt;
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key }, body: JSON.stringify({ model, messages: [{ role: 'user', content }], temperature: .2, max_tokens: 1400 }) });
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error?.message || 'Groq request failed');
-        answer.textContent = payload.choices?.[0]?.message?.content || 'No answer returned.';
-        status.textContent = 'Complete · ' + model;
-      } catch (error) { answer.textContent = 'AI Studio error: ' + error.message; status.textContent = 'Request failed'; }
-    };
-  }
-
-  function repairOpacity() {
-    const input = $('#koronaCharacterOpacity');
-    if (!input || input.dataset.finalHandler) return;
-    input.dataset.finalHandler = 'true';
-    input.oninput = () => {
-      const value = Number(input.value) / 100;
-      document.documentElement.style.setProperty('--korona-character-opacity', value);
-      document.documentElement.style.setProperty('--character-opacity', 1);
-      const output = $('#koronaOpacityValue'); if (output) output.textContent = input.value + '%';
-    };
-  }
-
-  function boot() { addCharacters(); repairAI(); repairOpacity(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
-})();
-</script>
-<style id="korona-fix-v4">
-/* Final interaction fixes: visible themes, compact settings, and isolated character art. */
-:root { --korona-character-opacity: .42; }
-.content { padding-top: 10px !important; }
-#settingsPage { padding-top: 0 !important; }
-#settingsPage .settings-panel { margin-top: 0 !important; max-height: none !important; overflow: visible !important; }
-#settingsPage .theme-grid { margin-top: 10px !important; }
-#koronaCharacterArt { opacity: var(--korona-character-opacity) !important; transition: opacity .18s ease; }
-body[data-theme] { background: var(--bg) !important; color: var(--text) !important; }
-body[data-theme]::before { opacity: .28 !important; }
-@media (max-height: 760px) { .content { padding-bottom: 32px !important; } }
-</style>
-<script id="korona-fix-v4-script">
-(() => {
-  const $ = (s, r = document) => r.querySelector(s);
-  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-
-  function ensureThemeBehavior() {
-    const cards = $$('.theme-card, [data-theme], [data-theme-name]');
-    cards.forEach((card) => {
-      if (card.dataset.koronaThemeBound) return;
-      const theme = card.dataset.theme || card.dataset.themeName || card.getAttribute('data-theme');
-      if (!theme || theme === 'true') return;
-      card.dataset.koronaThemeBound = '1';
-      card.addEventListener('click', () => {
-        document.body.dataset.theme = theme;
-        $$('.theme-card').forEach((item) => item.classList.toggle('active', item === card));
-        try { localStorage.setItem('korona_theme', theme); } catch (_) {}
-      });
-    });
-    const saved = (() => { try { return localStorage.getItem('korona_theme'); } catch (_) { return null; } })();
-    if (saved && saved !== 'fern') document.body.dataset.theme = saved;
-  }
-
-  function ensureCharacters() {
-    const grid = $('.korona-character-grid, .korona-editor-grid');
-    if (!grid || grid.dataset.koronaCharactersBound) return;
-    grid.dataset.koronaCharactersBound = '1';
-    const chars = [
-      ['gojo', 'Gojo', '#9b8cff', '#d8d2ff'],
-      ['naruto', 'Naruto', '#f28a22', '#ffd166'],
-      ['hunter', 'Hunter', '#49b875', '#baf2c2'],
-      ['lebron', 'LeBron', '#e5b84b', '#6da9ff']
-    ];
-    chars.forEach(([id, name, c1, c2]) => {
-      if (grid.querySelector('[data-char="' + id + '"]')) return;
-      const card = document.createElement('button');
-      card.type = 'button'; card.className = 'korona-char-card'; card.dataset.char = id;
-      card.innerHTML = '<span class="korona-char-swatch" style="background:linear-gradient(135deg,' + c1 + ',' + c2 + ')"></span><span>' + name + '</span>';
-      card.addEventListener('click', () => {
-        document.body.dataset.character = id;
-        document.documentElement.style.setProperty('--k-char-1', c1);
-        document.documentElement.style.setProperty('--k-char-2', c2);
-        const art = $('#koronaCharacterArt');
-        if (art) { art.alt = name; art.style.display = 'block'; }
-        try { localStorage.setItem('korona_character', id); } catch (_) {}
-      });
-      grid.appendChild(card);
-    });
-  }
-
-  function capAI() {
-    const send = $('#koronaAiSend');
-    if (!send || send.dataset.koronaCap) return;
-    send.dataset.koronaCap = '1';
-    const original = send.onclick;
-    send.onclick = async () => {
-      if (!original) return;
-      const oldFetch = window.fetch;
-      window.fetch = (input, init) => {
-        if (typeof input === 'string' && input.includes('/chat/completions') && init?.body) {
-          try {
-            const body = JSON.parse(init.body);
-            body.max_tokens = 512;
-            init = { ...init, body: JSON.stringify(body) };
-          } catch (_) {}
-        }
-        return oldFetch(input, init);
-      };
-      try { await original(); } finally { window.fetch = oldFetch; }
-    };
-  }
-
-  function boot() {
-    ensureThemeBehavior(); ensureCharacters(); capAI();
-    const opacity = $('#koronaCharacterOpacity');
-    if (opacity) {
-      const apply = () => document.documentElement.style.setProperty('--korona-character-opacity', String(Number(opacity.value) / 100));
-      opacity.addEventListener('input', apply); apply();
-    }
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
-})();
-</script>
-
-
-<!-- KORONA CLEAN FINAL REBUILD -->
 <style id="korona-clean-final-css">
 :root{
-  --kc-bg:#070a10;--kc-panel:#0d121c;--kc-panel2:#131b28;--kc-text:#eef4ff;--kc-muted:#91a0b5;
-  --kc-accent:#00eaff;--kc-border:rgba(255,255,255,.12);--kc-scale:1;--kc-char-opacity:1;--kc-char-color:#00eaff;
+ --k-bg:#080b10;--k-bg2:#0d1219;--k-panel:#111821;--k-panel2:#151e29;--k-text:#eef4f8;--k-muted:#91a0ad;--k-border:#27333f;--k-accent:#62e6a5;--k-accent2:#9cf5c8;--k-glow:rgba(98,230,165,.22);--k-scale:1;--k-char-opacity:.82;
 }
-html,body{width:100%!important;height:100%!important;margin:0!important;overflow:hidden!important;background:var(--kc-bg)!important;color:var(--kc-text)!important}
-body::before,body::after{display:none!important}
-#bgCanvas,#fernSkyDecor,#fernWebGLAurora,#fernMistTexture,#fernParticleCanvas,#fernStars,#fernMoon,.fern-moon,.fern-nebula,.fern-nebula-cloud,.fern-mist-layer,.fern-shooting-star{display:none!important}
-#app{position:relative!important;width:100%!important;height:100%!important;min-height:100%!important;max-width:none!important;display:flex!important;zoom:var(--kc-scale)!important;background:var(--kc-bg)!important;color:var(--kc-text)!important}
-.korona-sidebar{flex:0 0 172px!important;height:100%!important;min-height:0!important;box-sizing:border-box!important;background:var(--kc-panel)!important;border-right:1px solid var(--kc-border)!important;overflow:hidden!important;z-index:50!important}
-.sidebar-nav{overflow-y:auto!important;min-height:0!important}
-.content{flex:1 1 auto!important;width:auto!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;background:var(--kc-bg)!important;color:var(--kc-text)!important;box-sizing:border-box!important}
-.content>.page{width:100%!important;max-width:none!important;min-height:100%!important;height:100%!important;box-sizing:border-box!important;margin:0!important;padding:0 28px 28px!important;overflow-x:hidden!important;overflow-y:auto!important;color:var(--kc-text)!important;background:transparent!important}
-.content>.page.active{display:block!important}
-.content>.page:not(.active){display:none!important}
-/* Eliminate the old top-gap rules while keeping deliberate page padding. */
-.content>.page>.section-header:first-child,.content>.page>.browser-page:first-child,.content>.page>.settings-panel:first-child{margin-top:0!important}
-/* Theme propagation into the original UI */
-body,body[data-theme],#app,.content,.page,.korona-home,.quick-launch-panel,.section-header,.settings-section,.settings-panel,.theme-card,.game-card,.app-tile,.account-card,.panel,.hero,.library-controls,.browser-page,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container{background-color:var(--kc-bg)!important;color:var(--kc-text)!important;border-color:var(--kc-border)!important}
-.korona-sidebar,.sidebar-nav,.sidebar-bottom,.sidebar-brand{background-color:var(--kc-panel)!important;color:var(--kc-text)!important;border-color:var(--kc-border)!important}
-.section-header,.korona-home,.quick-launch-panel,.settings-section,.settings-panel,.theme-card,.game-card,.app-tile,.account-card,.panel,.hero,.library-controls,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container,.ai-card{background-color:var(--kc-panel)!important;color:var(--kc-text)!important;border-color:var(--kc-border)!important}
-button,.nav-button,.quick-site,.app-tile,.theme-card,.game-card,.korona-large-button,.settings-toggle,.browser-nav-button,.browser-tab,.new-tab-button,.iframe-toolbar button,.ai-button,.kc-theme,.kc-char,.kc-control button{background-color:var(--kc-panel2)!important;color:var(--kc-text)!important;border-color:color-mix(in srgb,var(--kc-accent) 42%,var(--kc-border))!important}
-button:hover,.nav-button:hover,.quick-site:hover,.app-tile:hover,.theme-card:hover,.kc-theme:hover,.kc-char:hover{border-color:var(--kc-accent)!important;color:var(--kc-text)!important}
-.nav-button.active,.theme-card.active,.kc-theme.active,.kc-char.active{background:color-mix(in srgb,var(--kc-accent) 15%,var(--kc-panel2))!important;border-color:var(--kc-accent)!important;color:var(--kc-text)!important;box-shadow:inset 3px 0 0 var(--kc-accent),0 0 18px color-mix(in srgb,var(--kc-accent) 16%,transparent)!important}
-.korona-large-button,.ai-button.primary,.kc-primary{background:var(--kc-accent)!important;color:#001018!important;border-color:var(--kc-accent)!important}
-input,textarea,select,.browser-address,.ai-input,.kc-control input[type=color]{background:var(--kc-bg)!important;color:var(--kc-text)!important;border-color:color-mix(in srgb,var(--kc-accent) 32%,var(--kc-border))!important}
-input[type=range]{accent-color:var(--kc-accent)!important}
-*{scrollbar-color:var(--kc-accent) transparent}
-/* Character: ONLY this layer is affected by opacity. */
-#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-character,.fern-character{display:none!important;visibility:hidden!important;opacity:0!important}
-#kcCharacter{position:fixed!important;right:18px!important;bottom:8px!important;width:min(310px,27vw)!important;height:min(470px,66vh)!important;object-fit:contain!important;object-position:center bottom!important;z-index:2147483000!important;pointer-events:none!important;margin:0!important;padding:0!important;background:transparent!important;opacity:var(--kc-char-opacity)!important;filter:none!important;display:block!important;transition:opacity .15s ease}
-#kcCharacter.kc-hidden{display:none!important}
-#kcCharacterBadge{position:fixed!important;right:18px!important;bottom:calc(min(470px,66vh) + 10px)!important;z-index:2147483001!important;pointer-events:none!important;background:var(--kc-panel)!important;color:var(--kc-text)!important;border:1px solid var(--kc-char-color)!important;padding:7px 10px!important;font-size:11px!important;display:block!important}
-/* AI */
-#koronaAiPage{display:none!important}
-#kcAiPage{height:100%!important;min-height:100%!important;overflow:hidden!important;padding:0 24px 24px!important}
-.kc-ai-shell{height:100%;min-height:0;display:flex;flex-direction:column;gap:12px}
-.kc-ai-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex:0 0 auto}
-.kc-ai-head h2{margin:0}.kc-ai-head p{margin:4px 0;color:var(--kc-muted)}
-.kc-ai-actions{display:flex;align-items:center;gap:8px}.kc-ai-status{font-size:11px;color:var(--kc-muted)}
-.kc-ai-history{flex:1 1 auto;min-height:0;overflow:auto;padding:12px;background:var(--kc-panel);border:1px solid var(--kc-border)}
-.kc-ai-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--kc-muted)}
-.kc-ai-message{display:flex;margin-bottom:12px}.kc-ai-message.user{justify-content:flex-end}.kc-ai-bubble{max-width:min(850px,88%);padding:12px 14px;background:var(--kc-panel2);border:1px solid var(--kc-border);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}.kc-ai-message.user .kc-ai-bubble{border-color:color-mix(in srgb,var(--kc-accent) 45%,var(--kc-border));background:color-mix(in srgb,var(--kc-accent) 10%,var(--kc-panel2))}.kc-ai-bubble img{display:block;max-width:min(520px,100%);max-height:300px;object-fit:contain;margin-top:8px;border:1px solid var(--kc-border)}
-.kc-ai-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;flex:0 0 auto}.kc-ai-input{width:100%;min-height:82px;max-height:190px;box-sizing:border-box;resize:vertical;padding:12px;font:inherit}.kc-ai-side{display:grid;grid-template-rows:auto auto 1fr;gap:7px;min-width:135px}.kc-upload{display:grid;place-items:center;padding:10px;border:1px dashed var(--kc-accent);background:var(--kc-panel);color:var(--kc-text);cursor:pointer}.kc-ai-send{min-height:42px;background:var(--kc-accent)!important;color:#001018!important;font-weight:900}.kc-file-name{font-size:10px;color:var(--kc-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Settings */
-#settingsPage{height:100%!important;min-height:100%!important;overflow:hidden!important;padding:0!important}
-#kcSettings{height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;padding:22px 26px 34px;box-sizing:border-box}
-.kc-setting-section{margin-bottom:14px;padding:16px;background:var(--kc-panel);border:1px solid var(--kc-border)}
-.kc-setting-section h3{margin:0 0 4px}.kc-setting-section p{margin:0;color:var(--kc-muted);font-size:12px}
-.kc-theme-grid,.kc-char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px;margin-top:12px}.kc-theme,.kc-char{min-height:60px;text-align:left;padding:9px;display:flex;align-items:center;gap:9px;cursor:pointer}.kc-theme-preview{width:32px;height:32px;flex:0 0 32px;border:1px solid rgba(255,255,255,.18)}
-.kc-char{min-height:86px}.kc-char-thumb{width:52px;height:68px;object-fit:contain;flex:0 0 52px;background:#0002;border:1px solid var(--kc-border)}.kc-char-name{font-weight:800}.kc-char-desc{display:block;color:var(--kc-muted);font-size:10px;margin-top:3px}
-.kc-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}.kc-control{display:flex;flex-direction:column;gap:7px}.kc-control label{font-size:12px;font-weight:800}.kc-control output{color:var(--kc-muted);font-size:11px}.kc-control input[type=range]{width:100%}.kc-control input[type=color]{height:40px;width:100%;padding:2px}.kc-reset{padding:10px 13px;cursor:pointer}
-@media(max-width:800px){#kcCharacter{width:180px!important;height:300px!important}.kc-ai-compose{grid-template-columns:1fr}.kc-ai-side{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;}.kc-file-name{grid-column:1/-1}.content>.page{padding:16px!important}}
+html,body{margin:0!important;min-height:100%;background:var(--k-bg)!important;color:var(--k-text)!important}
+body{overflow:hidden!important}
+/* remove legacy visual layers without touching the actual app */
+#bgCanvas,#fernSkyDecor,#fernWebGLAurora,#fernMistTexture,#fernParticleCanvas,#fernStars,#fernMoon,.fern-moon,.fern-nebula,.fern-nebula-cloud,.fern-mist-layer,.fern-shooting-star{display:none!important;visibility:hidden!important}
+#app{display:flex!important;width:calc(100% / var(--k-scale));height:calc(100dvh / var(--k-scale));min-height:0!important;zoom:var(--k-scale);transform:none!important;background:var(--k-bg)!important}
+.korona-sidebar{flex:0 0 230px!important;height:100%!important;min-height:0!important;background:var(--k-panel)!important;border-right:1px solid var(--k-border)!important;color:var(--k-text)!important}
+.sidebar-nav{display:flex!important;flex-direction:column!important;gap:5px!important}
+.nav-button{color:var(--k-muted)!important;background:transparent!important;border:1px solid transparent!important}
+.nav-button:hover,.nav-button.active{color:var(--k-text)!important;background:color-mix(in srgb,var(--k-accent) 12%,var(--k-panel))!important;border-color:color-mix(in srgb,var(--k-accent) 35%,var(--k-border))!important}
+.content{flex:1 1 auto!important;width:auto!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:auto!important;box-sizing:border-box!important;padding:24px 30px 40px!important;background:var(--k-bg)!important}
+.page{display:none!important;box-sizing:border-box!important;min-height:100%!important;margin:0!important;padding:0!important}
+.page.active{display:block!important}
+.content>.page:first-child,.content>.page.active:first-child{padding-top:0!important;margin-top:0!important}
+.section-header,.browser-topline{margin-top:0!important;padding-top:0!important}
+/* Theme propagation */
+body,.content,.page{background:var(--k-bg)!important;color:var(--k-text)!important}
+.settings-panel,.settings-section,.game-card,.hero,.panel,.about-card,.account-card,.bookmarks-panel,.browser-window,.browser-tabs,.browser-toolbar,.iframe-container{background:var(--k-panel)!important;border-color:var(--k-border)!important;color:var(--k-text)!important}
+button,.nav-button,.theme-card,.game-card button,.settings-toggle,.browser-nav-button,.new-tab-button,.browser-toolbar button{color:var(--k-text)!important;border-color:var(--k-border)!important}
+button:hover,.theme-card:hover,.theme-card.active,.game-card:hover{border-color:var(--k-accent)!important;box-shadow:0 0 0 1px var(--k-glow)!important}
+input,textarea,select{background:var(--k-bg2)!important;color:var(--k-text)!important;border-color:var(--k-border)!important}
+input:focus,textarea:focus,select:focus{border-color:var(--k-accent)!important;outline-color:var(--k-accent)!important}
+.theme-card.active{background:color-mix(in srgb,var(--k-accent) 14%,var(--k-panel))!important}
+/* Settings is its own scroll region */
+#settingsPage{height:100%!important;min-height:0!important;overflow:auto!important;padding:0 6px 50px 0!important}
+#settingsPage .settings-panel{max-width:none!important;min-height:0!important;overflow:visible!important;background:transparent!important;border:0!important;padding:0!important}
+.k-settings{max-width:1100px;margin:0 auto;padding-bottom:50px}
+.k-settings h2{margin:0 0 7px}.k-settings .sub{color:var(--k-muted);margin:0 0 24px}
+.k-setting-section{padding:18px 0;border-top:1px solid var(--k-border)}
+.k-setting-section h3{margin:0 0 6px}.k-setting-section p{margin:0 0 14px;color:var(--k-muted);font-size:13px}
+.k-theme-grid,.k-character-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.k-theme,.k-character-choice{appearance:none;text-align:left;padding:12px;border:1px solid var(--k-border);background:var(--k-panel);color:var(--k-text);cursor:pointer;border-radius:10px;min-height:62px}
+.k-theme.active,.k-character-choice.active{border-color:var(--k-accent)!important;background:color-mix(in srgb,var(--k-accent) 13%,var(--k-panel))!important}
+.k-theme-swatch{height:18px;border-radius:5px;margin-bottom:9px;border:1px solid rgba(255,255,255,.12)}
+.k-character-choice{position:relative;overflow:hidden}.k-character-choice img{width:100%;height:105px;object-fit:contain;display:block;margin-bottom:7px;background:var(--k-bg2);border-radius:7px}.k-character-choice strong{display:block}.k-character-choice span{display:block;color:var(--k-muted);font-size:11px;margin-top:3px}
+.k-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.k-control{padding:14px;border:1px solid var(--k-border);background:var(--k-panel);border-radius:10px}.k-control label{display:flex;justify-content:space-between;font-size:13px;font-weight:700}.k-control input[type=range]{width:100%;margin-top:13px;accent-color:var(--k-accent)}.k-control input[type=color]{width:100%;height:40px;margin-top:10px}
+/* Character: one isolated layer only */
+#korona-clean-character{position:fixed!important;right:22px!important;bottom:12px!important;width:min(250px,22vw)!important;height:min(430px,58vh)!important;z-index:100!important;pointer-events:none!important;display:none!important;align-items:flex-end!important;justify-content:center!important;opacity:var(--k-char-opacity)!important}
+#korona-clean-character.visible{display:flex!important}
+#korona-clean-character img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;display:block!important;opacity:1!important;filter:none!important}
+/* Browser fills every remaining pixel */
+#proxyPage{height:100%!important;min-height:0!important;display:none!important;flex-direction:column!important}
+#proxyPage.active{display:flex!important}
+#proxyPage .browser-page{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+#proxyPage .browser-topline{flex:0 0 auto!important}
+#proxyPage .browser-window{flex:1 1 auto!important;min-height:0!important;height:auto!important;width:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+#proxyPage .browser-tabs{flex:0 0 auto!important}
+#proxyPage .browser-toolbar{flex:0 0 auto!important;display:flex!important;min-width:0!important}
+#proxyPage .browser-address{flex:1 1 auto!important;min-width:0!important}
+#proxyPage .iframe-container{flex:1 1 auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;display:flex!important;position:relative!important;overflow:hidden!important}
+#proxyPage .browser-frames{flex:1 1 auto!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;position:relative!important;overflow:auto!important}
+#proxyPage .browser-frames iframe,#proxyPage .browser-frames>div:not(.browser-newtab){width:100%!important;height:100%!important;min-width:0!important;min-height:0!important}
+/* One AI Studio */
+#aiPage{height:100%!important;min-height:0!important;overflow:auto!important;padding:0 0 50px!important}
+.kai-shell{max-width:1150px;margin:0 auto;display:flex;flex-direction:column;min-height:100%;padding-bottom:40px}.kai-head{padding:0 0 18px}.kai-kicker{color:var(--k-accent);font:700 11px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase}.kai-head h2{margin:7px 0;font-size:42px}.kai-head p{margin:0;color:var(--k-muted)}
+.kai-history{flex:1 1 auto;min-height:260px;border:1px solid var(--k-border);background:var(--k-panel);border-radius:12px;padding:16px;overflow:auto}.kai-empty{height:100%;display:grid;place-items:center;color:var(--k-muted);text-align:center}.kai-msg{display:flex;margin:0 0 14px}.kai-msg.user{justify-content:flex-end}.kai-bubble{max-width:min(820px,90%);padding:11px 13px;border:1px solid var(--k-border);background:var(--k-bg2);border-radius:10px;white-space:pre-wrap;line-height:1.5}.kai-msg.user .kai-bubble{background:color-mix(in srgb,var(--k-accent) 12%,var(--k-bg2));border-color:color-mix(in srgb,var(--k-accent) 35%,var(--k-border))}.kai-bubble img{max-width:320px;max-height:240px;display:block;margin-top:9px;border-radius:7px}.kai-compose{margin-top:12px;border:1px solid var(--k-border);background:var(--k-panel);border-radius:12px;padding:12px}.kai-compose textarea{width:100%;min-height:90px;resize:vertical;box-sizing:border-box;padding:12px;border-radius:9px}.kai-actions{display:flex;gap:9px;align-items:center;margin-top:10px;flex-wrap:wrap}.kai-actions button{padding:9px 13px;border-radius:8px;background:var(--k-bg2);cursor:pointer}.kai-actions .primary{background:var(--k-accent)!important;color:#08110d!important;border-color:var(--k-accent)!important}.kai-file{cursor:pointer;padding:9px 13px;border:1px solid var(--k-border);border-radius:8px}.kai-file input{display:none}.kai-status{margin-left:auto;color:var(--k-muted);font-size:12px}.kai-preview{display:none;max-height:130px;max-width:220px;margin-top:10px;border-radius:7px}.kai-preview.show{display:block}
+@media(max-width:800px){.korona-sidebar{flex-basis:190px!important}.content{padding:18px!important}.kai-head h2{font-size:34px}#korona-clean-character{width:180px!important;height:300px!important;right:8px!important}.k-character-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 <script id="korona-clean-final-script">
-(function(){
-'use strict';
-const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-const KEY_SETTINGS='korona_clean_settings_v1',KEY_CHAR='korona_clean_character_v1';
-const MODEL='qwen/qwen3.8-27b',MAX_TOKENS=512;
-const themes={
- korona:['#070a10','#0d121c','#00eaff','#eef4ff'],midnight:['#060711','#101328','#7186ff','#eef1ff'],amber:['#0d0903','#1b1207','#ffb020','#fff4df'],ice:['#031117','#08242e','#5de7ff','#e9fbff'],violet:['#0b0415','#180b25','#b36bff','#f8efff'],rose:['#12050a','#230b14','#ff6688','#fff0f4'],mono:['#070707','#151515','#d7d7d7','#eeeeee'],cyan:['#03110f','#09231f','#20ffd4','#e8fffb'],light:['#f3f6f5','#ffffff','#087d3d','#132018'],cyberpunk:['#090511','#180d25','#ff2dcc','#f2fbff'],aurora:['#06100f','#102b27','#63ffd0','#effff9'],sunset:['#13070a','#281017','#ff8a5b','#fff4ef'],ocean:['#03101b','#0a2032','#43b8ff','#effaff'],dracula:['#0b0912','#1b1528','#bd93f9','#f4edff']
-};
-const chars=[
-{id:'none',name:'None',desc:'No character',a:'#777',b:'#aaa'},
-{id:'gojo',name:'Gojo',desc:'Limitless',a:'#9b8cff',b:'#dfe6ff'},
-{id:'naruto',name:'Naruto',desc:'Shinobi',a:'#ff8a24',b:'#ffd166'},
-{id:'hunter',name:'Hunter',desc:'Nen user',a:'#49b875',b:'#baf2c2'},
-{id:'lebron',name:'LeBron James',desc:'Basketball',a:'#e5b84b',b:'#6da9ff'},
-{id:'miku',name:'Miku',desc:'Hatsune Miku',a:'#39ccd6',b:'#b8ffff'},
-{id:'teto',name:'Teto',desc:'Kasane Teto',a:'#e8455f',b:'#ffb3c0'},
-{id:'neru',name:'Neru',desc:'Akita Neru',a:'#e8c547',b:'#fff0a8'},
-{id:'luka',name:'Luka',desc:'Megurine Luka',a:'#ff9ec4',b:'#ffd2e4'},
-{id:'rin',name:'Rin',desc:'Kagamine Rin',a:'#ffb23f',b:'#ffe0a0'},
-{id:'len',name:'Len',desc:'Kagamine Len',a:'#f2e14c',b:'#fff9b0'},
-{id:'kaito',name:'Kaito',desc:'KAITO',a:'#3f7bff',b:'#a9c6ff'},
-{id:'meiko',name:'Meiko',desc:'MEIKO',a:'#d8384a',b:'#ff9aa2'}
-];
-function asset(c){if(c.id==='none')return '';const hair={gojo:'#eef4ff',naruto:'#f07820',hunter:'#151d2b',lebron:'#171717',miku:'#1dced0',teto:'#c83c55',neru:'#e5c83f',luka:'#d783a9',rin:'#f4a52f',len:'#e7d83c',kaito:'#477fe8',meiko:'#8e3434'}[c.id]||'#222';const skin=c.id==='lebron'?'#7b4a2e':c.id==='naruto'?'#d79567':'#e0b18d';const shirt=c.a;const extra=c.id==='gojo'?'<rect x="79" y="99" width="82" height="34" rx="10" fill="#10131c"/><rect x="83" y="103" width="74" height="25" rx="8" fill="#05070b"/>':c.id==='naruto'?'<path d="M78 91l-12-22 24 13zM162 91l12-22-24 13z" fill="#f07820"/>':c.id==='miku'?'<path d="M65 110C25 85 25 25 72 20c-7 39 5 64 20 78zM175 110c40-25 40-85-7-90 7 39-5 64-20 78z" fill="#24cbd0"/>':c.id==='teto'?'<path d="M61 105C24 73 30 30 67 18c4 34 15 55 28 68zM179 105c37-32 31-75-6-87-4 34-15 55-28 68z" fill="#d94360"/>':'<path d="M62 108Q120 24 178 108Q168 48 120 38Q72 48 62 108Z" fill="'+hair+'"/>';return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 360"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+c.a+'"/><stop offset="1" stop-color="'+c.b+'"/></linearGradient></defs><rect width="240" height="360" fill="transparent"/><ellipse cx="120" cy="322" rx="78" ry="24" fill="#000" opacity=".18"/><path d="M52 350Q61 228 120 224Q179 228 188 350Z" fill="url(#g)"/> <ellipse cx="120" cy="130" rx="57" ry="70" fill="'+skin+'"/> '+extra+'<path d="M63 119Q68 45 120 39Q172 45 177 119Q151 90 120 86Q89 90 63 119Z" fill="'+hair+'"/><circle cx="99" cy="132" r="7" fill="#111827"/><circle cx="141" cy="132" r="7" fill="#111827"/><path d="M101 160Q120 173 139 160" fill="none" stroke="#673b3b" stroke-width="4" stroke-linecap="round"/><rect x="31" y="325" width="178" height="25" rx="12" fill="#000" opacity=".3"/><text x="120" y="342" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">'+c.name+'</text></svg>');}
-const charAssets=Object.fromEntries(chars.map(c=>[c.id,asset(c)]));
-let settings=Object.assign({theme:'korona',scale:1,accent:''},safe(localStorage.getItem(KEY_SETTINGS),{}));
-let character=Object.assign({id:'none',opacity:1},safe(localStorage.getItem(KEY_CHAR),{}));
-const ai={messages:[],image:null};
-function safe(v,f){try{return JSON.parse(v)}catch(_){return f}}
-function save(){try{localStorage.setItem(KEY_SETTINGS,JSON.stringify(settings));localStorage.setItem(KEY_CHAR,JSON.stringify(character))}catch(_) {}}
-function syncVars(){const t=themes[settings.theme]||themes.korona,a=settings.accent||t[2],root=document.documentElement;root.style.setProperty('--kc-bg',t[0]);root.style.setProperty('--kc-panel',t[1]);root.style.setProperty('--kc-panel2',shift(t[1],12));root.style.setProperty('--kc-text',t[3]);root.style.setProperty('--kc-accent',a);root.style.setProperty('--kc-scale',String(settings.scale));root.style.setProperty('--kc-char-opacity',String(character.opacity));const r=hex(character.color||a);root.style.setProperty('--kc-char-color',character.color||a);root.style.setProperty('--bg',t[0]);root.style.setProperty('--bg-light',t[1]);root.style.setProperty('--panel',t[1]);root.style.setProperty('--panel-hover',shift(t[1],14));root.style.setProperty('--panel-2',shift(t[1],12));root.style.setProperty('--text',t[3]);root.style.setProperty('--muted',t[3]+'99');root.style.setProperty('--green',a);root.style.setProperty('--green-soft',a);root.style.setProperty('--border','color-mix(in srgb,'+a+' 22%,rgba(255,255,255,.12))');root.style.setProperty('--border-bright',a);root.style.setProperty('--ui-scale',String(settings.scale));root.style.setProperty('--character-opacity','1');root.style.setProperty('--korona-character-opacity','1');document.body.dataset.theme=settings.theme;document.body.style.background=t[0];const app=$('#app');if(app)app.style.zoom=String(settings.scale);updateSettingsUI()}
-function hex(h){return /^#[0-9a-f]{6}$/i.test(h)?h:'#00eaff'}
-function shift(h,n){if(!/^#[0-9a-f]{6}$/i.test(h))return h;const v=parseInt(h.slice(1),16),r=Math.max(0,Math.min(255,(v>>16)+n)),g=Math.max(0,Math.min(255,((v>>8)&255)+n)),b=Math.max(0,Math.min(255,(v&255)+n));return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')}
-function updateSettingsUI(){ $$('.kc-theme').forEach(b=>b.classList.toggle('active',b.dataset.theme===settings.theme));$$('.kc-char').forEach(b=>b.classList.toggle('active',b.dataset.char===character.id));const sc=$('#kcScale'),so=$('#kcScaleOut'),op=$('#kcOpacity'),oo=$('#kcOpacityOut'),ac=$('#kcAccent');if(sc){sc.value=String(settings.scale);so.textContent=Math.round(settings.scale*100)+'%'}if(op){op.value=String(character.opacity);oo.textContent=Math.round(character.opacity*100)+'%'}if(ac)ac.value=settings.accent||themes[settings.theme][2];const cc=$('#kcCharColor');if(cc)cc.value=character.color||((chars.find(x=>x.id===character.id)||chars[0]).a||themes[settings.theme][2])}
-function applyCharacter(){let img=$('#kcCharacter'),badge=$('#kcCharacterBadge');const c=chars.find(x=>x.id===character.id)||chars[0];if(c.id==='none'){img?.classList.add('kc-hidden');if(img)img.removeAttribute('src');if(badge)badge.style.display='none';return}if(img){img.classList.remove('kc-hidden');img.src=charAssets[c.id];img.alt=c.name;img.style.opacity=String(character.opacity)}if(badge){badge.textContent=c.name+' · '+c.desc;badge.style.display='block'}document.documentElement.style.setProperty('--kc-char-color',character.color||c.a);updateSettingsUI()}
-function buildSettings(){const p=$('#settingsPage');if(!p)return;p.innerHTML='<div id="kcSettings"><div class="section-header"><div class="eyebrow">KORONA CONTROL CENTER</div><h2>Settings</h2><p>Appearance and character controls are independent from the rest of Korona.</p></div><section class="kc-setting-section"><h3>Theme</h3><p>Changes the background, panels, text, borders, browser chrome, and controls immediately.</p><div class="kc-theme-grid">'+Object.keys(themes).map(k=>'<button type="button" class="kc-theme" data-theme="'+k+'"><span class="kc-theme-preview" style="background:linear-gradient(135deg,'+themes[k][0]+','+themes[k][2]+')"></span><span>'+k[0].toUpperCase()+k.slice(1)+'</span></button>').join('')+'</div></section><section class="kc-setting-section"><h3>Interface</h3><div class="kc-controls"><div class="kc-control"><label for="kcScale">Interface scale <output id="kcScaleOut">100%</output></label><input id="kcScale" type="range" min="0.8" max="1.25" step="0.05" value="1"></div><div class="kc-control"><label for="kcAccent">Accent color</label><input id="kcAccent" type="color" value="#00eaff"></div></div></section><section class="kc-setting-section"><h3>Character</h3><p>Each entry has its own artwork. Character opacity affects only the character image.</p><div class="kc-char-grid">'+chars.map(c=>'<button type="button" class="kc-char" data-char="'+c.id+'">'+(c.id==='none'?'<span class="kc-char-thumb"></span>':'<img class="kc-char-thumb" src="'+charAssets[c.id]+'" alt="'+c.name+' preview">')+'<span><span class="kc-char-name">'+c.name+'</span><span class="kc-char-desc">'+c.desc+'</span></span></button>').join('')+'</div><div class="kc-controls"><div class="kc-control"><label for="kcOpacity">Character opacity <output id="kcOpacityOut">100%</output></label><input id="kcOpacity" type="range" min="0" max="1" step="0.01" value="1"></div><div class="kc-control"><label for="kcCharColor">Character color</label><input id="kcCharColor" type="color" value="#00eaff"></div></div></section><section class="kc-setting-section"><button class="kc-reset" id="kcReset" type="button">Reset appearance and character</button></section></div>';bindSettings();updateSettingsUI()}
-function bindSettings(){ $$('.kc-theme').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.theme;settings.accent='';save();syncVars()});$$('.kc-char').forEach(b=>b.onclick=()=>{character.id=b.dataset.char;character.color='';save();applyCharacter();syncVars()});const sc=$('#kcScale');if(sc)sc.oninput=()=>{settings.scale=Number(sc.value);save();syncVars()};const ac=$('#kcAccent');if(ac)ac.oninput=()=>{settings.accent=ac.value;save();syncVars()};const op=$('#kcOpacity');if(op)op.oninput=()=>{character.opacity=Number(op.value);save();syncVars();applyCharacter()};const cc=$('#kcCharColor');if(cc)cc.oninput=()=>{character.color=cc.value;save();applyCharacter();syncVars()};$('#kcReset')?.addEventListener('click',()=>{settings={theme:'korona',scale:1,accent:''};character={id:'none',opacity:1,color:''};save();syncVars();applyCharacter()})}
-function installCharacter(){let img=$('#kcCharacter');if(!img){img=document.createElement('img');img.id='kcCharacter';img.className='kc-hidden';document.body.appendChild(img)}let badge=$('#kcCharacterBadge');if(!badge){badge=document.createElement('div');badge.id='kcCharacterBadge';badge.style.display='none';document.body.appendChild(badge)}}
-function cleanLegacy(){ $$('#koronaAiPage').forEach(x=>x.remove()); $$('.korona-character-dock,.korona-character,#koronaCharacterArt,#koronaCharacterBadge,.fern-character').forEach(x=>x.remove());const nav=$('#koronaSidebar .sidebar-nav');if(nav){const aiBtns=$$('.nav-button',nav).filter(b=>{const t=(b.textContent||'').trim().toLowerCase();return b.dataset.page==='ai'||b.dataset.koronaAi!==undefined||t==='ai studio'});aiBtns.slice(1).forEach(b=>b.remove());let btn=aiBtns[0];if(!btn){btn=document.createElement('button');btn.type='button';btn.className='nav-button';nav.appendChild(btn)}btn.dataset.page='kc-ai';btn.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';btn.removeAttribute('data-korona-ai');if(btn.dataset.kcBound!=='1'){btn.dataset.kcBound='1';btn.addEventListener('click',e=>{e.preventDefault();showPage('kc-ai',btn)},true)}}}
-function installAI(){let p=$('#kcAiPage');if(!p){p=document.createElement('section');p.id='kcAiPage';p.className='page';($('.content')||$('#app')).appendChild(p)}p.innerHTML='<div class="kc-ai-shell"><div class="kc-ai-head"><div><div class="eyebrow">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Text questions and image-based problems in one conversation.</p></div><div class="kc-ai-actions"><span class="kc-ai-status" id="kcAiStatus">Ready · '+MODEL+'</span><button class="ai-button" id="kcNewChat" type="button">New Chat</button></div></div><div class="kc-ai-history" id="kcAiHistory"><div class="kc-ai-empty">Ask a question or upload a screenshot/photo.</div></div><div class="kc-ai-compose"><textarea class="kc-ai-input" id="kcAiInput" aria-label="AI Studio question" placeholder="Ask a question or explain what you need..." rows="4"></textarea><div class="kc-ai-side"><label class="kc-upload" for="kcAiFile">Upload image<input id="kcAiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><span class="kc-file-name" id="kcFileName">No image selected</span><button class="kc-ai-send" id="kcAiSend" type="button">Send</button></div></div></div>';bindAI()}
-function renderAI(){const h=$('#kcAiHistory');if(!h)return;h.innerHTML='';if(!ai.messages.length){h.innerHTML='<div class="kc-ai-empty">Ask a question or upload a screenshot/photo.</div>';return}ai.messages.forEach(m=>{const row=document.createElement('div');row.className='kc-ai-message '+m.role;const b=document.createElement('div');b.className='kc-ai-bubble';if(m.image){const im=document.createElement('img');im.src=m.image;im.alt='Attached image';b.appendChild(im)}const tx=document.createElement('div');tx.textContent=m.content||'';b.appendChild(tx);row.appendChild(b);h.appendChild(row)});h.scrollTop=h.scrollHeight}
-function bindAI(){const f=$('#kcAiFile'),i=$('#kcAiInput'),send=$('#kcAiSend'),nc=$('#kcNewChat');if(!f||!i||!send||!nc)return;f.onchange=()=>{const file=f.files?.[0];if(!file){ai.image=null;$('#kcFileName').textContent='No image selected';return}if(!file.type.startsWith('image/')){f.value='';$('#kcFileName').textContent='Unsupported image';return}const r=new FileReader();r.onload=()=>{ai.image={data:String(r.result),name:file.name,type:file.type};$('#kcFileName').textContent=file.name};r.readAsDataURL(file)};nc.onclick=()=>{ai.messages=[];ai.image=null;f.value='';i.value='';$('#kcFileName').textContent='No image selected';$('#kcAiStatus').textContent='Ready · '+MODEL;renderAI()};i.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();send.click()}};send.onclick=sendAI}
-function key(){return String(window.KORONA_GROQ_API_KEY||'').trim()}
-async function sendAI(){const i=$('#kcAiInput'),status=$('#kcAiStatus'),send=$('#kcAiSend'),text=(i?.value||'').trim();if(!text&&!ai.image){status.textContent='Enter a question or attach an image.';return}const k=key();if(!k){status.textContent='Groq API key is not configured. Set window.KORONA_GROQ_API_KEY before sending.';return}const user={role:'user',content:text||'Inspect this image and explain or solve the problem shown.',image:ai.image?.data||null};ai.messages.push(user);renderAI();i.value='';send.disabled=true;status.textContent='Thinking…';try{const messages=[{role:'system',content:'You are Korona AI Studio. Answer clearly. When an image is attached, inspect the actual image carefully before answering. For math, English, worksheets, screenshots, diagrams, and photos, extract visible information accurately and explain or solve it. Use prior conversation messages for follow-up questions.'}];ai.messages.forEach(m=>{const content=[];if(m.content)content.push({type:'text',text:m.content});if(m.image)content.push({type:'image_url',image_url:{url:m.image}});messages.push({role:m.role,content:m.image?content:(content[0]?.text||'')})});const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},body:JSON.stringify({model:MODEL,messages,temperature:.2,max_tokens:MAX_TOKENS})});const data=await r.json();if(!r.ok)throw new Error(data?.error?.message||('Groq request failed ('+r.status+')'));const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error('Groq returned no answer.');ai.messages.push({role:'assistant',content:String(answer),image:null});ai.image=null;fClear();status.textContent='Complete · '+MODEL;renderAI()}catch(e){ai.messages.pop();renderAI();status.textContent='AI error · '+e.message}finally{send.disabled=false}}
-function fClear(){const f=$('#kcAiFile');if(f)f.value='';const n=$('#kcFileName');if(n)n.textContent='No image selected'}
-function showPage(name,btn){const map={home:'homePage',games:'gamesPage',apps:'appsPage',proxy:'proxyPage',settings:'settingsPage',account:'accountPage','kc-ai':'kcAiPage'};const p=document.getElementById(map[name]);if(!p)return;$$('.content>.page').forEach(x=>{x.classList.toggle('active',x===p);x.style.display=x===p?'block':'none'});$$('.sidebar-nav .nav-button').forEach(x=>x.classList.toggle('active',x===btn));const c=$('.content');if(c)c.scrollTop=0;if(name==='kc-ai')renderAI()}
-function bindNav(){const nav=$('#koronaSidebar .sidebar-nav');if(!nav)return;$$('.nav-button',nav).forEach(btn=>{if(btn.dataset.kcNav==='1')return;btn.dataset.kcNav='1';btn.addEventListener('click',e=>{const page=btn.dataset.page;if(page==='kc-ai'){e.preventDefault();e.stopImmediatePropagation();showPage('kc-ai',btn)}else if(['home','games','apps','proxy','settings','account'].includes(page)){e.preventDefault();e.stopImmediatePropagation();showPage(page,btn)}},true)});$$('[data-page-jump]').forEach(b=>{if(b.dataset.kcJump)return;b.dataset.kcJump='1';b.addEventListener('click',e=>{const page=b.dataset.pageJump;if(page){e.preventDefault();const target=nav?.querySelector('.nav-button[data-page="'+page+'"]');showPage(page,target)}})});}
-function boot(){cleanLegacy();installCharacter();installAI();buildSettings();syncVars();applyCharacter();bindNav();const obs=new MutationObserver(()=>{if(window.__kcBusy)return;window.__kcBusy=true;try{cleanLegacy();installCharacter();const p=$('#kcAiPage');if(p&&p.dataset.kcBuilt!=='1'){installAI()} }finally{window.__kcBusy=false}});const p=$('#kcAiPage');if(p)p.dataset.kcBuilt='1';obs.observe(document.body,{childList:true,subtree:true});}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();
-</script>
-
-
-<!-- KORONA DEFINITIVE UI FIX -->
-<style id="korona-definitive-css">
-:root{
- --kd-bg:#070a10;--kd-panel:#0d121c;--kd-panel2:#151e2c;--kd-text:#eef4ff;--kd-muted:#91a0b5;
- --kd-accent:#00eaff;--kd-border:rgba(255,255,255,.12);--kd-scale:1;--kd-char-opacity:1;--kd-char-color:#00eaff;
-}
-html,body{margin:0!important;width:100%!important;height:100%!important;overflow:hidden!important;background:var(--kd-bg)!important;color:var(--kd-text)!important}
-body::before,body::after,#bgCanvas,#fernSkyDecor,#fernWebGLAurora,#fernMistTexture,#fernParticleCanvas,#fernStars,#fernMoon,.fern-moon,.fern-nebula,.fern-nebula-cloud,.fern-mist-layer,.fern-shooting-star{display:none!important}
-#app{display:flex!important;position:relative!important;width:100%!important;height:100%!important;min-height:0!important;max-width:none!important;margin:0!important;padding:0!important;zoom:var(--kd-scale)!important;background:var(--kd-bg)!important;color:var(--kd-text)!important}
-.korona-sidebar{flex:0 0 172px!important;width:172px!important;height:100%!important;min-height:0!important;box-sizing:border-box!important;overflow:hidden!important;background:var(--kd-panel)!important;border-right:1px solid var(--kd-border)!important}
-.sidebar-nav{overflow-y:auto!important;min-height:0!important}
-.content{flex:1 1 auto!important;width:auto!important;max-width:none!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;box-sizing:border-box!important;overflow-x:hidden!important;overflow-y:auto!important;background:var(--kd-bg)!important;color:var(--kd-text)!important}
-.content>.page{width:100%!important;max-width:none!important;height:auto!important;min-height:100%!important;box-sizing:border-box!important;margin:0!important;padding:22px 28px 32px!important;background:transparent!important;color:var(--kd-text)!important;overflow:visible!important}
-.content>.page.active{display:block!important}.content>.page:not(.active){display:none!important}
-/* remove the old accumulated page offsets */
-.content>.page>.section-header:first-child,.content>.page>.browser-page:first-child,.content>.page>.settings-panel:first-child{margin-top:0!important}
-.section-header{margin-top:0!important;padding-top:0!important}
-/* one coherent theme layer */
-body,#app,.content,.page{background:var(--kd-bg)!important;color:var(--kd-text)!important}
-.korona-sidebar,.sidebar-brand,.sidebar-nav,.sidebar-bottom{background:var(--kd-panel)!important;color:var(--kd-text)!important;border-color:var(--kd-border)!important}
-.korona-home,.quick-launch-panel,.section-header,.game-card,.app-tile,.account-card,.settings-section,.theme-card,.panel,.hero,.library-controls,.bookmarks-panel,.about-grid,.browser-page{background:transparent!important;color:var(--kd-text)!important;border-color:var(--kd-border)!important}
-button,.nav-button,.quick-site,.app-tile,.game-card,.theme-card,.settings-toggle,.korona-large-button,.browser-nav-button,.browser-tab,.new-tab-button,.iframe-toolbar button,.ai-button{background:var(--kd-panel2)!important;color:var(--kd-text)!important;border:1px solid color-mix(in srgb,var(--kd-accent) 32%,var(--kd-border))!important}
-button:hover,.nav-button:hover,.quick-site:hover,.app-tile:hover,.game-card:hover,.theme-card:hover{border-color:var(--kd-accent)!important}
-.nav-button.active,.theme-card.active{background:color-mix(in srgb,var(--kd-accent) 14%,var(--kd-panel2))!important;border-color:var(--kd-accent)!important;color:var(--kd-text)!important;box-shadow:inset 3px 0 0 var(--kd-accent)!important}
-.korona-large-button,.kc-primary,.kc-ai-send{background:var(--kd-accent)!important;color:#001016!important;border-color:var(--kd-accent)!important}
-input,textarea,select,.browser-address,.browser-address input{background:var(--kd-panel)!important;color:var(--kd-text)!important;border-color:color-mix(in srgb,var(--kd-accent) 32%,var(--kd-border))!important}
-input[type=range]{accent-color:var(--kd-accent)!important}
-/* Browser fills every pixel available */
-#proxyPage{padding:0!important;height:100%!important;min-height:100%!important;overflow:hidden!important}
-#proxyPage .browser-page{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;margin:0!important;padding:0!important}
-#proxyPage .browser-topline{display:none!important}
-#proxyPage .browser-window{flex:1 1 auto!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;margin:0!important;border-radius:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:var(--kd-panel)!important;border:1px solid var(--kd-border)!important;box-shadow:none!important}
-#proxyPage .browser-tabs{flex:0 0 46px!important;min-height:46px!important;box-sizing:border-box!important;background:var(--kd-panel)!important;border-color:var(--kd-border)!important}
-#proxyPage .browser-toolbar{flex:0 0 56px!important;min-height:56px!important;box-sizing:border-box!important;background:var(--kd-panel)!important;border-color:var(--kd-border)!important}
-#proxyPage .iframe-container{position:relative!important;flex:1 1 auto!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;background:var(--kd-bg)!important;overflow:hidden!important}
-#proxyPage .browser-frames{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;overflow:hidden!important}
-#proxyPage .korona-browser-frame{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border:0!important}
-#proxyPage .browser-newtab{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;box-sizing:border-box!important;background:var(--kd-bg)!important}
-/* AI: exactly one page, one button */
-#koronaAiPage,#aiPage{display:none!important}
-#kdAiPage{height:100%!important;min-height:100%!important;margin:0!important;padding:22px 28px 28px!important;box-sizing:border-box!important;overflow:hidden!important}
-.kd-ai-shell{height:100%;min-height:0;display:flex;flex-direction:column;gap:12px}
-.kd-ai-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex:0 0 auto}.kd-ai-head h2{margin:0}.kd-ai-head p{margin:5px 0 0;color:var(--kd-muted)}
-.kd-ai-history{flex:1 1 auto;min-height:0;overflow:auto;padding:14px;background:var(--kd-panel);border:1px solid var(--kd-border);box-sizing:border-box}
-.kd-ai-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--kd-muted)}
-.kd-ai-message{display:flex;margin:0 0 12px}.kd-ai-message.user{justify-content:flex-end}.kd-ai-bubble{max-width:min(900px,88%);padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;background:var(--kd-panel2);border:1px solid var(--kd-border)}.kd-ai-message.user .kd-ai-bubble{border-color:color-mix(in srgb,var(--kd-accent) 48%,var(--kd-border));background:color-mix(in srgb,var(--kd-accent) 9%,var(--kd-panel2))}.kd-ai-bubble img{display:block;max-width:520px;max-height:300px;object-fit:contain;margin:0 0 9px;border:1px solid var(--kd-border)}
-.kd-ai-compose{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:9px;flex:0 0 auto}.kd-ai-input{width:100%;min-height:78px;max-height:180px;resize:vertical;box-sizing:border-box;padding:12px;font:inherit}.kd-ai-side{display:grid;grid-template-rows:auto auto 1fr;gap:8px}.kd-upload{display:grid;place-items:center;min-height:40px;border:1px dashed var(--kd-accent);background:var(--kd-panel);cursor:pointer}.kd-file-name{font-size:10px;color:var(--kd-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kd-ai-send{min-height:42px;font-weight:900}
-/* Settings: one independent scroll container */
-#settingsPage{height:100%!important;min-height:100%!important;padding:0!important;overflow:hidden!important}
-#kdSettings{height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding:22px 28px 34px}
-.kd-setting{margin:0 0 14px;padding:16px;background:var(--kd-panel);border:1px solid var(--kd-border)}.kd-setting h3{margin:0 0 5px}.kd-setting p{margin:0;color:var(--kd-muted);font-size:12px}.kd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px;margin-top:12px}
-.kd-theme,.kd-char{min-height:62px;padding:9px;display:flex;align-items:center;gap:9px;text-align:left;cursor:pointer}.kd-theme-preview{width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(255,255,255,.18)}.kd-char{min-height:88px}.kd-char img,.kd-char-none{width:54px;height:70px;object-fit:contain;flex:0 0 54px;background:rgba(0,0,0,.15);border:1px solid var(--kd-border)}.kd-char-name{font-weight:900}.kd-char-desc{display:block;margin-top:3px;font-size:10px;color:var(--kd-muted)}
-.kd-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}.kd-control{display:flex;flex-direction:column;gap:7px}.kd-control label{font-size:12px;font-weight:900}.kd-control output{float:right;color:var(--kd-muted);font-size:11px}.kd-control input[type=range]{width:100%}.kd-control input[type=color]{width:100%;height:40px;padding:2px}
-/* Character is a single isolated image layer. */
-#kdCharacter{position:fixed!important;right:16px!important;bottom:8px!important;width:min(330px,26vw)!important;height:min(520px,68vh)!important;object-fit:contain!important;object-position:center bottom!important;z-index:2147483000!important;pointer-events:none!important;display:block!important;margin:0!important;padding:0!important;background:transparent!important;opacity:var(--kd-char-opacity)!important;visibility:visible!important;filter:none!important}
-#kdCharacter.kd-hidden{display:none!important}
-#kdCharacterBadge{position:fixed!important;right:18px!important;bottom:calc(min(520px,68vh) + 8px)!important;z-index:2147483001!important;pointer-events:none!important;padding:7px 10px!important;background:var(--kd-panel)!important;color:var(--kd-text)!important;border:1px solid var(--kd-char-color)!important;font-size:11px!important}
-/* Kill every obsolete character renderer without affecting the app. */
-.korona-character-dock,.korona-character,#koronaCharacterArt,.fern-character{display:none!important}
-@media(max-width:800px){#app{zoom:var(--kd-scale)!important}.korona-sidebar{flex-basis:62px!important;width:62px!important}.sidebar-brand strong,.sidebar-brand span,.sidebar-nav .nav-button span:not(.sidebar-icon),.sidebar-bottom{display:none!important}.content>.page{padding:16px!important}.kd-ai-compose{grid-template-columns:1fr}.kd-ai-side{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}.kd-file-name{grid-column:1/-1}#kdCharacter{width:190px!important;height:310px!important}}
-</style>
-<script id="korona-definitive-script">
 (()=>{
 'use strict';
-const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-const MODEL='qwen/qwen3.8-27b',MAX_TOKENS=512;
-const settingsKey='korona_definitive_settings_v1',charKey='korona_definitive_character_v1';
-const themes={korona:['#070a10','#0d121c','#00eaff','#eef4ff'],midnight:['#060711','#101328','#7186ff','#eef1ff'],amber:['#0d0903','#1b1207','#ffb020','#fff4df'],ice:['#031117','#08242e','#5de7ff','#e9fbff'],violet:['#0b0415','#180b25','#b36bff','#f8efff'],rose:['#12050a','#230b14','#ff6688','#fff0f4'],mono:['#070707','#151515','#d7d7d7','#eeeeee'],cyan:['#03110f','#09231f','#20ffd4','#e8fffb'],light:['#f3f6f5','#fff','#087d3d','#132018'],cyberpunk:['#090511','#180d25','#ff2dcc','#f2fbff'],aurora:['#06100f','#102b27','#63ffd0','#effff9'],sunset:['#13070a','#281017','#ff8a5b','#fff4ef'],ocean:['#03101b','#0a2032','#43b8ff','#effaff'],dracula:['#0b0912','#1b1528','#bd93f9','#f4edff']};
-const chars=[
- ['none','None','No character','#777','#aaa'],['gojo','Gojo','Limitless','#9b8cff','#dfe6ff'],['naruto','Naruto','Shinobi','#ff8a24','#ffd166'],['hunter','Hunter','Nen user','#49b875','#baf2c2'],['lebron','LeBron James','Basketball','#e5b84b','#6da9ff'],['miku','Miku','Hatsune Miku','#39ccd6','#b8ffff'],['teto','Teto','Kasane Teto','#e8455f','#ffb3c0'],['neru','Neru','Akita Neru','#e8c547','#fff0a8'],['luka','Luka','Megurine Luka','#ff9ec4','#ffd2e4'],['rin','Rin','Kagamine Rin','#ffb23f','#ffe0a0'],['len','Len','Kagamine Len','#f2e14c','#fff9b0'],['kaito','Kaito','KAITO','#3f7bff','#a9c6ff'],['meiko','Meiko','MEIKO','#d8384a','#ff9aa2']
-].map(x=>({id:x[0],name:x[1],desc:x[2],a:x[3],b:x[4]}));
-const saved=(k,d)=>{try{return Object.assign(d,JSON.parse(localStorage.getItem(k)||'{}'))}catch(_){return d}};
-let appearance=saved(settingsKey,{theme:'korona',scale:1,accent:''});
-let character=saved(charKey,{id:'none',opacity:1,color:''});
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const THEMES={
+ korona:['#080b10','#111821','#151e29','#eef4f8','#91a0ad','#62e6a5'],midnight:['#070912','#101322','#171a2a','#edf0ff','#8c93ad','#8b9cff'],amber:['#120d06','#1c150b','#261b0d','#fff4df','#bca98d','#ffb84d'],ice:['#071015','#0e1d25','#142733','#ecfbff','#8eabb7','#5de3ff'],violet:['#0d0815','#181024','#211532','#f7edff','#ad9abb','#c58cff'],rose:['#14080d','#201018','#2b141f','#fff0f4','#b89aa4','#ff6f9d'],mono:['#0a0a0a','#151515','#1e1e1e','#f2f2f2','#9a9a9a','#d0d0d0'],cyan:['#061112','#0b1b1c','#112526','#eaffff','#8eafb0','#36e6dc'],light:['#eef2f4','#ffffff','#e3e9ed','#10161b','#59656e','#0b9c68'],cyberpunk:['#0a0610','#171021','#22152e','#fff2ff','#b9a4c1','#ff3bd4'],aurora:['#06100d','#0b1b16','#11281f','#edfff6','#91b5a5','#72f3b4'],sunset:['#120a08','#21120d','#2d1811','#fff1e8','#bda093','#ff8a4c'],ocean:['#061018','#0b1925','#102636','#eaf8ff','#8ca7b6','#46b8ff'],dracula:['#0d0b12','#171421','#211d2d','#f8f5ff','#aaa1b9','#bd93f9']
+};
+const CHARS={none:['None','No character',null],gojo:['Gojo','Limitless','#9b8cff'],naruto:['Naruto','Shinobi','#f28a22'],hunter:['Hunter','Hunter','#d0d6df'],lebron:['LeBron James','Basketball','#f2c94c'],miku:['Miku','Vocaloid','#39ccd6'],teto:['Teto','Vocaloid','#e8455f'],neru:['Neru','Vocaloid','#e8c547'],luka:['Luka','Vocaloid','#ff9ec4'],rin:['Rin','Vocaloid','#ffb23f'],len:['Len','Vocaloid','#f2e14c'],kaito:['Kaito','Vocaloid','#3f7bff'],meiko:['Meiko','Vocaloid','#d8384a']};
+function art(id){const p={gojo:['#f1d1c0','#eef3ff','#151822'],naruto:['#e5b89c','#f29a2e','#111827'],hunter:['#e3c0a8','#252a34','#151922'],lebron:['#8d5b3c','#171717','#d2a679'],miku:['#efd0bf','#39ccd6','#17242c'],teto:['#efd0bf','#e8455f','#24171d'],neru:['#efd0bf','#e8c547','#171717'],luka:['#efd0bf','#ff9ec4','#27212b'],rin:['#efd0bf','#ffb23f','#222'],len:['#efd0bf','#f2e14c','#222'],kaito:['#efd0bf','#3f7bff','#142033'],meiko:['#efd0bf','#d8384a','#24171d']}[id];if(!p)return null;const [skin,hair,cloth]=p;const label=CHARS[id][0];const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 480"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${hair}"/><stop offset="1" stop-color="${cloth}"/></linearGradient></defs><path fill="url(#g)" d="M35 475V335c0-80 55-122 125-122s125 42 125 122v140Z"/><circle cx="160" cy="165" r="82" fill="${skin}"/><path fill="${hair}" d="M73 160c0-105 174-126 181 0-25-41-58-60-91-60-42 0-72 22-90 60Z"/><circle cx="128" cy="166" r="7"/><circle cx="192" cy="166" r="7"/><path d="M130 205q30 18 60 0" fill="none" stroke="#6b3f3f" stroke-width="5" stroke-linecap="round"/><rect x="85" y="265" width="150" height="36" rx="18" fill="${cloth}" opacity=".9"/><text x="160" y="360" text-anchor="middle" fill="white" font-family="Arial" font-size="25" font-weight="700">${label}</text></svg>`;return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)}
+const state={theme:localStorage.getItem('korona_clean_theme')||'korona',char:localStorage.getItem('korona_clean_char')||'none',opacity:Number(localStorage.getItem('korona_clean_opacity')||82),scale:Number(localStorage.getItem('korona_clean_scale')||100),accent:localStorage.getItem('korona_clean_accent')||''};
+function applyTheme(name){if(!THEMES[name])name='korona';state.theme=name;const [bg,panel,panel2,text,muted,accent]=THEMES[name];document.documentElement.style.setProperty('--k-bg',bg);document.documentElement.style.setProperty('--k-bg2',bg);document.documentElement.style.setProperty('--k-panel',panel);document.documentElement.style.setProperty('--k-panel2',panel2);document.documentElement.style.setProperty('--k-text',text);document.documentElement.style.setProperty('--k-muted',muted);document.documentElement.style.setProperty('--k-accent',state.accent||accent);document.documentElement.style.setProperty('--green',state.accent||accent);document.documentElement.style.setProperty('--border',`color-mix(in srgb, ${state.accent||accent} 20%, ${panel2})`);document.body.dataset.theme=name;localStorage.setItem('korona_clean_theme',name);$$('.k-theme').forEach(x=>x.classList.toggle('active',x.dataset.theme===name))}
+function applyChar(){const host=$('#korona-clean-character'),img=$('#korona-clean-character img');if(!host||!img)return;const a=art(state.char);host.classList.toggle('visible',!!a);host.style.setProperty('--k-char-accent',CHARS[state.char]?.[2]||'transparent');img.src=a||'';img.alt=CHARS[state.char]?.[0]||'No character';document.documentElement.style.setProperty('--k-char-opacity',String(state.opacity/100));localStorage.setItem('korona_clean_char',state.char);localStorage.setItem('korona_clean_opacity',state.opacity);$$('.k-character-choice').forEach(x=>x.classList.toggle('active',x.dataset.char===state.char))}
+function applyScale(){const s=Math.max(.85,Math.min(1.15,state.scale/100));document.documentElement.style.setProperty('--k-scale',s);localStorage.setItem('korona_clean_scale',state.scale);const out=$('#kScaleOut');if(out)out.textContent=state.scale+'%'}
+function buildCharacterLayer(){ $$('#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-character,.fern-character').forEach(x=>x.remove());const d=document.createElement('div');d.id='korona-clean-character';d.innerHTML='<img alt="" draggable="false">';document.body.appendChild(d);applyChar() }
+function buildSettings(){const p=$('#settingsPage');if(!p)return;const themes=Object.keys(THEMES).map(k=>'<button type="button" class="k-theme" data-theme="'+k+'"><span class="k-theme-swatch" style="background:'+THEMES[k][5]+'"></span>'+(k==='korona'?'Korona':k[0].toUpperCase()+k.slice(1))+'</button>').join('');const chars=Object.entries(CHARS).map(([id,c])=>'<button type="button" class="k-character-choice" data-char="'+id+'">'+(id==='none'?'<div style="height:105px;display:grid;place-items:center;background:var(--k-bg2);border-radius:7px;margin-bottom:7px">None</div>':'<img src="'+art(id)+'" alt="'+c[0]+'" loading="eager">')+'<strong>'+c[0]+'</strong><span>'+c[1]+'</span></button>').join('');p.innerHTML='<div class="k-settings"><h2>Settings</h2><p class="sub">Customize Korona without changing the rest of the application.</p><section class="k-setting-section"><h3>Theme</h3><p>Changes the entire interface immediately.</p><div class="k-theme-grid">'+themes+'</div></section><section class="k-setting-section"><h3>Characters</h3><p>Character identity and visual effects are independent. Opacity only affects the artwork.</p><div class="k-character-grid">'+chars+'</div></section><section class="k-setting-section"><h3>Interface</h3><div class="k-controls"><div class="k-control"><label>Interface scale <output id="kScaleOut">'+state.scale+'%</output></label><input id="kScale" type="range" min="85" max="115" value="'+state.scale+'"></div><div class="k-control"><label>Character opacity <output id="kOpacityOut">'+state.opacity+'%</output></label><input id="kOpacity" type="range" min="0" max="100" value="'+state.opacity+'"></div><div class="k-control"><label>Accent color</label><input id="kAccent" type="color" value="'+(state.accent||THEMES[state.theme][5])+'"></div></div></section></div>';$$('.k-theme',p).forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));$$('.k-character-choice',p).forEach(b=>b.onclick=()=>{state.char=b.dataset.char;applyChar()});$('#kScale').oninput=e=>{state.scale=+e.target.value;applyScale()};$('#kOpacity').oninput=e=>{state.opacity=+e.target.value;$('#kOpacityOut').textContent=state.opacity+'%';applyChar()};$('#kAccent').oninput=e=>{state.accent=e.target.value;localStorage.setItem('korona_clean_accent',state.accent);applyTheme(state.theme)};applyTheme(state.theme);applyScale();applyChar()}
+
 const ai={messages:[],image:null};
-function shift(hex,n){if(!/^#[0-9a-f]{6}$/i.test(hex))return hex;let v=parseInt(hex.slice(1),16),r=Math.max(0,Math.min(255,(v>>16)+n)),g=Math.max(0,Math.min(255,((v>>8)&255)+n)),b=Math.max(0,Math.min(255,(v&255)+n));return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')}
-function svg(c){if(c.id==='none')return '';let hair={gojo:'#eef4ff',naruto:'#f07820',hunter:'#171d2a',lebron:'#161616',miku:'#20cfd2',teto:'#c83c55',neru:'#e5c83f',luka:'#d783a9',rin:'#f4a52f',len:'#e7d83c',kaito:'#477fe8',meiko:'#8e3434'}[c.id]||'#222';let skin=c.id==='lebron'?'#7b4a2e':c.id==='naruto'?'#d79567':'#e0b18d';let special={gojo:'<rect x="71" y="112" width="98" height="29" rx="9" fill="#090b10"/><rect x="78" y="117" width="84" height="16" rx="7" fill="#111a2b"/>',naruto:'<path d="M70 108L48 80l31 12zM170 108l22-28-31 12z" fill="#f07820"/>',miku:'<path d="M70 115C26 83 30 26 78 19c-9 43 4 70 23 87zM170 115c44-32 40-89-8-96 9 43-4 70-23 87z" fill="#20cfd2"/>',teto:'<path d="M69 112C28 79 32 30 72 18c5 37 17 62 29 78zM171 112c41-33 37-82-3-94-5 37-17 62-29 78z" fill="#d94360"/>'}[c.id]||'<path d="M63 111Q69 40 120 34Q171 40 177 111Q151 84 120 80Q89 84 63 111Z" fill="'+hair+'"/>';return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 380"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+c.a+'"/><stop offset="1" stop-color="'+c.b+'"/></linearGradient></defs><path d="M40 370Q52 222 120 220Q188 222 200 370Z" fill="url(#g)"/><ellipse cx="120" cy="135" rx="58" ry="72" fill="'+skin+'"/>'+special+'<circle cx="98" cy="140" r="7" fill="#111827"/><circle cx="142" cy="140" r="7" fill="#111827"/><path d="M99 169Q120 183 141 169" fill="none" stroke="#673b3b" stroke-width="4" stroke-linecap="round"/><rect x="62" y="57" width="116" height="63" rx="30" fill="'+hair+'" opacity=".98"/><path d="M64 113Q75 39 120 34Q165 39 176 113Q151 84 120 80Q89 84 64 113Z" fill="'+hair+'"/><path d="M36 345h168" stroke="#fff" stroke-opacity=".2"/><text x="120" y="362" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">'+c.name+'</text></svg>')}
-const assets=Object.fromEntries(chars.map(c=>[c.id,svg(c)]));
-function save(){try{localStorage.setItem(settingsKey,JSON.stringify(appearance));localStorage.setItem(charKey,JSON.stringify(character))}catch(_) {}}
-function applyAppearance(){const t=themes[appearance.theme]||themes.korona,a=appearance.accent||t[2],r=document.documentElement;r.style.setProperty('--kd-bg',t[0]);r.style.setProperty('--kd-panel',t[1]);r.style.setProperty('--kd-panel2',shift(t[1],12));r.style.setProperty('--kd-text',t[3]);r.style.setProperty('--kd-muted',t[3]+'99');r.style.setProperty('--kd-accent',a);r.style.setProperty('--kd-scale',appearance.scale);r.style.setProperty('--kd-char-opacity',character.opacity);r.style.setProperty('--kd-char-color',character.color||a);r.style.setProperty('--bg',t[0]);r.style.setProperty('--panel',t[1]);r.style.setProperty('--panel-2',shift(t[1],12));r.style.setProperty('--text',t[3]);r.style.setProperty('--muted',t[3]+'99');r.style.setProperty('--green',a);r.style.setProperty('--green-soft',a);r.style.setProperty('--border',a+'55');r.style.setProperty('--border-bright',a);r.style.setProperty('--ui-scale',appearance.scale);document.body.dataset.theme=appearance.theme;updateSettingsUI()}
-function applyCharacter(){const img=$('#kdCharacter'),badge=$('#kdCharacterBadge'),c=chars.find(x=>x.id===character.id)||chars[0];if(!img)return;if(c.id==='none'){img.classList.add('kd-hidden');img.removeAttribute('src');if(badge)badge.style.display='none';return}img.classList.remove('kd-hidden');img.src=assets[c.id];img.alt=c.name;img.style.opacity=String(character.opacity);if(badge){badge.textContent=c.name+' · '+c.desc;badge.style.display='block'}document.documentElement.style.setProperty('--kd-char-color',character.color||c.a);updateSettingsUI()}
-function updateSettingsUI(){ $$('.kd-theme').forEach(x=>x.classList.toggle('active',x.dataset.theme===appearance.theme));$$('.kd-char').forEach(x=>x.classList.toggle('active',x.dataset.char===character.id));const sc=$('#kdScale'),so=$('#kdScaleOut'),op=$('#kdOpacity'),oo=$('#kdOpacityOut'),ac=$('#kdAccent'),cc=$('#kdCharColor');if(sc){sc.value=appearance.scale;so.textContent=Math.round(appearance.scale*100)+'%'}if(op){op.value=character.opacity;oo.textContent=Math.round(character.opacity*100)+'%'}if(ac)ac.value=appearance.accent||themes[appearance.theme][2];if(cc)cc.value=character.color||((chars.find(x=>x.id===character.id)||chars[0]).a)}
-function buildSettings(){const p=$('#settingsPage');if(!p)return;p.innerHTML='<div id="kdSettings"><div class="section-header"><div class="eyebrow">KORONA CONTROL CENTER</div><h2>Settings</h2><p>Appearance, interface scale, accent, and character controls.</p></div><section class="kd-setting"><h3>Themes</h3><p>Every theme changes the actual page, panels, buttons, browser chrome, text, borders, and accent.</p><div class="kd-grid">'+Object.keys(themes).map(k=>'<button type="button" class="kd-theme" data-theme="'+k+'"><span class="kd-theme-preview" style="background:linear-gradient(135deg,'+themes[k][0]+','+themes[k][2]+')"></span><span>'+k[0].toUpperCase()+k.slice(1)+'</span></button>').join('')+'</div></section><section class="kd-setting"><h3>Interface</h3><div class="kd-controls"><div class="kd-control"><label for="kdScale">Interface scale <output id="kdScaleOut">100%</output></label><input id="kdScale" type="range" min="0.8" max="1.25" step="0.05"></div><div class="kd-control"><label for="kdAccent">Accent color</label><input id="kdAccent" type="color"></div></div></section><section class="kd-setting"><h3>Character</h3><p>Character identity, artwork, opacity, and character color are isolated from the rest of the page.</p><div class="kd-grid">'+chars.map(c=>'<button type="button" class="kd-char" data-char="'+c.id+'">'+(c.id==='none'?'<span class="kd-char-none"></span>':'<img src="'+assets[c.id]+'" alt="'+c.name+' preview">')+'<span><span class="kd-char-name">'+c.name+'</span><span class="kd-char-desc">'+c.desc+'</span></span></button>').join('')+'</div><div class="kd-controls"><div class="kd-control"><label for="kdOpacity">Character opacity <output id="kdOpacityOut">100%</output></label><input id="kdOpacity" type="range" min="0" max="1" step="0.01"></div><div class="kd-control"><label for="kdCharColor">Character color</label><input id="kdCharColor" type="color"></div></div></section><section class="kd-setting"><button id="kdReset" type="button">Reset appearance</button></section></div>';bindSettings();updateSettingsUI()}
-function bindSettings(){$$('.kd-theme').forEach(b=>b.onclick=()=>{appearance.theme=b.dataset.theme;appearance.accent='';save();applyAppearance()});$$('.kd-char').forEach(b=>b.onclick=()=>{character.id=b.dataset.char;character.color='';save();applyCharacter();applyAppearance()});$('#kdScale').oninput=e=>{appearance.scale=Number(e.target.value);save();applyAppearance()};$('#kdAccent').oninput=e=>{appearance.accent=e.target.value;save();applyAppearance()};$('#kdOpacity').oninput=e=>{character.opacity=Number(e.target.value);save();applyCharacter();applyAppearance()};$('#kdCharColor').oninput=e=>{character.color=e.target.value;save();applyCharacter();applyAppearance()};$('#kdReset').onclick=()=>{appearance={theme:'korona',scale:1,accent:''};character={id:'none',opacity:1,color:''};save();applyAppearance();applyCharacter()}}
-function installCharacter(){let img=$('#kdCharacter');if(!img){img=document.createElement('img');img.id='kdCharacter';img.className='kd-hidden';document.body.appendChild(img)}let badge=$('#kdCharacterBadge');if(!badge){badge=document.createElement('div');badge.id='kdCharacterBadge';badge.style.display='none';document.body.appendChild(badge)}}
-function normalizeNav(){const nav=$('#koronaSidebar .sidebar-nav');if(!nav)return;nav.innerHTML='<button class="nav-button active" data-page="home" type="button"><span class="sidebar-icon">⌂</span><span>Home</span></button><button class="nav-button" data-page="games" type="button"><span class="sidebar-icon">⌘</span><span>Games</span></button><button class="nav-button" data-page="apps" type="button"><span class="sidebar-icon">▣</span><span>Apps</span></button><button class="nav-button" data-page="proxy" type="button"><span class="sidebar-icon">◎</span><span>Browser</span></button><button class="nav-button" data-page="settings" type="button"><span class="sidebar-icon">⚙</span><span>Settings</span></button><button class="nav-button" data-page="account" type="button"><span class="sidebar-icon">♙</span><span>Account</span></button><button class="nav-button" id="kdAiNav" data-page="kd-ai" data-kc-bound="1" type="button"><span class="sidebar-icon">✦</span><span>AI Studio</span></button>'}
-function installAI(){ $$('#koronaAiPage,#aiPage').forEach(x=>x.remove());let p=$('#kdAiPage');if(!p){p=document.createElement('section');p.id='kdAiPage';p.className='page';$('.content').appendChild(p)}p.innerHTML='<div class="kd-ai-shell"><div class="kd-ai-head"><div><div class="eyebrow">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>One conversation for text and image questions.</p></div><div><span id="kdAiStatus" class="kd-ai-status">Ready · '+MODEL+'</span> <button id="kdNewChat" class="ai-button" type="button">New Chat</button></div></div><div id="kdAiHistory" class="kd-ai-history"><div class="kd-ai-empty">Ask a question or upload a screenshot/photo.</div></div><div class="kd-ai-compose"><textarea id="kdAiInput" class="kd-ai-input" rows="3" aria-label="AI Studio question" placeholder="Ask a question, follow up, or attach an image..."></textarea><div class="kd-ai-side"><label class="kd-upload" for="kdAiFile">Upload image<input id="kdAiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><span id="kdFileName" class="kd-file-name">No image selected</span><button id="kdAiSend" class="kd-ai-send" type="button">Send</button></div></div></div>';bindAI()}
-function renderAI(){const h=$('#kdAiHistory');if(!h)return;h.innerHTML='';if(!ai.messages.length){h.innerHTML='<div class="kd-ai-empty">Ask a question or upload a screenshot/photo.</div>';return}ai.messages.forEach(m=>{const row=document.createElement('div');row.className='kd-ai-message '+m.role;const b=document.createElement('div');b.className='kd-ai-bubble';if(m.image){const im=document.createElement('img');im.src=m.image;im.alt='Image attached to this message';b.appendChild(im)}const t=document.createElement('div');t.textContent=m.content||'';b.appendChild(t);row.appendChild(b);h.appendChild(row)});h.scrollTop=h.scrollHeight}
-function bindAI(){const f=$('#kdAiFile'),i=$('#kdAiInput'),s=$('#kdAiSend'),n=$('#kdNewChat');f.onchange=()=>{const file=f.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{ai.image=String(reader.result);$('#kdFileName').textContent=file.name};reader.readAsDataURL(file)};n.onclick=()=>{ai.messages=[];ai.image=null;f.value='';i.value='';$('#kdFileName').textContent='No image selected';$('#kdAiStatus').textContent='Ready · '+MODEL;renderAI()};i.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();s.click()}};s.onclick=sendAI}
-function apiKey(){return String(window.KORONA_GROQ_API_KEY||'').trim()}
-async function sendAI(){const i=$('#kdAiInput'),s=$('#kdAiSend'),status=$('#kdAiStatus'),text=(i.value||'').trim();if(!text&&!ai.image){status.textContent='Enter a question or attach an image.';return}const k=apiKey();if(!k){status.textContent='Groq API key is not configured.';return}const user={role:'user',content:text||'Inspect this image and explain or solve what it shows.',image:ai.image};ai.messages.push(user);renderAI();i.value='';s.disabled=true;status.textContent='Thinking…';try{const messages=[{role:'system',content:'You are Korona AI Studio. Use the complete conversation for follow-ups. When an image is attached, inspect the actual image carefully. You can analyze screenshots, photos, math, English, worksheets, diagrams, and other visible content. Answer clearly and directly.'}];for(const m of ai.messages){if(m.image)messages.push({role:m.role,content:[{type:'text',text:m.content||''},{type:'image_url',image_url:{url:m.image}}]});else messages.push({role:m.role,content:m.content||''})}const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},body:JSON.stringify({model:MODEL,messages,temperature:.7,max_tokens:MAX_TOKENS,reasoning_effort:'none'})});const d=await r.json();if(!r.ok)throw new Error(d?.error?.message||('Groq request failed ('+r.status+')'));const answer=d?.choices?.[0]?.message?.content;if(!answer)throw new Error('Groq returned no answer.');ai.messages.push({role:'assistant',content:String(answer),image:null});ai.image=null;fClear();status.textContent='Complete · '+MODEL;renderAI()}catch(e){ai.messages.pop();renderAI();status.textContent='AI error · '+e.message}finally{s.disabled=false}}
-function fClear(){const f=$('#kdAiFile');if(f)f.value='';const n=$('#kdFileName');if(n)n.textContent='No image selected'}
-function show(name,btn){const map={home:'homePage',games:'gamesPage',apps:'appsPage',proxy:'proxyPage',settings:'settingsPage',account:'accountPage','kd-ai':'kdAiPage'};const target=$('#'+map[name]);if(!target)return;$$('.content>.page').forEach(p=>{p.classList.toggle('active',p===target);p.style.display=p===target?'block':'none'});$$('.sidebar-nav .nav-button').forEach(b=>b.classList.toggle('active',b===btn));const c=$('.content');if(c)c.scrollTop=0;if(name==='kd-ai')renderAI()}
-function bindNav(){const nav=$('#koronaSidebar .sidebar-nav');$$('.nav-button',nav).forEach(btn=>btn.onclick=e=>{e.preventDefault();show(btn.dataset.page,btn)});$$('[data-page-jump]').forEach(b=>b.onclick=e=>{e.preventDefault();const target=nav.querySelector('[data-page="'+b.dataset.pageJump+'"]');show(b.dataset.pageJump,target)})}
-function cleanOldCharacterNodes(){$$('.korona-character-dock,.korona-character,#koronaCharacterArt,#koronaCharacterBadge,.fern-character').forEach(x=>x.remove())}
-function boot(){cleanOldCharacterNodes();normalizeNav();installAI();buildSettings();installCharacter();applyAppearance();applyCharacter();bindNav();show('home',$('#kdAiNav')?.previousElementSibling?.previousElementSibling);}
+function buildAI(){ $$('#aiPage,#koronaAiPage').forEach(x=>x.remove());const page=document.createElement('section');page.id='aiPage';page.className='page';page.innerHTML=`<div class="kai-shell"><div class="kai-head"><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Ask questions, upload screenshots, or continue a conversation.</p></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…"></textarea><img id="kaiPreview" class="kai-preview" alt="Attached image preview"><div class="kai-actions"><label class="kai-file">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button type="button" class="primary" id="kaiSend">Send</button><button type="button" id="kaiNew">New Chat</button><span class="kai-status" id="kaiStatus">Qwen 3.8 27B · vision + text</span></div></div></div>`;$('.content').appendChild(page);$('#kaiFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{ai.image=r.result;$('#kaiPreview').src=ai.image;$('#kaiPreview').classList.add('show')};r.readAsDataURL(f)};$('#kaiNew').onclick=()=>{ai.messages=[];ai.image=null;$('#kaiPrompt').value='';$('#kaiFile').value='';$('#kaiPreview').classList.remove('show');renderAI();$('#kaiStatus').textContent='New chat · Qwen 3.8 27B'};$('#kaiSend').onclick=sendAI;$('#kaiPrompt').onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendAI()}};renderAI()}
+function renderAI(){const h=$('#kaiHistory');if(!h)return;if(!ai.messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.</div>';return}h.innerHTML=ai.messages.map(m=>`<div class="kai-msg ${m.role}"><div class="kai-bubble">${escapeHTML(m.content)}${m.image?`<img src="${m.image}" alt="Attached image">`:''}</div></div>`).join('');h.scrollTop=h.scrollHeight}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function sendAI(){const input=$('#kaiPrompt');const text=input.value.trim();if(!text&&!ai.image)return;const turn={role:'user',content:text||'Please analyze this image.',image:ai.image};ai.messages.push(turn);input.value='';renderAI();$('#kaiStatus').textContent='Thinking…';const key=window.KORONA_GROQ_API_KEY||'';if(!key){ai.messages.push({role:'assistant',content:'AI error: Groq API key is not configured.'});renderAI();$('#kaiStatus').textContent='Configuration error';return}const messages=ai.messages.map(m=>({role:m.role,content:m.image?[{type:'text',text:m.content},{type:'image_url',image_url:{url:m.image}}]:m.content}));try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'qwen/qwen3.8-27b',messages,temperature:.2,max_tokens:512})});const data=await res.json();if(!res.ok)throw new Error(data.error?.message||`Groq HTTP ${res.status}`);ai.messages.push({role:'assistant',content:data.choices?.[0]?.message?.content||'No response returned.'});renderAI();$('#kaiStatus').textContent='Qwen 3.8 27B · ready'}catch(e){ai.messages.push({role:'assistant',content:'AI error · '+e.message});renderAI();$('#kaiStatus').textContent='Request failed'}}
+function nav(){const sidebar=$('.sidebar-nav');if(!sidebar)return;$$('.sidebar-nav .nav-button').forEach(b=>b.removeAttribute('data-korona-bound'));if(!sidebar.querySelector('[data-page="ai"]')){const b=document.createElement('button');b.type='button';b.className='nav-button';b.dataset.page='ai';b.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';sidebar.appendChild(b)}const pages={home:'homePage',games:'gamesPage',apps:'appsPage',proxy:'proxyPage',settings:'settingsPage',account:'accountPage',ai:'aiPage'};const buttons=$$('.sidebar-nav .nav-button');buttons.forEach(b=>b.onclick=()=>{const id=pages[b.dataset.page];if(!id)return;buttons.forEach(x=>x.classList.toggle('active',x===b));Object.values(pages).forEach(pid=>{const p=$('#'+pid);if(p)p.classList.toggle('active',pid===id)});if(id==='settingsPage'){$('#settingsPage').scrollTop=0}if(id==='aiPage')$('#aiPage').scrollTop=0});}
+function cleanLegacy(){// Remove duplicate AI controls/pages produced by earlier repair scripts.
+$$('[data-korona-ai],#koronaAiPage').forEach(x=>x.remove());$$('.nav-button[data-page="ai"]').forEach((x,i)=>{if(i>0)x.remove()});
+// Remove old character visual layer; settings will create exactly one.
+$$('#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-character,.fern-character').forEach(x=>x.remove());
+// Kill old global opacity/scale inline mutations on app shell.
+$$('#app,.content,.page,.korona-sidebar').forEach(x=>{x.style.removeProperty('opacity');x.style.removeProperty('transform');x.style.removeProperty('zoom')});
+}
+function boot(){cleanLegacy();buildAI();buildSettings();buildCharacterLayer();nav();applyTheme(state.theme);applyScale();window.KORONA_GROQ_MODEL='qwen/qwen3.8-27b';const home=$('#homePage'),first=$('.sidebar-nav .nav-button[data-page="home"]');$$('.page').forEach(p=>p.classList.remove('active'));if(home)home.classList.add('active');$$('.sidebar-nav .nav-button').forEach(b=>b.classList.toggle('active',b===first));}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
-
-</body>
-</html>
+</body></html>
