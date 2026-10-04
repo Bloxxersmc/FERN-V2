@@ -7529,4 +7529,89 @@ html,body{background:transparent!important}
  let gridSig=''; const mo=new MutationObserver(()=>{const g=$('.k-character-grid');if(g){const sig=g.children.length+'|'+g.textContent.length;if(sig!==gridSig){gridSig=sig;characterGrid();normalizeCharacter()}}if($('#kaiFile'))attachment()});mo.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
+\n<style id="korona-restore-new-characters-ai">
+/* Final restoration: keep the newer character set and exactly one AI Studio entry. */
+.k-character-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))!important;gap:12px!important}
+.k-character-choice{min-height:150px!important;padding:7px!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-end!important;overflow:hidden!important}
+.k-character-choice img{width:100%!important;height:128px!important;object-fit:contain!important;display:block!important}
+.k-character-choice span{display:none!important}
+.k-character-choice strong{text-align:center!important;margin-top:5px!important}
+</style>
+<script id="korona-restore-new-characters-ai-script">
+(()=>{
+ 'use strict';
+ const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+ const chars={
+  none:['None',''],
+  gojo:['Gojo',''],
+  naruto:['Naruto',''],
+  hunter:['Hunter',''],
+  lebron:['LeBron James',''],
+  miku:['Miku',''],
+  teto:['Teto',''],
+  neru:['Neru',''],
+  luka:['Luka',''],
+  rin:['Rin',''],
+  len:['Len',''],
+  kaito:['Kaito',''],
+  meiko:['Meiko','']
+ };
+ const art={
+  gojo:'https://img.favpng.com/5/7/12/satoru-gojo-anime-character-in-action-pose-0grZfvWw.jpg',
+  naruto:'https://www.vhv.rs/dpng/d/339-3395432_naruto-uzumaki-is-a-shinobi-of-konohagakure-transparent.png',
+  hunter:'https://upload.wikimedia.org/wikipedia/en/3/3a/Hunter_x_Hunter.png',
+  lebron:'https://www.freeiconspng.com/uploads/lebron-james-png-5.png',
+  miku:'https://static.wikia.nocookie.net/vocaloid/images/f/f9/Miku_Chinese.png/revision/latest?cb=20220327221551',
+  teto:'https://static.wikia.nocookie.net/vocaloid/images/5/5a/Teto.png/revision/latest?cb=20260310064834',
+  neru:'https://commons.wikimedia.org/wiki/Special:FilePath/Akita_Neru.jpg',
+  luka:'https://p7.hiclipart.com/preview/985/96/2/megurine-luka-vocaloid-kagamine-rin-len-utau-anime-megurine-luka.jpg',
+  rin:'https://www.pikpng.com/pngl/m/445-4458790_rin-kagamine-transparent-background-png-download-rin-kagamine.png',
+  len:'https://www.kindpng.com/picc/m/440-4406188_len-kagamine-transparent-hd-png-download.png',
+  kaito:'https://www.pngkit.com/png/detail/735-7358172_kaito.png',
+  meiko:'https://p7.hiclipart.com/preview/190/193/202/meiko-vocaloid-kaito-kagamine-rin-len-crypton-future-media-hatsune-miku.jpg'
+ };
+ function restoreCharacters(){
+  const grid=$('.k-character-grid'); if(!grid)return;
+  const selected=localStorage.getItem('korona_clean_char_v3')||localStorage.getItem('korona_clean_char')||'none';
+  const valid=Object.prototype.hasOwnProperty.call(chars,selected)?selected:'none';
+  grid.innerHTML=Object.entries(chars).map(([id,c])=>`<button type="button" class="k-character-choice ${id===valid?'active':''}" data-char="${id}" aria-label="Select ${c[0]}">${id==='none'?'<div class="k-none-art">NONE</div>':`<img src="${art[id]}" alt="${c[0]}" loading="eager" referrerpolicy="no-referrer">`}<strong>${c[0]}</strong></button>`).join('');
+  $$('.k-character-choice',grid).forEach(b=>b.onclick=()=>{
+   const id=b.dataset.char;
+   localStorage.setItem('korona_clean_char_v3',id);
+   localStorage.setItem('korona_clean_char',id);
+   if(typeof window.applyChar==='function')window.applyChar();
+   document.documentElement.dataset.koronaCharacter=id;
+   const box=$('#korona-clean-character'),img=box&&$('img',box);
+   if(box&&img){if(id==='none'){box.style.display='none';box.classList.remove('visible');img.removeAttribute('src')}else{img.src=art[id];img.alt=chars[id][0];box.style.display='flex';box.classList.add('visible')}}
+   $$('.k-character-choice',grid).forEach(x=>x.classList.toggle('active',x===b));
+  });
+ }
+ function restoreAI(){
+  const sidebar=$('.sidebar-nav'); if(!sidebar)return;
+  // Remove every competing AI button except our canonical one.
+  const buttons=$$('.sidebar-nav .nav-button[data-page="ai"],.sidebar-nav [data-korona-ai]');
+  let canonical=buttons.find(b=>b.dataset.page==='ai')||buttons[0]||null;
+  buttons.forEach(b=>{if(b!==canonical)b.remove()});
+  if(!canonical){
+   canonical=document.createElement('button');
+   canonical.type='button'; canonical.className='nav-button'; canonical.dataset.page='ai';
+   canonical.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
+   sidebar.appendChild(canonical);
+  }else{
+   canonical.dataset.page='ai'; canonical.className='nav-button';
+   canonical.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
+  }
+  const page=$('#aiPage'); if(!page)return;
+  canonical.onclick=()=>{
+   $$('.sidebar-nav .nav-button').forEach(x=>x.classList.toggle('active',x===canonical));
+   $$('.page').forEach(p=>p.classList.toggle('active',p===page));
+   page.scrollTop=0;
+  };
+ }
+ function run(){restoreCharacters();restoreAI()}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+ setTimeout(run,250);setTimeout(run,800);setTimeout(run,1600);
+})();
+</script>
+
 </body></html>
