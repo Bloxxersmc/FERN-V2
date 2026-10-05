@@ -7835,4 +7835,133 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 new MutationObserver(()=>{if($('#kaiSend'))bind()}).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
+
+<style id="korona-v5-final-ui">
+/* Final layout: keep the browser input, but make it flush with the browser panel. */
+#proxyPage, #aiPage{box-sizing:border-box!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+#proxyPage.active,#aiPage.active{display:flex!important;flex-direction:column!important}
+#proxyPage .browser-page{flex:1 1 auto!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;display:flex!important;flex-direction:column!important}
+#proxyPage .browser-window{flex:1 1 auto!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+#proxyPage .browser-toolbar{flex:0 0 auto!important;width:100%!important;box-sizing:border-box!important;margin:0!important;border-radius:0!important}
+#proxyPage .browser-address{display:flex!important;flex:1 1 auto!important;min-width:0!important;width:auto!important;margin:0!important;border-radius:9px!important}
+#proxyPage .iframe-container{flex:1 1 auto!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;border-radius:0!important;overflow:hidden!important}
+#proxyPage .browser-frames,#proxyPage .browser-frame,#proxyPage .browser-frames iframe,#proxyPage .browser-newtab{width:100%!important;height:100%!important;min-width:0!important;min-height:0!important}
+#proxyPage .browser-topline{display:none!important}
+
+/* AI takes every pixel beside the sidebar. */
+#aiPage .kai-shell{box-sizing:border-box!important;width:100%!important;height:100%!important;min-height:0!important;padding:0!important;margin:0!important;gap:0!important;display:flex!important;flex-direction:column!important}
+#aiPage .kai-head{flex:0 0 auto!important;padding:16px 20px!important;margin:0!important;border-bottom:1px solid var(--k-border)!important}
+#aiPage .kai-history{flex:1 1 auto!important;height:auto!important;min-height:0!important;padding:20px!important;margin:0!important;overflow:auto!important}
+#aiPage .kai-compose{flex:0 0 auto!important;padding:12px 16px 14px!important;margin:0!important;border-radius:0!important;border-left:0!important;border-right:0!important;border-bottom:0!important}
+#aiPage #kaiPrompt{width:100%!important;box-sizing:border-box!important}
+
+/* Real MathJax output */
+#aiPage .kai-math-display{display:block!important;overflow-x:auto!important;overflow-y:hidden!important;padding:12px 4px!important;margin:12px 0!important;text-align:center!important;font-size:1.08em!important}
+#aiPage .kai-math-inline{white-space:nowrap!important}
+#aiPage mjx-container{color:inherit!important}
+#aiPage mjx-container[display="true"]{margin:1em 0!important;overflow-x:auto!important;overflow-y:hidden!important;max-width:100%!important}
+#aiPage .kai-markdown p{line-height:1.6!important}
+#aiPage .kai-markdown h2,#aiPage .kai-markdown h3,#aiPage .kai-markdown h4{line-height:1.25!important;margin:18px 0 8px!important}
+#aiPage .kai-markdown ul,#aiPage .kai-markdown ol{padding-left:28px!important;margin:8px 0 12px!important}
+#aiPage .kai-markdown li{margin:5px 0!important;line-height:1.5!important}
+#aiPage .kai-markdown blockquote{margin:12px 0!important;padding:8px 14px!important;border-left:3px solid var(--k-accent)!important}
+</style>
+<script id="korona-v5-math-final">
+(function(){
+'use strict';
+const S=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
+const MODEL=window.KORONA_GROQ_MODEL||'qwen/qwen3.8-27b';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+function status(t){const e=$('#kaiStatus');if(e)e.textContent=t}
+function loadMathJax(){
+ if(window.MathJax?.typesetPromise)return Promise.resolve();
+ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['\\[','\\]'],['$$','$$']],processEscapes:true,processEnvironments:true},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},startup:{typeset:false}};
+ return new Promise(resolve=>{const old=document.getElementById('korona-mathjax');if(old){old.addEventListener('load',resolve,{once:true});return}const sc=document.createElement('script');sc.id='korona-mathjax';sc.async=true;sc.src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';sc.onload=resolve;sc.onerror=resolve;document.head.appendChild(sc)});
+}
+function md(src){
+ let s=String(src??'').replace(/\r\n?/g,'\n');
+ const blocks=[], math=[];
+ // Protect fenced code first.
+ s=s.replace(/```([^\n`]*)\n?([\s\S]*?)```/g,(_,lang,code)=>{const i=blocks.length;blocks.push('<pre class="kai-code"><div class="kai-code-head"><span>'+esc(lang||'code')+'</span><button type="button" class="kai-copy" data-copy-code="'+i+'">Copy</button></div><code>'+esc(code.replace(/\n$/,''))+'</code></pre>');return '\u0000CODE'+i+'\u0000'});
+ // Display math: $$...$$ and \[...\].
+ s=s.replace(/\$\$([\s\S]+?)\$\$/g,(_,x)=>{const i=math.length;math.push('<div class="kai-math-display">\\['+esc(x.trim())+'\\]</div>');return '\u0000MATH'+i+'\u0000'});
+ s=s.replace(/\\\[([\s\S]+?)\\\]/g,(_,x)=>{const i=math.length;math.push('<div class="kai-math-display">\\['+esc(x.trim())+'\\]</div>');return '\u0000MATH'+i+'\u0000'});
+ // Inline math: \(...\) and $...$.
+ s=s.replace(/\\\((.+?)\\\)/g,(_,x)=>{const i=math.length;math.push('<span class="kai-math-inline">\\('+esc(x.trim())+'\\)</span>');return '\u0000MATH'+i+'\u0000'});
+ s=s.replace(/(?<!\$)\$([^$\n]+?)\$(?!\$)/g,(_,x)=>{const i=math.length;math.push('<span class="kai-math-inline">\\('+esc(x.trim())+'\\)</span>');return '\u0000MATH'+i+'\u0000'});
+ // Heuristic for standalone LaTeX equation lines emitted without delimiters.
+ s=s.split('\n').map(line=>{
+   const t=line.trim();
+   if(t && !/^[-*+>#\d]/.test(t) && /\\(?:frac|sqrt|lim|sum|int|prod|sin|cos|tan|log|ln|cdot|times|pm|leq|geq|neq|to|infty|alpha|beta|gamma|Delta|pi|theta)|\^|_/.test(t) && t.length<220){
+     const i=math.length;math.push('<div class="kai-math-display">\\['+esc(t)+'\\]</div>');return '\u0000MATH'+i+'\u0000';
+   }
+   return line;
+ }).join('\n');
+ s=esc(s).replace(/\u0000CODE(\d+)\u0000/g,(_,i)=>blocks[+i]).replace(/\u0000MATH(\d+)\u0000/g,(_,i)=>math[+i]);
+ s=s.replace(/^###\s+(.+)$/gm,'<h4>$1</h4>').replace(/^##\s+(.+)$/gm,'<h3>$1</h3>').replace(/^#\s+(.+)$/gm,'<h2>$1</h2>');
+ s=s.replace(/^>\s?(.*)$/gm,'<blockquote>$1</blockquote>');
+ s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)(?:\s+"[^"]*")?\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+ s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+ s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>');
+ s=s.replace(/~~([^~\n]+)~~/g,'<del>$1</del>');
+ s=s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>').replace(/(?<!_)_([^_\n]+)_(?!_)/g,'<em>$1</em>');
+ const lines=s.split('\n'),out=[];let listType=null,list=[];
+ const flush=()=>{if(list.length){out.push('<'+listType+'>'+list.join('')+'</'+listType+'>');list=[];listType=null}};
+ for(const line of lines){
+   if(/^<pre class="kai-code">/.test(line)){flush();out.push(line);continue}
+   const ul=line.match(/^\s*[-*+]\s+(.+)$/),ol=line.match(/^\s*\d+[.)]\s+(.+)$/);
+   if(ul||ol){const typ=ul?'ul':'ol';if(listType&&listType!==typ)flush();listType=typ;list.push('<li>'+((ul||ol)[1])+'</li>');continue}
+   flush();if(!line.trim())continue;
+   if(/^<(h[234]|blockquote|div class="kai-math-display|span class="kai-math-inline|pre)/.test(line))out.push(line);else out.push('<p>'+line+'</p>');
+ }
+ flush();return out.join('');
+}
+async function typeset(){
+ const h=$('#kaiHistory');if(!h)return;
+ if(window.MathJax?.typesetPromise){try{await window.MathJax.typesetPromise([h])}catch(e){}}
+}
+function render(){
+ const h=$('#kaiHistory');if(!h)return;
+ if(!S.messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.<br><small>Web access and vision are enabled.</small></div>';return}
+ h.innerHTML=S.messages.map((m,i)=>'<div class="kai-msg '+esc(m.role)+'"><div class="kai-bubble"><div class="kai-markdown">'+md(m.content||'')+'</div>'+(m.image?'<div class="kai-sent-image"><img src="'+m.image+'" alt="Attached image"><button type="button" class="kai-image-remove" data-remove-turn="'+i+'">×</button></div>':'')+(m.sources?.length?'<div class="kai-source-list"><strong>Web sources</strong><br>'+m.sources.map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.title||x.url)+'</a>').join('<br>')+'</div>':'')+'</div></div>').join('');
+ h.scrollTop=h.scrollHeight;
+ h.querySelectorAll('[data-remove-turn]').forEach(b=>b.onclick=()=>{const i=+b.dataset.removeTurn;if(S.messages[i]){S.messages[i].image=null;render()}});
+ h.querySelectorAll('.kai-copy').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.closest('.kai-code')?.querySelector('code')?.textContent||'');b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1000)}catch{}});
+ typeset();
+}
+async function webSearch(q){
+ q=String(q||'').trim();if(!q||q.length<5)return {context:'',sources:[]};
+ const sources=[],chunks=[];
+ try{const r=await fetch('https://api.duckduckgo.com/?q='+encodeURIComponent(q)+'&format=json&no_html=1&skip_disambig=0');if(r.ok){const d=await r.json();if(d.AbstractText)chunks.push('DuckDuckGo: '+d.AbstractText);if(d.AbstractURL)sources.push({title:d.Heading||'DuckDuckGo result',url:d.AbstractURL});for(const x of (d.RelatedTopics||[]).slice(0,5)){if(x.Text)chunks.push(x.Text);if(x.FirstURL)sources.push({title:String(x.Text||'Web result').slice(0,100),url:x.FirstURL})}}}catch{}
+ try{const r=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(q)+'&format=json&origin=*');if(r.ok){const d=await r.json();for(const x of (d.query?.search||[]).slice(0,5)){const sn=String(x.snippet||'').replace(/<[^>]+>/g,'');chunks.push('Wikipedia: '+x.title+' — '+sn);sources.push({title:'Wikipedia: '+x.title,url:'https://en.wikipedia.org/wiki/'+encodeURIComponent(String(x.title).replace(/ /g,'_'))})}}}catch{}
+ return {context:chunks.length?'\n\nLIVE WEB RESULTS:\n'+chunks.slice(0,10).join('\n'):'',sources:sources.slice(0,8)};
+}
+function shouldSearch(t){t=String(t||'').trim();return t.length>=8&&!/^(hi|hello|hey|thanks|thank you|ok|okay|yo|test)[!. ]*$/i.test(t)}
+async function send(){
+ const input=$('#kaiPrompt'),btn=$('#kaiSend');if(!input)return;const text=input.value.trim(),image=S.image;if(!text&&!image){status('Enter a message or attach an image.');return}
+ const key=String(window.KORONA_GROQ_API_KEY||'').trim();if(!key){status('Groq API key is not configured.');return}
+ S.messages.push({role:'user',content:text||(image?'Inspect this image carefully.':''),image:image||null});input.value='';S.image=null;const f=$('#kaiFile');if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')};render();if(btn)btn.disabled=true;
+ let web={context:'',sources:[]};if(text&&shouldSearch(text)){status('Searching the web…');web=await webSearch(text)}status(image?'Analyzing image…':web.context?'Using live web results…':'Thinking…');
+ try{
+  const sys='You are Korona AI Studio, a precise text and vision assistant with live web-search context. When an image is attached, inspect it carefully before answering. Read visible text, equations, labels, diagrams, tables, UI elements and answer choices when possible. Do not invent unreadable details. For mathematics, use real LaTeX delimiters: inline \\(...\\) or $...$, and display \\[...\\] or $$...$$. Never output raw LaTeX commands as plain prose when they are intended as equations. Use proper mathematical notation and symbols naturally. For fractions, use \\frac{a}{b}; roots use \\sqrt{x}; limits use \\lim_{x\\to0}; exponents/subscripts use ^{} and _{}. Use clear headings and step-by-step structure for math. Use Markdown naturally. Treat LIVE WEB RESULTS as source context and do not invent facts not supported by them.'+(web.context?'\n'+web.context:'');
+  const api=[{role:'system',content:sys}];
+  for(const m of S.messages){if(m.role==='assistant')api.push({role:'assistant',content:m.content||''});else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content||'Inspect this image carefully.'},{type:'image_url',image_url:{url:m.image}}]});else api.push({role:'user',content:m.content||''})}
+  const maxTokens=image?4096:1024;
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODEL,messages:api,max_tokens:maxTokens,temperature:image?.2:.4})});
+  let data=null;try{data=await res.json()}catch{}if(!res.ok)throw new Error(data?.error?.message||('Groq request failed ('+res.status+')'));const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error('Groq returned no response.');S.messages.push({role:'assistant',content:String(answer),sources:web.sources||[]});status('Ready · '+MODEL+(image?' · Vision 4096':' · Text 1024'));render();
+ }catch(e){S.messages.push({role:'assistant',content:'**AI request failed:** '+String(e?.message||e)});status('Request failed');render()}finally{if(btn)btn.disabled=false}
+}
+function bind(){
+ const b=$('#kaiSend'),i=$('#kaiPrompt'),f=$('#kaiFile'),n=$('#kaiNew');if(!b||!i)return;
+ b.dataset.webBound='v5';b.onclick=send;i.onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send()}};
+ if(f)f.onchange=async()=>{const file=f.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){f.value='';status('Please choose an image.');return}if(file.size>12*1024*1024){f.value='';status('Image is too large (max 12 MB).');return}try{const r=new FileReader();r.onload=()=>{S.image=String(r.result);const p=$('#kaiPreview');if(p){p.src=S.image;p.classList.add('show')}status('Image attached · ready to send')};r.readAsDataURL(file)}catch{status('Could not read image.')}};
+ if(n)n.onclick=()=>{S.messages=[];S.image=null;i.value='';if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}render();status('New chat')};
+ const clear=$('#kaiClearImage');if(clear)clear.onclick=()=>{S.image=null;if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}status('Ready · '+MODEL)};
+ render();
+}
+async function init(){await loadMathJax();bind();render()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
 </body></html>
