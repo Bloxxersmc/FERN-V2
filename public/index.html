@@ -3908,7 +3908,7 @@ body.korona-auth-unlocked #app {
                 <button class="browser-nav-button" id="browserFullscreen" title="Fullscreen browser" type="button">⛶</button>
               </div>
               <div class="iframe-container" id="iframeContainer">
-                <div class="browser-frames" id="browserFrames"><div class="browser-newtab" id="browserNewTab"><div class="newtab-k">K</div><h3>korona</h3><p>Search the web or enter a website address above.</p><span>+ opens a new tab</span></div></div>
+                <div class="browser-frames" id="browserFrames"><div class="browser-newtab" id="browserNewTab"><div class="newtab-k">K</div><h3>korona</h3><p>Open a site from a Korona tab or app.</p><span>+ opens a new tab</span></div></div>
                 <div class="proxy-opening-overlay" id="proxyOpeningOverlay"><div class="proxy-opening-text">OPENING WINDOW...</div></div>
                 <div class="iframe-toolbar"><button id="fullscreenButton" title="Press and hold for fullscreen" type="button">⛶</button><button id="reloadButton" title="Reload current site" type="button">↻</button></div>
               </div>
@@ -7756,4 +7756,83 @@ function boot(){const page=document.getElementById('aiPage');if(!page)return;con
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 setTimeout(boot,300);setTimeout(boot,900);
 })();</script>
+
+<style id="korona-fullspace-web-final">
+/* Korona full-space browser + AI Studio */
+.content > .page { width:100% !important; max-width:none !important; min-height:100vh !important; height:100vh !important; margin:0 !important; padding:0 !important; overflow:hidden !important; box-sizing:border-box !important; }
+#proxyPage, #aiPage { width:100% !important; height:100vh !important; min-height:0 !important; margin:0 !important; padding:0 !important; overflow:hidden !important; }
+/* Remove the standalone browser address/search input box as requested. */
+#proxyPage .browser-address { display:none !important; }
+#proxyPage .browser-toolbar { justify-content:flex-start !important; }
+#proxyPage .browser-window { width:100% !important; height:100% !important; min-height:0 !important; display:flex !important; flex-direction:column !important; border:0 !important; }
+#proxyPage .browser-tabs { flex:0 0 45px !important; }
+#proxyPage .iframe-container { flex:1 1 auto !important; width:100% !important; height:auto !important; min-height:0 !important; margin:0 !important; border:0 !important; border-radius:0 !important; }
+#proxyPage .browser-frames, #proxyPage .browser-frame, #proxyPage .browser-frame iframe { width:100% !important; height:100% !important; min-height:0 !important; }
+#proxyPage .browser-topline { display:none !important; }
+#proxyPage .iframe-toolbar { z-index:20 !important; }
+#proxyPage .browser-newtab { height:100% !important; min-height:0 !important; }
+/* AI Studio owns the entire content area beside the sidebar. */
+#aiPage { display:none; }
+#aiPage.active { display:block !important; }
+#aiPage .kai-shell { width:100% !important; max-width:none !important; height:100% !important; min-height:0 !important; margin:0 !important; padding:0 !important; display:flex !important; flex-direction:column !important; }
+#aiPage .kai-head { flex:0 0 auto !important; padding:18px 22px 12px !important; margin:0 !important; border-bottom:1px solid var(--k-border) !important; }
+#aiPage .kai-head h2 { margin:3px 0 !important; font-size:24px !important; }
+#aiPage .kai-head p { margin:0 !important; }
+#aiPage .kai-history { flex:1 1 auto !important; min-height:0 !important; height:auto !important; margin:0 !important; border:0 !important; border-radius:0 !important; padding:22px !important; overflow:auto !important; }
+#aiPage .kai-compose { flex:0 0 auto !important; margin:0 !important; border-top:1px solid var(--k-border) !important; border-radius:0 !important; padding:12px 16px 14px !important; background:var(--k-panel) !important; }
+#aiPage #kaiPrompt { min-height:72px !important; max-height:180px !important; }
+.kai-web-status { display:inline-flex; align-items:center; gap:7px; margin-left:8px; color:var(--k-muted); font-size:11px; }
+.kai-web-dot { width:7px; height:7px; border-radius:50%; background:#36d98b; box-shadow:0 0 9px rgba(54,217,139,.6); }
+.kai-source-list { margin-top:10px; padding-top:8px; border-top:1px solid var(--k-border); font-size:11px; }
+.kai-source-list a { color:var(--k-accent); }
+</style>
+<script id="korona-fullspace-web-final-script">
+(function(){
+'use strict';
+const S=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
+const MODEL=window.KORONA_GROQ_MODEL||'qwen/qwen3.8-27b';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+function status(t){const e=$('#kaiStatus');if(e)e.textContent=t;}
+function md(src){
+ let s=String(src??'').replace(/\r\n?/g,'\n'),blocks=[],math=[];
+ s=s.replace(/```([^\n`]*)\n?([\s\S]*?)```/g,(_,lang,code)=>{let i=blocks.length;blocks.push('<pre class="kai-code"><div class="kai-code-head"><span>'+esc(lang||'code')+'</span><button type="button" class="kai-copy" data-copy-code="'+i+'">Copy</button></div><code>'+esc(code.replace(/\n$/,''))+'</code></pre>');return '\u0000CODE'+i+'\u0000'});
+ s=s.replace(/\$\$([\s\S]+?)\$\$/g,(_,x)=>{let i=math.length;math.push('<div class="kai-math kai-math-display">'+esc(x.trim())+'</div>');return '\u0000MATH'+i+'\u0000'});
+ s=s.replace(/(?<!\$)\$([^$\n]+?)\$(?!\$)/g,(_,x)=>{let i=math.length;math.push('<span class="kai-math kai-math-inline">'+esc(x.trim())+'</span>');return '\u0000MATH'+i+'\u0000'});
+ s=esc(s).replace(/\u0000CODE(\d+)\u0000/g,(_,i)=>blocks[+i]).replace(/\u0000MATH(\d+)\u0000/g,(_,i)=>math[+i]);
+ s=s.replace(/^###\s+(.+)$/gm,'<h4>$1</h4>').replace(/^##\s+(.+)$/gm,'<h3>$1</h3>').replace(/^#\s+(.+)$/gm,'<h2>$1</h2>');
+ s=s.replace(/^>\s?(.*)$/gm,'<blockquote>$1</blockquote>');
+ s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)(?:\s+"[^"]*")?\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+ s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>').replace(/~~([^~\n]+)~~/g,'<del>$1</del>').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>');
+ const lines=s.split('\n'),out=[];let list=[];const flush=()=>{if(list.length){out.push('<ul>'+list.join('')+'</ul>');list=[]}};
+ for(const line of lines){if(/^\s*[-*]\s+/.test(line)){list.push('<li>'+line.replace(/^\s*[-*]\s+/,'')+'</li>');continue}if(/^\s*\d+\.\s+/.test(line)){list.push('<li>'+line.replace(/^\s*\d+\.\s+/,'')+'</li>');continue}flush();if(!line.trim()){out.push('');continue}if(/^<(h[234]|pre|blockquote|div class="kai-math)/.test(line)){out.push(line);continue}out.push('<p>'+line+'</p>')}
+ flush();return out.join('');
+}
+function render(){const h=$('#kaiHistory');if(!h)return;if(!S.messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.<br><small>Web access is enabled for current information.</small></div>';return}h.innerHTML=S.messages.map((m,i)=>'<div class="kai-msg '+m.role+'"><div class="kai-bubble"><div class="kai-markdown">'+md(m.content||'')+'</div>'+(m.image?'<div class="kai-sent-image"><img src="'+m.image+'" alt="Attached image"><button type="button" class="kai-image-remove" data-remove-turn="'+i+'">×</button></div>':'')+(m.sources?.length?'<div class="kai-source-list"><strong>Web sources</strong><br>'+m.sources.map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.title||x.url)+'</a>').join('<br>')+'</div>':'')+'</div></div>').join('');h.scrollTop=h.scrollHeight;h.querySelectorAll('[data-remove-turn]').forEach(b=>b.onclick=()=>{let i=+b.dataset.removeTurn;if(S.messages[i]){S.messages[i].image=null;render()}});h.querySelectorAll('.kai-copy').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.parentElement?.nextElementSibling?.textContent||'');b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1000)}catch{}});}
+async function webSearch(q){
+ q=String(q||'').trim(); if(!q||q.length<4)return {context:'',sources:[]};
+ const sources=[];let chunks=[];
+ try{const u='https://api.duckduckgo.com/?q='+encodeURIComponent(q)+'&format=json&no_html=1&skip_disambig=0';const r=await fetch(u,{headers:{Accept:'application/json'}});if(r.ok){const d=await r.json();if(d.AbstractText)chunks.push('DuckDuckGo instant answer: '+d.AbstractText);if(d.AbstractURL)sources.push({title:d.Heading||'DuckDuckGo result',url:d.AbstractURL});for(const x of (d.RelatedTopics||[]).slice(0,5)){if(x.Text)chunks.push(x.Text);if(x.FirstURL)sources.push({title:x.Text?.slice(0,90)||'Related result',url:x.FirstURL})}}}catch{}
+ try{const u='https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(q)+'&format=json&origin=*';const r=await fetch(u);if(r.ok){const d=await r.json();for(const x of (d.query?.search||[]).slice(0,5)){chunks.push('Wikipedia: '+x.title+' — '+String(x.snippet||'').replace(/<[^>]+>/g,''));sources.push({title:'Wikipedia: '+x.title,url:'https://en.wikipedia.org/wiki/'+encodeURIComponent(x.title.replace(/ /g,'_'))})}}}catch{}
+ return {context:chunks.length?'\n\nLIVE WEB RESULTS:\n'+chunks.slice(0,8).join('\n'):'',sources:sources.slice(0,8)};
+}
+function shouldSearch(t){t=String(t||'').trim();if(t.length<8)return false;return !/^(hi|hello|hey|thanks|thank you|ok|okay|yo|test)[!. ]*$/i.test(t)}
+async function send(){
+ const input=$('#kaiPrompt'),btn=$('#kaiSend');if(!input)return;const text=input.value.trim(),image=S.image;if(!text&&!image){status('Enter a message or attach an image.');return}
+ const key=String(window.KORONA_GROQ_API_KEY||'').trim();if(!key){status('Groq API key is not configured.');return}
+ S.messages.push({role:'user',content:text||(image?'Inspect this image carefully.':''),image:image||null});input.value='';S.image=null;const f=$('#kaiFile');if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}render();if(btn)btn.disabled=true;
+ let web={context:'',sources:[]};try{if(text&&shouldSearch(text)){status('Searching the web…');web=await webSearch(text)}}catch{}
+ status(image?'Analyzing image…':web.context?'Using live web results…':'Thinking…');
+ try{
+  const api=[{role:'system',content:'You are Korona AI Studio, a precise text and vision assistant with live web-search context. When an image is attached, inspect it carefully before answering: read visible text, equations, labels, diagrams, tables, UI elements and answer choices when possible. Do not invent unreadable details. For math, show useful work. Use Markdown naturally and use $...$ for inline math and $$...$$ for display math. Prefer Unicode symbols such as √, ≈, ≤, ≥, ≠, ±, π, ∞, ∑, ∫, → and Δ when natural. Treat LIVE WEB RESULTS as potentially useful current information, but distinguish uncertainty and never claim you directly browsed a source unless the supplied results support it. Use conversation context.'+(web.context?'\n'+web.context:'')}];
+  for(const m of S.messages){if(m.role==='assistant')api.push({role:'assistant',content:m.content||''});else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content||'Inspect this image carefully.'},{type:'image_url',image_url:{url:m.image}}]});else api.push({role:'user',content:m.content||''})}
+  const maxTokens=image?4096:1024;const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODEL,messages:api,max_tokens:maxTokens,temperature:image?.2:.45})});let data=null;try{data=await res.json()}catch{}if(!res.ok)throw new Error(data?.error?.message||('Groq request failed ('+res.status+')'));const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error('Groq returned no response.');S.messages.push({role:'assistant',content:String(answer),sources:web.sources||[]});status('Ready · '+MODEL+(image?' · Vision 4096':' · Text 1024'));render();
+ }catch(e){S.messages.push({role:'assistant',content:'**AI request failed:** '+String(e?.message||e)});status('Request failed');render()}finally{if(btn)btn.disabled=false}
+}
+function bind(){const b=$('#kaiSend'),i=$('#kaiPrompt'),f=$('#kaiFile');if(!b||!i)return;if(b.dataset.webBound==='1')return;b.dataset.webBound='1';b.onclick=send;i.onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send()}};if(f)f.onchange=async()=>{const file=f.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){f.value='';status('Please choose an image.');return}if(file.size>12*1024*1024){f.value='';status('Image is too large (max 12 MB).');return}const r=new FileReader();r.onload=()=>{S.image=String(r.result);const p=$('#kaiPreview');if(p){p.src=S.image;p.classList.add('show')}status('Image attached · ready to send')};r.readAsDataURL(file)};const n=$('#kaiNew');if(n)n.onclick=()=>{S.messages=[];S.image=null;i.value='';if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}render();status('New chat')};render()}
+function init(){bind();render();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
+new MutationObserver(()=>{if($('#kaiSend'))bind()}).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 </body></html>
