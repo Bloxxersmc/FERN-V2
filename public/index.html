@@ -10,6 +10,10 @@
 
     <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
     <script>
+        window.KORONA_GROQ_API_KEY = "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";
+    </script>
+
+    <script>
         window.KORONA_NAVY_API_KEY = "sk-navy-isLv_EPoFNyTD-MxH7dhck4ETGWXIOJKHhhO0_V1B-A";
     </script>
 
@@ -7699,7 +7703,7 @@ html,body{background:transparent!important}
   }
   function rebuild(){
     let page=document.getElementById('aiPage');if(!page){page=document.createElement('section');page.id='aiPage';page.className='page';document.querySelector('.content')?.appendChild(page)}
-    page.innerHTML='<div class="kai-shell"><div class="kai-head"><div><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Text + vision chat with Markdown rendering.</p></div><div class="kai-head-actions"><select id="kaiModel" class="kai-model" aria-label="AI model"><option value="gpt-5.5">GPT-5.5</option><option value="o4-mini">o4-mini</option></select><span class="kai-status" id="kaiStatus">Ready · '+MODEL+'</span><button type="button" id="kaiNew">New Chat</button></div></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…" rows="4"></textarea><div id="kaiPreviewWrap" class="kai-preview-wrap"><img id="kaiPreview" class="kai-preview" alt="Attached image"><button type="button" id="kaiClearImage" aria-label="Remove attached image">×</button></div><div class="kai-actions"><label class="kai-file" for="kaiFile">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="primary" id="kaiSend">Send</button></div></div></div>';
+    page.innerHTML='<div class="kai-shell"><div class="kai-head"><div><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Text + vision chat with Markdown rendering.</p></div><div class="kai-head-actions"><select id="kaiProvider" class="kai-model" aria-label="AI provider"><option value="navy">NavyAI</option><option value="groq">Groq</option></select><select id="kaiModel" class="kai-model" aria-label="AI model"><option value="gpt-5.5">GPT-5.5</option><option value="o4-mini">o4-mini</option></select><span class="kai-status" id="kaiStatus">Ready · '+MODEL+'</span><button type="button" id="kaiNew">New Chat</button></div></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…" rows="4"></textarea><div id="kaiPreviewWrap" class="kai-preview-wrap"><img id="kaiPreview" class="kai-preview" alt="Attached image"><button type="button" id="kaiClearImage" aria-label="Remove attached image">×</button></div><div class="kai-actions"><label class="kai-file" for="kaiFile">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="primary" id="kaiSend">Send</button></div></div></div>';
     const clear=document.getElementById('kaiClearImage');if(clear)clear.onclick=()=>{state.image=null;const f=document.getElementById('kaiFile');if(f)f.value='';const p=document.getElementById('kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}setStatus('Ready · '+MODEL)};
     bind();
   }
@@ -7940,22 +7944,37 @@ async function webSearch(q){
 }
 function shouldSearch(t){t=String(t||'').trim();return t.length>=8&&!/^(hi|hello|hey|thanks|thank you|ok|okay|yo|test)[!. ]*$/i.test(t)}
 async function send(){
- const input=$('#kaiPrompt'),btn=$('#kaiSend');if(!input)return;const text=input.value.trim(),image=S.image;if(!text&&!image){status('Enter a message or attach an image.');return}
- const key=String(window.KORONA_NAVY_API_KEY||'').trim();if(!key){status('NavyAI API key is not configured.');return}
- S.messages.push({role:'user',content:text||(image?'Inspect this image carefully.':''),image:image||null});input.value='';S.image=null;const f=$('#kaiFile');if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')};render();if(btn)btn.disabled=true;
+ const input=$('#kaiPrompt'),btn=$('#kaiSend');if(!input)return;
+ const text=input.value.trim(),image=S.image;if(!text&&!image){status('Enter a message or attach an image.');return}
+ const provider=$('#kaiProvider')?.value||window.KORONA_AI_PROVIDER||'navy';
+ const configs={
+  navy:{name:'NavyAI',base:'https://api.navy/v1',key:String(window.KORONA_NAVY_API_KEY||'').trim()},
+  groq:{name:'Groq',base:'https://api.groq.com/openai/v1',key:String(window.KORONA_GROQ_API_KEY||'').trim()}
+ };
+ const cfg=configs[provider]||configs.navy;
+ const key=cfg.key;if(!key){status(cfg.name+' API key is not configured.');return}
+ S.messages.push({role:'user',content:text||(image?'Inspect this image carefully.':''),image:image||null});input.value='';S.image=null;
+ const f=$('#kaiFile');if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')};render();if(btn)btn.disabled=true;
  let web={context:'',sources:[]};if(text&&shouldSearch(text)){status('Searching the web…');web=await webSearch(text)}status(image?'Analyzing image…':web.context?'Using live web results…':'Thinking…');
  try{
-  const sys='You are Korona AI Studio, a precise text and vision assistant with live web-search context. When an image is attached, inspect it carefully before answering. Read visible text, equations, labels, diagrams, tables, UI elements and answer choices when possible. Do not invent unreadable details. For mathematics, use real LaTeX delimiters: inline \\(...\\) or $...$, and display \\[...\\] or $$...$$. Never output raw LaTeX commands as plain prose when they are intended as equations. Use proper mathematical notation and symbols naturally. For fractions, use \\frac{a}{b}; roots use \\sqrt{x}; limits use \\lim_{x\\to0}; exponents/subscripts use ^{} and _{}. Use clear headings and step-by-step structure for math. Use Markdown naturally. Treat LIVE WEB RESULTS as source context and do not invent facts not supported by them.'+(web.context?'\n'+web.context:'');
+  const sys='You are Korona AI Studio, a precise text and vision assistant with live web-search context. When an image is attached, inspect it carefully before answering. Read visible text, equations, labels, diagrams, tables, UI elements and answer choices when possible. Do not invent unreadable details. For mathematics, use real LaTeX delimiters: inline \\(…\\) or $...$, and display \\[...\\] or $$...$$. Use clear headings and step-by-step structure for math. Use Markdown naturally. Treat LIVE WEB RESULTS as source context and do not invent facts not supported by them.'+(web.context?'\n'+web.context:'');
   const api=[{role:'system',content:sys}];
-  for(const m of S.messages){if(m.role==='assistant')api.push({role:'assistant',content:m.content||''});else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content||'Inspect this image carefully.'},{type:'image_url',image_url:{url:m.image}}]});else api.push({role:'user',content:m.content||''})}
-  const maxTokens=image?1000:900;
-  const res=await fetch('https://api.navy/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODEL,messages:api,max_tokens:maxTokens,temperature:image?.2:.4})});
-  let data=null;try{data=await res.json()}catch{}if(!res.ok)throw new Error(data?.error?.message||('NavyAI request failed ('+res.status+')'));const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error('NavyAI returned no response.');S.messages.push({role:'assistant',content:String(answer),sources:web.sources||[]});status('Ready · '+MODEL+(image?' · Vision 1000':' · Text 900'));render();
+  for(const m of S.messages){
+   if(m.role==='assistant')api.push({role:'assistant',content:m.content||''});
+   else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content||'Inspect this image carefully.'},{type:'image_url',image_url:{url:m.image}}]});
+   else api.push({role:'user',content:m.content||''});
+  }
+  const selectedModel=MODEL;
+  const res=await fetch(cfg.base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:selectedModel,messages:api,max_tokens:image?1000:900,temperature:image?.2:.4})});
+  let data=null;try{data=await res.json()}catch{}
+  if(!res.ok)throw new Error(data?.error?.message||(`${cfg.name} request failed (${res.status})`));
+  const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error(cfg.name+' returned no response.');
+  S.messages.push({role:'assistant',content:String(answer),sources:web.sources||[]});status('Ready · '+cfg.name+' · '+selectedModel);render();
  }catch(e){S.messages.push({role:'assistant',content:'**AI request failed:** '+String(e?.message||e)});status('Request failed');render()}finally{if(btn)btn.disabled=false}
 }
 function bind(){
- const b=$('#kaiSend'),i=$('#kaiPrompt'),f=$('#kaiFile'),n=$('#kaiNew'),ms=$('#kaiModel');if(!b||!i)return;
- if(ms){ms.value=MODEL;ms.onchange=()=>{MODEL=ms.value;window.KORONA_NAVY_MODEL=MODEL;status('Ready · '+MODEL)}}
+ const b=$('#kaiSend'),i=$('#kaiPrompt'),f=$('#kaiFile'),n=$('#kaiNew'),ms=$('#kaiModel'),ps=$('#kaiProvider');if(!b||!i)return;
+ if(ps){ps.value=window.KORONA_AI_PROVIDER||'navy';ps.onchange=()=>{window.KORONA_AI_PROVIDER=ps.value;MODEL=ps.value==='groq'?'llama-3.3-70b-versatile':'gpt-5.5';if(ms){ms.innerHTML=ps.value==='groq'?'<option value="llama-3.3-70b-versatile">Llama 3.3 70B</option><option value="openai/gpt-oss-120b">GPT-OSS 120B</option>':'<option value="gpt-5.5">GPT-5.5</option><option value="o4-mini">o4-mini</option>';ms.value=MODEL}window.KORONA_NAVY_MODEL=MODEL;status('Ready · '+(ps.value==='groq'?'Groq':'NavyAI')+' · '+MODEL)}};if(ms){ms.value=MODEL;ms.onchange=()=>{MODEL=ms.value;window.KORONA_NAVY_MODEL=MODEL;status('Ready · '+(ps?.value==='groq'?'Groq':'NavyAI')+' · '+MODEL)}}
  b.dataset.webBound='v5';b.onclick=send;i.onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send()}};
  if(f)f.onchange=async()=>{const file=f.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){f.value='';status('Please choose an image.');return}if(file.size>12*1024*1024){f.value='';status('Image is too large (max 12 MB).');return}try{const r=new FileReader();r.onload=()=>{S.image=String(r.result);const p=$('#kaiPreview');if(p){p.src=S.image;p.classList.add('show')}status('Image attached · ready to send')};r.readAsDataURL(file)}catch{status('Could not read image.')}};
  if(n)n.onclick=()=>{S.messages=[];S.image=null;i.value='';if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}render();status('New chat')};
@@ -7966,4 +7985,5 @@ async function init(){await loadMathJax();bind();render()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
+<script>window.KORONA_AI_PROVIDER=window.KORONA_AI_PROVIDER||'navy';</script>
 </body></html>
