@@ -5,11 +5,10 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Korona</title>
-<meta content="4.1.2" name="fern-version"/>
-<!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
-<script>
-        window.KORONA_GROQ_API_KEY = "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";
-    </script>
+<meta content="4.0.3" name="fern-version"/>
+        
+<!-- Configure AI through a secure server-side endpoint. Do not place provider API keys in public HTML. -->
+<script>window.KORONA_GROQ_API_KEY = "";</script>
 <!-- Scramjet -->
 <script src="/scram/scramjet.all.js"></script>
 <script src="/baremux/index.js"></script>
@@ -109,11 +108,17 @@
             await initializeFernScramjet();
             await registerFernScramjetSW();
 
-            const wispUrl =
-                (location.protocol === "https:" ? "wss" : "ws") +
-                "://" +
-                location.host +
-                "/wisp/";
+            // Vercel serves the static HTML but does not provide a WebSocket proxy
+            // automatically. Set window.KORONA_WISP_URL to your deployed Wisp URL,
+            // or configure it once in this browser (stored locally).
+            let configuredWisp = "";
+            try { configuredWisp = localStorage.getItem("korona_wisp_url") || ""; } catch (_) {}
+            const wispUrl = String(window.KORONA_WISP_URL || configuredWisp || (
+                (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/"
+            )).trim();
+            if (!/^wss?:\/\//i.test(wispUrl)) {
+                throw new Error("Invalid Wisp URL. Use a ws:// or wss:// WebSocket endpoint.");
+            }
 
             const currentTransport =
                 await fernScramjetConnection.getTransport();
@@ -139,7 +144,7 @@
             const frame = fernScramjet.createFrame();
             frame.frame.id = "iframeWindow-" + tabId;
             frame.frame.className = "korona-browser-frame";
-            frame.frame.title = "Bob James";
+            frame.frame.title = "Korona website preview";
             frame.frame.setAttribute("allow", "fullscreen; autoplay; gamepad");
             frame.frame.setAttribute("allowfullscreen", "");
             frame.frame.setAttribute("loading", "eager");
@@ -4632,6 +4637,27 @@ let activeTabId = "tab-1";
 const koronaTabs = new Map([["tab-1",{id:"tab-1",title:"New Tab",url:"",frame:null}]]);
 
 function getActiveTab(){return koronaTabs.get(activeTabId);}
+function removeDirectPreview(tab){
+  if(tab?.directFrame){ try{tab.directFrame.remove();}catch(_){} tab.directFrame=null; }
+}
+function showDirectPreview(tab, url){
+  if(!tab || !browserFrames) return null;
+  removeDirectPreview(tab);
+  const frame=document.createElement("iframe");
+  frame.className="korona-direct-preview";
+  frame.id="directPreview-"+tab.id;
+  frame.title="Direct website preview (some sites block embedding)";
+  frame.allow="fullscreen; autoplay; gamepad";
+  frame.allowFullscreen=true;
+  frame.referrerPolicy="no-referrer";
+  frame.loading="eager";
+  frame.src=url;
+  frame.style.cssText="position:absolute;inset:0;width:100%;height:100%;border:0;background:#080d16;z-index:4;";
+  browserFrames.appendChild(frame);
+  tab.directFrame=frame;
+  if(proxyOpeningOverlay){proxyOpeningOverlay.classList.remove("show");proxyOpeningOverlay.style.display="none";}
+  return frame;
+}
 function normalizeURL(value){
   let url=String(value||"").trim();
   if(!url)return "";
@@ -4673,7 +4699,10 @@ function createBrowserTab(initialURL=""){
 function switchBrowserTab(id){
   if(!koronaTabs.has(id))return;
   activeTabId=id;
-  koronaTabs.forEach(tab=>{if(tab.frame?.frame)tab.frame.frame.style.display=tab.id===id?"block":"none";});
+  koronaTabs.forEach(tab=>{
+    if(tab.frame?.frame)tab.frame.frame.style.display=tab.id===id?"block":"none";
+    if(tab.directFrame)tab.directFrame.style.display=tab.id===id?"block":"none";
+  });
   const tab=getActiveTab();iframeWindow=tab?.frame?.frame||null;
   if(browserNewTab) browserNewTab.style.display = tab?.url ? "none" : "grid";
   if(urlInput)urlInput.value=tab?.url||"";
@@ -4681,7 +4710,7 @@ function switchBrowserTab(id){
 }
 function closeBrowserTab(id){
   const tab=koronaTabs.get(id);if(!tab)return;
-  if(tab.frame?.frame)tab.frame.frame.remove();koronaTabs.delete(id);
+  if(tab.frame?.frame)tab.frame.frame.remove();removeDirectPreview(tab);koronaTabs.delete(id);
   if(!koronaTabs.size){
     const replacement={id:"tab-1",title:"New Tab",url:"",frame:null};
     koronaTabs.set(replacement.id,replacement);activeTabId=replacement.id;tabCounter=Math.max(tabCounter,1);
@@ -4714,7 +4743,17 @@ async function launchURL(targetURL=null,targetTabId=activeTabId){
     await tab.frame.go(url);tab.title=getSiteTitle(url);renderTabButtons();
   }catch(error){
     console.error("Korona Scramjet launch failed:",error);
-    if(proxyOpeningOverlay)proxyOpeningOverlay.classList.add("show");
+    // A direct iframe is not a full proxy and some sites intentionally block it,
+    // but it provides an actual preview when a site's embed policy permits it.
+    if(proxyOpeningOverlay){
+      proxyOpeningOverlay.style.display="";
+      proxyOpeningOverlay.innerHTML='<div class="proxy-opening-text">Proxy connection failed</div><div style="max-width:440px;margin:10px auto;color:#9aa8ba;font-size:12px;line-height:1.5;text-align:center">Check that Scramjet assets and your Wisp WebSocket endpoint are deployed. You can also try a direct preview for sites that allow embedding.</div><button id="tryDirectPreview" type="button" style="display:block;margin:12px auto;padding:10px 14px;border:1px solid #5cdcf5;border-radius:9px;background:#10202d;color:#d9f7ff;cursor:pointer">Try direct preview</button>';
+      proxyOpeningOverlay.classList.add("show");
+      document.getElementById("tryDirectPreview")?.addEventListener("click",()=>{
+        showDirectPreview(tab,url);
+        proxyOpeningOverlay.classList.remove("show");
+      },{once:true});
+    }
   }finally{setTabLoading(false);renderTabButtons();}
 }
 function openBrowserTab(targetURL){
@@ -4726,12 +4765,13 @@ function openInProxy(targetURL){return openBrowserTab(targetURL);}
 newTabButton?.addEventListener("click",()=>createBrowserTab());
 urlInput?.addEventListener("keydown",event=>{if(event.key==="Enter")launchURL();});
 document.getElementById("searchButton")?.addEventListener("click",()=>launchURL());
-refreshButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.location.reload();}catch(_){}});
+refreshButton?.addEventListener("click",()=>{const tab=getActiveTab();if(tab?.directFrame){try{tab.directFrame.src=tab.directFrame.src;}catch(_){}}else{try{iframeWindow?.contentWindow?.location.reload();}catch(_){}}});
+document.getElementById("reloadButton")?.addEventListener("click",()=>{const tab=getActiveTab();if(tab?.directFrame){try{tab.directFrame.src=tab.directFrame.src;}catch(_){}}else{try{iframeWindow?.contentWindow?.location.reload();}catch(_){}}});
 backButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.history.back();}catch(_){}});
 forwardButton?.addEventListener("click",()=>{try{iframeWindow?.contentWindow?.history.forward();}catch(_){}});
 homeTabButton?.addEventListener("click",()=>{
   const tab=getActiveTab();if(!tab)return;
-  if(tab.frame?.frame)tab.frame.frame.remove();tab.frame=null;tab.url="";tab.title="New Tab";
+  if(tab.frame?.frame)tab.frame.frame.remove();removeDirectPreview(tab);tab.frame=null;tab.url="";tab.title="New Tab";
   if(urlInput)urlInput.value="";
   if(browserNewTab) browserNewTab.style.display="grid";
   setProxyFrameVisible(true);renderTabButtons();
@@ -5119,22 +5159,14 @@ function renderGames() {
         const fallbackArtwork = gameFallbackDataURL(game);
         image.src = fallbackArtwork;
         image.dataset.artworkState = 'fallback';
-        const imageCandidates = getGameImageCandidates(game);
-        let imageCandidateIndex = 0;
-        const tryNextArtwork = () => {
-            if (imageCandidateIndex >= imageCandidates.length) return;
-            const candidateUrl = imageCandidates[imageCandidateIndex++];
-            if (!candidateUrl || candidateUrl === fallbackArtwork) { tryNextArtwork(); return; }
-            const probe = new Image();
-            probe.referrerPolicy = 'no-referrer';
-            probe.onload = () => {
-                image.src = candidateUrl;
-                image.dataset.artworkState = 'remote';
-            };
-            probe.onerror = tryNextArtwork;
-            probe.src = candidateUrl;
+        // Use generated, self-contained SVG artwork as the guaranteed default.
+        // External thumbnail hosts often reject hotlinks from Vercel deployments;
+        // keeping card artwork local means every automatically generated card renders.
+        image.onerror = () => {
+            image.onerror = null;
+            image.src = gameFallbackDataURL(game);
+            image.dataset.artworkState = 'fallback';
         };
-        tryNextArtwork();
 
         const mediaGlow = document.createElement('div');
         mediaGlow.className = 'game-media-glow';
@@ -5201,8 +5233,8 @@ function renderBookmarks() {
         const card = document.createElement('div');
         card.className = 'bookmark-row';
         const img = document.createElement('img');
-        img.src = getGameImage(game); img.alt = game.name + ' logo';
-        img.onerror = () => { img.onerror=null; img.src=gameFallbackDataURL(game); };
+        img.src = gameFallbackDataURL(game); img.alt = game.name + ' logo';
+        img.onerror = () => { img.onerror=null; };
         const info = document.createElement('div');
         info.innerHTML = `<strong></strong><small></small>`;
         info.querySelector('strong').textContent = game.name;
@@ -8225,6 +8257,12 @@ button::after,.nav button::after,.sidebar-nav button::after,.nav-button::after,.
  button:hover,.game-card a:hover,.bookmark-button:hover{transform:translateY(-1px)!important;filter:none!important}
 }
 @media(prefers-reduced-motion:reduce){#koronaParticleNetwork{display:none!important}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Vercel-safe browser preview and deterministic generated game-card artwork. */
+#proxyPage .browser-window,#proxyPage .iframe-container,#proxyPage .browser-frames{min-height:360px!important;}
+.korona-direct-preview{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border:0!important;background:#080d16!important;z-index:4!important;}
+.proxy-opening-overlay{z-index:20!important;}
+.proxy-opening-overlay.show{display:flex!important;flex-direction:column;align-items:center;justify-content:center;padding:22px!important;background:rgba(4,8,16,.94)!important;}
 </style>
 <script id="korona-particle-network-runtime">
 (()=>{
@@ -8269,4 +8307,19 @@ button::after,.nav button::after,.sidebar-nav button::after,.nav-button::after,.
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
+
+<style id="korona-browser-preview-fullpage-fix">
+/* Make the live website preview fill the complete app workspace, edge to edge. */
+html, body { width:100%; height:100%; }
+#app { width:100%!important; height:100dvh!important; min-height:0!important; overflow:hidden!important; }
+.content:has(#proxyPage.active) { padding:0!important; margin:0!important; height:100dvh!important; min-height:0!important; overflow:hidden!important; }
+.content:has(#proxyPage.active) > #proxyPage.active { width:100%!important; max-width:none!important; height:100dvh!important; min-height:0!important; margin:0!important; padding:0!important; overflow:hidden!important; }
+#proxyPage.active, #proxyPage.active .browser-page { display:flex!important; flex-direction:column!important; width:100%!important; height:100%!important; min-height:0!important; max-height:none!important; flex:1 1 auto!important; overflow:hidden!important; }
+#proxyPage .browser-window { flex:1 1 0!important; width:100%!important; height:100%!important; min-height:0!important; max-height:none!important; margin:0!important; padding:0!important; border-radius:0!important; overflow:hidden!important; }
+#proxyPage .iframe-container { position:relative!important; flex:1 1 0!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; max-height:none!important; overflow:hidden!important; }
+#proxyPage .browser-frames { position:relative!important; flex:1 1 0!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; overflow:hidden!important; }
+#proxyPage .browser-frames iframe, #proxyPage .browser-frames .korona-direct-preview, #proxyPage .browser-frame iframe { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; min-width:100%!important; min-height:100%!important; max-width:none!important; max-height:none!important; margin:0!important; padding:0!important; border:0!important; }
+@media(max-width:800px){ .content:has(#proxyPage.active){padding:0!important} }
+</style>
+
 </body></html>
