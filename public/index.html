@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Korona</title>
-<meta content="2.1.0" name="fern-version"/>
+<meta content="4.0.8" name="fern-version"/>
 <!-- Configure AI through a secure server-side endpoint. Do not place provider API keys in public HTML. -->
 <script>window.KORONA_GROQ_API_KEY = "";</script>
 <!-- Scramjet -->
@@ -4016,6 +4016,7 @@ main.content, .content, .page { height: auto !important; max-height: none !impor
 <button class="browser-nav-button" id="browserRefresh" title="Refresh" type="button">↻</button>
 <button class="browser-nav-button" id="browserHome" title="New tab" type="button">⌂</button>
 <div class="browser-address"><span class="address-lock">⌕</span><input autocomplete="off" id="urlInput" placeholder="Search or enter a website address" type="text"/><button id="searchButton" title="Go" type="button">↵</button></div>
+<button class="browser-nav-button" id="browserAI" title="Open Duck.ai" type="button" style="width:auto;flex:0 0 auto;padding:0 10px;white-space:nowrap;color:var(--green)!important">AI</button>
 <button class="browser-nav-button" id="browserFullscreen" title="Fullscreen browser" type="button">⛶</button>
 </div>
 <div class="iframe-container" id="iframeContainer">
@@ -4662,7 +4663,7 @@ function normalizeURL(value){
   if(!url)return "";
   if(!/^https?:\/\//i.test(url)){
     if(/^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(url)) url="https://"+url;
-    else url="https://www.google.com/search?q="+encodeURIComponent(url);
+    else url="https://duckduckgo.com/?q="+encodeURIComponent(url);
   }
   return url;
 }
@@ -4759,6 +4760,7 @@ function openBrowserTab(targetURL){
 }
 function openInProxy(targetURL){return openBrowserTab(targetURL);}
 newTabButton?.addEventListener("click",()=>createBrowserTab());
+document.getElementById("browserAI")?.addEventListener("click",()=>openBrowserTab("https://duck.ai/"));
 urlInput?.addEventListener("keydown",event=>{if(event.key==="Enter")launchURL();});
 document.getElementById("searchButton")?.addEventListener("click",()=>launchURL());
 refreshButton?.addEventListener("click",()=>{const tab=getActiveTab();if(tab?.directFrame){try{tab.directFrame.src=tab.directFrame.src;}catch(_){}}else{try{iframeWindow?.contentWindow?.location.reload();}catch(_){}}});
@@ -5160,7 +5162,19 @@ function renderGames() {
         image.style.backgroundImage = 'url("' + fallbackArtwork + '")';
         image.dataset.artworkState = 'generated-local';
         image.onerror = () => { image.onerror = null; image.removeAttribute('src'); image.style.backgroundImage = 'url("' + fallbackArtwork + '")'; };
-        image.src = fallbackArtwork;
+        // Try an automatically selected game-related thumbnail first; always fall back to local artwork.
+        const imageQuery = encodeURIComponent((game.name || 'video game').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').trim().replace(/\s+/g, ','));
+        const autoImageUrl = 'https://loremflickr.com/800/450/' + imageQuery + '?lock=' + (index + 41);
+        image.dataset.fallbackArtwork = fallbackArtwork;
+        image.onerror = () => {
+            if (image.dataset.artworkState !== 'generated-local') {
+                image.dataset.artworkState = 'generated-local';
+                image.onerror = null;
+                image.src = fallbackArtwork;
+            }
+        };
+        image.dataset.artworkState = 'remote-pending';
+        image.src = autoImageUrl;
 
         const mediaGlow = document.createElement('div');
         mediaGlow.className = 'game-media-glow';
