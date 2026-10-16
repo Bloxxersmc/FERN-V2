@@ -8536,13 +8536,17 @@ html, body { min-height:100%; height:auto!important; overflow-y:auto!important; 
     ai.type = 'button'; ai.className = 'nav-button'; ai.dataset.koronaDuckAi = 'true';
     ai.innerHTML = '<span class="sidebar-icon" aria-hidden="true">✦</span><span>Duck.ai</span>';
     ai.title = 'Open Duck.ai'; ai.setAttribute('aria-label','Open Duck.ai');
-    ai.addEventListener('click', function(){ window.open('https://duck.ai/','_blank','noopener,noreferrer'); });
+    ai.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); if (typeof window.openBrowserTab === 'function') { window.openBrowserTab('https://duck.ai/'); } else { window.open('https://duck.ai/','_blank','noopener,noreferrer'); } });
     nav.appendChild(ai);
   }
-  // Direct launch is dependable on static Vercel hosting; the embedded proxy can be configured separately.
+  // Keep game launches inside Korona's proxy/browser view when available.
+  // Direct-open is only a fallback if the proxy navigation function is absent.
   window.openGame = function(targetURL){
     let url; try { url = new URL(String(targetURL || '').trim(), location.href); } catch(e) { return false; }
     if (!['http:','https:'].includes(url.protocol)) return false;
+    if (typeof window.openBrowserTab === 'function') {
+      try { window.openBrowserTab(url.href); return true; } catch(e) { console.warn('Korona proxy navigation failed:', e); }
+    }
     const opened = window.open(url.href, '_blank', 'noopener,noreferrer');
     if (!opened) { location.href = url.href; }
     return true;
