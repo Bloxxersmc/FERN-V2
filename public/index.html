@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Korona</title>
-<meta content="4.0.8" name="fern-version"/>
+<meta content="4.1.0" name="fern-version"/>
 <!-- Configure AI through a secure server-side endpoint. Do not place provider API keys in public HTML. -->
 <script>window.KORONA_GROQ_API_KEY = "";</script>
 <!-- Scramjet -->
@@ -5162,19 +5162,26 @@ function renderGames() {
         image.style.backgroundImage = 'url("' + fallbackArtwork + '")';
         image.dataset.artworkState = 'generated-local';
         image.onerror = () => { image.onerror = null; image.removeAttribute('src'); image.style.backgroundImage = 'url("' + fallbackArtwork + '")'; };
-        // Try an automatically selected game-related thumbnail first; always fall back to local artwork.
+        // Local-first artwork means cards are never blank if a thumbnail host is down or filtered.
+        image.dataset.fallbackArtwork = fallbackArtwork;
+        image.dataset.artworkState = 'generated-local';
+        image.src = fallbackArtwork;
+        image.onerror = () => {
+            image.onerror = null;
+            image.dataset.artworkState = 'generated-local';
+            image.src = fallbackArtwork;
+        };
+        // Try an automatic game-related thumbnail in the background; use it only after it loads.
         const imageQuery = encodeURIComponent((game.name || 'video game').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').trim().replace(/\s+/g, ','));
         const autoImageUrl = 'https://loremflickr.com/800/450/' + imageQuery + '?lock=' + (index + 41);
-        image.dataset.fallbackArtwork = fallbackArtwork;
-        image.onerror = () => {
-            if (image.dataset.artworkState !== 'generated-local') {
-                image.dataset.artworkState = 'generated-local';
-                image.onerror = null;
-                image.src = fallbackArtwork;
-            }
+        const thumbnailProbe = new Image();
+        thumbnailProbe.referrerPolicy = 'no-referrer';
+        thumbnailProbe.onload = () => {
+            image.src = autoImageUrl;
+            image.dataset.artworkState = 'remote-loaded';
         };
-        image.dataset.artworkState = 'remote-pending';
-        image.src = autoImageUrl;
+        thumbnailProbe.onerror = () => { /* Keep the local SVG art. */ };
+        thumbnailProbe.src = autoImageUrl;
 
         const mediaGlow = document.createElement('div');
         mediaGlow.className = 'game-media-glow';
@@ -5206,6 +5213,8 @@ function renderGames() {
         const link = document.createElement('a');
         link.href = game.link;
         link.textContent = 'Play now';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
         link.dataset.gameIndex = index;
         link.addEventListener('click', event => {
             event.preventDefault();
@@ -7679,17 +7688,17 @@ html,body{background:transparent!important}
   if(!canonical){
    canonical=document.createElement('button');
    canonical.type='button'; canonical.className='nav-button'; canonical.dataset.page='ai';
-   canonical.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
+   canonical.innerHTML='<span class="sidebar-icon">✦</span><span>Duck.ai</span>';
    sidebar.appendChild(canonical);
   }else{
    canonical.dataset.page='ai'; canonical.className='nav-button';
-   canonical.innerHTML='<span class="sidebar-icon">✦</span><span>AI Studio</span>';
+   canonical.innerHTML='<span class="sidebar-icon">✦</span><span>Duck.ai</span>';
   }
-  const page=$('#aiPage'); if(!page)return;
-  canonical.onclick=()=>{
-   $$('.sidebar-nav .nav-button').forEach(x=>x.classList.toggle('active',x===canonical));
-   $$('.page').forEach(p=>p.classList.toggle('active',p===page));
-   page.scrollTop=0;
+  canonical.title='Open Duck.ai';
+  canonical.setAttribute('aria-label','Open Duck.ai');
+  canonical.onclick=(event)=>{
+   event.preventDefault();
+   window.open('https://duck.ai/','_blank','noopener,noreferrer');
   };
  }
  function run(){restoreCharacters();restoreAI()}
@@ -8415,7 +8424,23 @@ main.content, #app > .content, .content { position:relative !important; display:
 @media(max-width:520px) { #gamesPage .games-grid, #gamesPage #gamesGrid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px !important; } #gamesPage #gamesGrid .game-media { height:112px !important; min-height:112px !important; } }
 </style>
 
-</body></html>
+
+<script id="korona-duckduckgo-sidebar-correction">
+(function(){
+  // Browser address searches should use DuckDuckGo by default.
+  window.KORONA_DEFAULT_SEARCH_URL = 'https://duckduckgo.com/?q=';
+  const input = document.getElementById('urlInput');
+  if (input) input.placeholder = 'Search DuckDuckGo or enter a URL';
+  // The sidebar AI item is intentionally an external Duck.ai link.
+  document.querySelectorAll('.sidebar-nav .nav-button[data-page="ai"]').forEach(function(btn){
+    btn.innerHTML = '<span class="sidebar-icon">✦</span><span>Duck.ai</span>';
+    btn.title = 'Open Duck.ai';
+    btn.setAttribute('aria-label','Open Duck.ai');
+    btn.onclick = function(e){ e.preventDefault(); window.open('https://duck.ai/','_blank','noopener,noreferrer'); };
+  });
+})();
+</script>
+
 <style id="korona-final-layout-repair">
 /* Sidebar is a fixed rail; the content column must reserve its width instead of sitting underneath it. */
 :root { --korona-sidebar-width: 194px; }
@@ -8448,34 +8473,32 @@ main.content, #app > .content, .content { position:relative !important; display:
  #app > .content, #app main.content, main.content, .content:has(#proxyPage.active) { margin-left:var(--korona-sidebar-width)!important; width:calc(100% - var(--korona-sidebar-width))!important; }
 }
 </style>
-<script id="korona-final-game-launch-repair">
-(function(){
-  // Keep game launch connected to the existing in-app browser, with a direct-open fallback if its controller throws.
-  window.openGame = function(targetURL) {
-    if (!targetURL) return false;
+<script id="korona-vercel-game-launch-fix">
+(function () {
+  function normalizeGameTarget(value) {
     try {
-      if (typeof window.openBrowserTab === 'function') {
-        const result = window.openBrowserTab(targetURL);
-        if (result !== false) return result;
-      }
-    } catch (err) { console.warn('In-app game launch failed; using direct fallback.', err); }
-    try {
-      const browserButton = document.querySelector('.nav-button[data-page="proxy"]');
-      if (browserButton) browserButton.click();
-      const input = document.getElementById('urlInput');
-      if (input) input.value = targetURL;
-      if (typeof window.launchURL === 'function') return window.launchURL(targetURL);
-    } catch (err) { console.warn('Browser fallback failed.', err); }
-    window.open(targetURL, '_blank', 'noopener,noreferrer');
-    return false;
+      const url = new URL(String(value || '').trim(), window.location.href);
+      return (url.protocol === 'https:' || url.protocol === 'http:') ? url.href : '';
+    } catch (_) { return ''; }
+  }
+
+  // The previous handler called openBrowserTab(), which returns a tab object immediately.
+  // That made the caller think launch succeeded even if async Scramjet/Wisp setup failed later.
+  // Launch cards directly in a normal browser tab so they remain usable on a static Vercel deploy.
+  window.openGame = function (targetURL) {
+    const url = normalizeGameTarget(targetURL);
+    if (!url) return false;
+    let popup = null;
+    try { popup = window.open(url, '_blank'); } catch (_) {}
+    if (popup) {
+      try { popup.opener = null; } catch (_) {}
+      return true;
+    }
+    // Popup blocked: retain a reliable path to the selected game.
+    window.location.assign(url);
+    return true;
   };
-  document.addEventListener('keydown', function(e){
-    const card=e.target.closest && e.target.closest('#gamesGrid .game-card');
-    if (!card || (e.key!=='Enter' && e.key!==' ')) return;
-    if (e.target.closest('a,button,input,select,textarea')) return;
-    e.preventDefault();
-    const link=card.querySelector('a[href]');
-    if (link) window.openGame(link.href);
-  });
 })();
 </script>
+</body>
+</html>
