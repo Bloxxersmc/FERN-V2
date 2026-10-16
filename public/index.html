@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Korona</title>
-<meta content="4.0.4" name="fern-version"/>
+<meta content="4.0.5" name="fern-version"/>
 <!-- Configure AI through a secure server-side endpoint. Do not place provider API keys in public HTML. -->
 <script>window.KORONA_GROQ_API_KEY = "";</script>
 <!-- Scramjet -->
@@ -5153,26 +5153,14 @@ function renderGames() {
         image.loading = index < 2 ? 'eager' : 'lazy';
         if (index === 0) image.fetchPriority = 'high';
         image.referrerPolicy = 'no-referrer';
-        // Paint local artwork immediately, then progressively try automatic remote art.
-        // If Vercel or a remote host blocks thumbnails, the local artwork remains reliable.
+        // Deterministic auto-art: render a local SVG from each game's name.
+        // Do not wait on thumbnail APIs/CDNs that can hang or be blocked on Vercel.
         const fallbackArtwork = gameFallbackDataURL(game);
-        const artworkCandidates = getGameImageCandidates(game);
-        let artworkAttempt = 0;
-        image.src = fallbackArtwork;
+        image.decoding = 'async';
         image.style.backgroundImage = 'url("' + fallbackArtwork + '")';
-        image.dataset.artworkState = 'fallback';
-        image.onerror = () => {
-            if (artworkAttempt < artworkCandidates.length) {
-                image.src = artworkCandidates[artworkAttempt++];
-                image.dataset.artworkState = 'remote';
-                return;
-            }
-            image.onerror = null;
-            image.src = fallbackArtwork;
-            image.dataset.artworkState = 'fallback';
-        };
-        // Start the remote-art attempt after the fallback has been assigned.
-        image.src = artworkCandidates.length ? artworkCandidates[artworkAttempt++] : fallbackArtwork;
+        image.dataset.artworkState = 'generated-local';
+        image.onerror = () => { image.onerror = null; image.removeAttribute('src'); image.style.backgroundImage = 'url("' + fallbackArtwork + '")'; };
+        image.src = fallbackArtwork;
 
         const mediaGlow = document.createElement('div');
         mediaGlow.className = 'game-media-glow';
@@ -8388,4 +8376,29 @@ html, body { width:100%; height:100%; }
   #proxyPage, #proxyPage.active { padding:0 !important; }
 }
 </style>
+
+<style id="korona-final-sidebar-and-games-fix">
+/* Reserve a real sidebar column so page content never sits underneath it. */
+#app { display:block !important; position:relative !important; width:100% !important; max-width:none !important; min-width:0 !important; }
+#koronaSidebar, .korona-sidebar { position:fixed !important; top:0 !important; bottom:0 !important; left:0 !important; right:auto !important; width:194px !important; min-width:194px !important; max-width:194px !important; z-index:100 !important; box-sizing:border-box !important; }
+main.content, #app > .content, .content { position:relative !important; display:block !important; margin-left:194px !important; width:calc(100% - 194px) !important; max-width:none !important; min-width:0 !important; box-sizing:border-box !important; }
+.content > .page, .content > section.page { width:100% !important; max-width:none !important; min-width:0 !important; box-sizing:border-box !important; margin:0 !important; padding-left:clamp(16px, 2.5vw, 38px) !important; padding-right:clamp(16px, 2.5vw, 38px) !important; }
+#gamesPage { overflow:visible !important; min-width:0 !important; }
+#gamesPage .games-grid, #gamesPage #gamesGrid { display:grid !important; grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr)) !important; gap:16px !important; width:100% !important; min-width:0 !important; max-width:none !important; align-items:stretch !important; }
+#gamesPage #gamesGrid .game-card { width:100% !important; min-width:0 !important; margin:0 !important; box-sizing:border-box !important; cursor:pointer !important; }
+#gamesPage #gamesGrid .game-media { display:block !important; position:relative !important; width:100% !important; height:150px !important; min-height:150px !important; overflow:hidden !important; }
+#gamesPage #gamesGrid .game-image { width:100% !important; height:100% !important; display:block !important; object-fit:cover !important; }
+#gamesPage #gamesGrid .game-card a, #gamesPage #gamesGrid .bookmark-button { pointer-events:auto !important; }
+/* Browser preview consumes the content column, not the sidebar or a centered narrow column. */
+#proxyPage, #proxyPage.active { width:100% !important; max-width:none !important; min-width:0 !important; margin:0 !important; padding:0 !important; box-sizing:border-box !important; }
+#proxyPage .browser-page, #proxyPage .browser-window, #proxyPage .iframe-container, #proxyPage .browser-frames { width:100% !important; max-width:none !important; min-width:0 !important; box-sizing:border-box !important; }
+@media(max-width:900px) {
+ #koronaSidebar, .korona-sidebar { width:76px !important; min-width:76px !important; max-width:76px !important; }
+ main.content, #app > .content, .content { margin-left:76px !important; width:calc(100% - 76px) !important; }
+ .content > .page, .content > section.page { padding-left:14px !important; padding-right:14px !important; }
+ #gamesPage .games-grid, #gamesPage #gamesGrid { grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr)) !important; }
+}
+@media(max-width:520px) { #gamesPage .games-grid, #gamesPage #gamesGrid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px !important; } #gamesPage #gamesGrid .game-media { height:112px !important; min-height:112px !important; } }
+</style>
+
 </body></html>
