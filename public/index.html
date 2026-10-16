@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Korona</title>
-<meta content="4.0.5" name="fern-version"/>
+<meta content="2.1.0" name="fern-version"/>
 <!-- Configure AI through a secure server-side endpoint. Do not place provider API keys in public HTML. -->
 <script>window.KORONA_GROQ_API_KEY = "";</script>
 <!-- Scramjet -->
@@ -8402,3 +8402,66 @@ main.content, #app > .content, .content { position:relative !important; display:
 </style>
 
 </body></html>
+<style id="korona-final-layout-repair">
+/* Sidebar is a fixed rail; the content column must reserve its width instead of sitting underneath it. */
+:root { --korona-sidebar-width: 194px; }
+#app { position:relative!important; width:100%!important; max-width:none!important; min-width:0!important; }
+#koronaSidebar, .korona-sidebar { width:var(--korona-sidebar-width)!important; box-sizing:border-box!important; }
+#app > .content, #app main.content, main.content {
+  position:relative!important; box-sizing:border-box!important;
+  margin-left:var(--korona-sidebar-width)!important;
+  width:calc(100% - var(--korona-sidebar-width))!important;
+  max-width:none!important; min-width:0!important;
+}
+.content > .page { box-sizing:border-box!important; width:100%!important; max-width:none!important; min-width:0!important; }
+/* Browser view fills the content column, not the entire viewport behind the sidebar. */
+.content:has(#proxyPage.active) { margin-left:var(--korona-sidebar-width)!important; width:calc(100% - var(--korona-sidebar-width))!important; height:100dvh!important; }
+#proxyPage.active { width:100%!important; max-width:none!important; margin:0!important; padding:0!important; }
+#proxyPage .browser-page, #proxyPage .browser-window, #proxyPage .iframe-container, #proxyPage .browser-frames { min-width:0!important; max-width:none!important; box-sizing:border-box!important; }
+#proxyPage .browser-window, #proxyPage .iframe-container, #proxyPage .browser-frames { width:100%!important; }
+#gamesPage .games-grid, #gamesGrid { display:grid!important; grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr))!important; gap:16px!important; width:100%!important; max-width:none!important; min-width:0!important; }
+#gamesGrid .game-card { display:flex!important; flex-direction:column!important; min-width:0!important; padding:0!important; overflow:hidden!important; cursor:pointer!important; pointer-events:auto!important; }
+#gamesGrid .game-media { display:block!important; height:148px!important; min-height:148px!important; flex:0 0 148px!important; pointer-events:none!important; }
+#gamesGrid .game-image { width:100%!important; height:100%!important; display:block!important; object-fit:cover!important; }
+#gamesGrid .game-card-body { display:flex!important; flex-direction:column!important; flex:1 1 auto!important; min-width:0!important; }
+#gamesGrid .game-card a { display:block!important; position:relative!important; z-index:5!important; pointer-events:auto!important; cursor:pointer!important; }
+#gamesGrid .bookmark-button { position:relative!important; z-index:6!important; cursor:pointer!important; pointer-events:auto!important; }
+@media(max-width:700px) {
+ :root { --korona-sidebar-width:72px; }
+ .sidebar-brand { justify-content:center!important; padding:2px 0 20px!important; }
+ .sidebar-brand > div:last-child, .korona-sidebar .nav-button > span:not(.sidebar-icon), .sidebar-bottom .sidebar-status, .sidebar-version { display:none!important; }
+ .korona-sidebar .nav-button { justify-content:center!important; padding:0!important; }
+ #app > .content, #app main.content, main.content, .content:has(#proxyPage.active) { margin-left:var(--korona-sidebar-width)!important; width:calc(100% - var(--korona-sidebar-width))!important; }
+}
+</style>
+<script id="korona-final-game-launch-repair">
+(function(){
+  // Keep game launch connected to the existing in-app browser, with a direct-open fallback if its controller throws.
+  window.openGame = function(targetURL) {
+    if (!targetURL) return false;
+    try {
+      if (typeof window.openBrowserTab === 'function') {
+        const result = window.openBrowserTab(targetURL);
+        if (result !== false) return result;
+      }
+    } catch (err) { console.warn('In-app game launch failed; using direct fallback.', err); }
+    try {
+      const browserButton = document.querySelector('.nav-button[data-page="proxy"]');
+      if (browserButton) browserButton.click();
+      const input = document.getElementById('urlInput');
+      if (input) input.value = targetURL;
+      if (typeof window.launchURL === 'function') return window.launchURL(targetURL);
+    } catch (err) { console.warn('Browser fallback failed.', err); }
+    window.open(targetURL, '_blank', 'noopener,noreferrer');
+    return false;
+  };
+  document.addEventListener('keydown', function(e){
+    const card=e.target.closest && e.target.closest('#gamesGrid .game-card');
+    if (!card || (e.key!=='Enter' && e.key!==' ')) return;
+    if (e.target.closest('a,button,input,select,textarea')) return;
+    e.preventDefault();
+    const link=card.querySelector('a[href]');
+    if (link) window.openGame(link.href);
+  });
+})();
+</script>
