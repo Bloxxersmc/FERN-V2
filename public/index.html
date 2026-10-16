@@ -1,22 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Korona</title>
-
-    <meta name="fern-version" content="2.1.0">
-
-    <!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
-    <script>
-        window.KORONA_GROQ_API_KEY = "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";
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Korona</title>
+<meta content="4.1.2" name="fern-version"/>
+<!-- Local-only AI testing: replace this placeholder in your local copy. Never publish real keys in HTML. -->
+<script>
+        window.KORONA_GROQ_API_KEY = "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";
     </script>
-
-    <!-- Scramjet -->
-    <script src="/scram/scramjet.all.js"></script>
-    <script src="/baremux/index.js"></script>
-    <script>
+<!-- Scramjet -->
+<script src="/scram/scramjet.all.js"></script>
+<script src="/baremux/index.js"></script>
+<script>
 
         let fernScramjet = null;
         let fernScramjetFrame = null;
@@ -154,11 +151,9 @@
             return frame;
         }
     </script>
-
-    <!-- Korona authentication -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <style>
+<!-- Korona authentication -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
         :root {
             --bg: #030603;
             --bg-light: #071008;
@@ -2573,7 +2568,6 @@ body::after {
 }
 
 </style>
-
 <style id="fern-v28-visual-fix">
 /* =========================================================
    FERN 2.8 — MATCH REFERENCE COMPOSITION
@@ -2701,7 +2695,6 @@ body.no-animations::before{animation:none !important;}
 .game-card{cursor:pointer;}
 .game-card:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
 </style>
-
 <style id="fern-v29-atmosphere">
 /* =========================================================
    FERN 2.9 — MORE STARS + LARGE MOVING MIST + PERFORMANCE
@@ -2811,7 +2804,6 @@ body.no-animations .fern-nebula-cloud{animation:none!important;} .fern-bright-au
 .fern-nebula{display:none!important;}
 .fern-mist-layer,.fern-nebula-cloud{animation:none!important;filter:none!important;}
 </style>
-
 <style id="fern-cpu-killer-fix">
 /* Fern performance pass: atmosphere is STATIC. No continuous animation, no canvas, no blur. */
 #bgCanvas{display:none!important;}
@@ -2824,69 +2816,6 @@ body::before,body::after{animation:none!important;will-change:auto!important;}
 <style id="fern-disable-old-aurora">
 .fern-aurora,.aurora,.aurora-layer,#aurora,.fernAurora,.aurora-layer *{animation:none!important;filter:none!important;will-change:auto!important}
 </style>
-
-
-<style id="fern-webgl-aurora">
-#fernWebGLAurora{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.78;mix-blend-mode:screen;}
-#app,#loginScreen{position:relative;z-index:3;}
-</style>
-
-<script id="fern-webgl-aurora-script">
-(()=>{
-const boot=()=>{
- if(document.getElementById('fernWebGLAurora'))return;
- const c=document.createElement('canvas'); c.id='fernWebGLAurora'; document.body.appendChild(c);
- const gl=c.getContext('webgl2',{alpha:true,antialias:false,preserveDrawingBuffer:false,powerPreference:'low-power'});
- if(!gl){c.style.display='none';return;}
- const vs=`#version 300 es
- in vec2 p; void main(){gl_Position=vec4(p,0.,1.);}`;
- const fs=`#version 300 es
- precision mediump float;
- out vec4 o; uniform vec2 r; uniform float t;
- float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
- float noise(vec2 p){
-   vec2 i=floor(p),f=fract(p);
-   f=f*f*(3.-2.*f);
-   return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),
-              mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);
- }
- void main(){
-   vec2 uv=gl_FragCoord.xy/r; uv.y=1.-uv.y;
-   float tt=t*.018;
-   float dx=abs(uv.x-.55);
-   float arc=.16+.18*exp(-pow(dx/.34,2.));
-   float wave=.028*sin(uv.x*10.+tt*2.)+.018*sin(uv.x*24.-tt*1.4);
-   float band=1.-smoothstep(.015,.060,abs(uv.y-(arc+wave)));
-   float n=noise(uv*vec2(3.0,4.0)+vec2(tt,tt*.35));
-   float f=band*(.72+.28*n)*smoothstep(.02,.16,uv.x)*smoothstep(1.,.82,uv.x);
-   float fade=smoothstep(.78,.16,uv.y);
-   f*=fade;
-   vec3 col=vec3(.015,.82,.50)*f*1.35;
-   o=vec4(col,clamp(f*.82,0.,.78));
- }`;
- const compile=(type,src)=>{const sh=gl.createShader(type);gl.shaderSource(sh,src);gl.compileShader(sh);return sh;};
- const a=compile(gl.VERTEX_SHADER,vs),b=compile(gl.FRAGMENT_SHADER,fs);
- if(!gl.getShaderParameter(a,gl.COMPILE_STATUS)||!gl.getShaderParameter(b,gl.COMPILE_STATUS)){c.style.display='none';return;}
- const pr=gl.createProgram();gl.attachShader(pr,a);gl.attachShader(pr,b);gl.linkProgram(pr);if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){c.style.display='none';return;}
- const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
- const loc=gl.getAttribLocation(pr,'p'),rr=gl.getUniformLocation(pr,'r'),tm=gl.getUniformLocation(pr,'t');gl.useProgram(pr);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
- let w=0,h=0,last=0,active=true,raf=0;
- const resize=()=>{w=Math.max(1,Math.floor(innerWidth*.18));h=Math.max(1,Math.floor(innerHeight*.18));c.width=w;c.height=h;c.style.width='100%';c.style.height='100%';gl.viewport(0,0,w,h);};
- addEventListener('resize',resize,{passive:true}); resize();
- const shouldRun=()=>active&&!document.hidden&&!document.body.classList.contains('fern-proxy-active');
- const stop=()=>{if(raf){cancelAnimationFrame(raf);raf=0;}};
- const start=()=>{if(raf||!shouldRun())return; raf=requestAnimationFrame(frame);};
- const frame=now=>{raf=0;if(!shouldRun())return;if(now-last>=200){last=now;gl.uniform2f(rr,w,h);gl.uniform1f(tm,now*.001);gl.drawArrays(gl.TRIANGLES,0,3);}start();};
- const sync=()=>{if(shouldRun())start();else stop();};
- const io=new IntersectionObserver(es=>{active=es.some(e=>e.isIntersecting);sync()});io.observe(c);
- document.addEventListener('visibilitychange',sync,{passive:true});
- const proxyObserver=new MutationObserver(sync);proxyObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
- sync();
-};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();
-</script>
-
 <style id="fern-stars-moon">
 #fernSkyDecor{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
 .fern-moon{position:absolute;right:6vw;top:5vh;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 28%,#edf4ff 52%,#b9d4ff 78%,#7ea8e8 100%);box-shadow:0 0 18px rgba(205,225,255,.9),0 0 42px rgba(130,180,255,.42),0 0 80px rgba(100,140,255,.18);opacity:.95}
@@ -2895,8 +2824,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .fern-star.big{width:3px;height:3px;box-shadow:0 0 8px 2px rgba(220,240,255,1)}
 @media(max-width:900px){.fern-moon{width:64px;height:64px;right:5vw}.fern-star{transform:scale(.8)}}
 </style>
-<div id="fernSkyDecor" aria-hidden="true"><div class="fern-moon"></div><i class="fern-star big" style="left:61.5%;top:4.3%"></i><i class="fern-star" style="left:28.8%;top:14.6%"></i><i class="fern-star" style="left:70.3%;top:38.2%"></i><i class="fern-star" style="left:84.3%;top:7.5%"></i><i class="fern-star" style="left:42.0%;top:4.5%"></i><i class="fern-star" style="left:23.7%;top:29.3%"></i><i class="fern-star" style="left:6.4%;top:13.3%"></i><i class="fern-star" style="left:62.5%;top:31.3%"></i><i class="fern-star" style="left:23.8%;top:33.6%"></i><i class="fern-star big" style="left:76.8%;top:3.3%"></i><i class="fern-star" style="left:76.5%;top:39.3%"></i><i class="fern-star" style="left:34.6%;top:11.1%"></i><i class="fern-star" style="left:90.1%;top:20.5%"></i><i class="fern-star" style="left:12.3%;top:8.0%"></i><i class="fern-star" style="left:80.3%;top:34.4%"></i><i class="fern-star" style="left:76.6%;top:40.9%"></i><i class="fern-star" style="left:52.3%;top:53.6%"></i><i class="fern-star" style="left:38.1%;top:31.7%"></i><i class="fern-star big" style="left:78.6%;top:35.2%"></i><i class="fern-star" style="left:81.6%;top:33.0%"></i><i class="fern-star" style="left:67.4%;top:5.4%"></i><i class="fern-star" style="left:24.5%;top:18.0%"></i><i class="fern-star" style="left:11.2%;top:15.1%"></i><i class="fern-star" style="left:13.1%;top:17.5%"></i><i class="fern-star" style="left:61.2%;top:22.0%"></i><i class="fern-star" style="left:37.3%;top:13.9%"></i><i class="fern-star" style="left:28.0%;top:51.7%"></i><i class="fern-star big" style="left:62.3%;top:34.7%"></i><i class="fern-star" style="left:19.4%;top:40.9%"></i><i class="fern-star" style="left:18.7%;top:22.7%"></i><i class="fern-star" style="left:93.1%;top:36.3%"></i><i class="fern-star" style="left:54.1%;top:38.6%"></i><i class="fern-star" style="left:79.9%;top:43.4%"></i><i class="fern-star" style="left:24.6%;top:4.7%"></i></div>
-
+<div aria-hidden="true" id="fernSkyDecor"><div class="fern-moon"></div><i class="fern-star big" style="left:61.5%;top:4.3%"></i><i class="fern-star" style="left:28.8%;top:14.6%"></i><i class="fern-star" style="left:70.3%;top:38.2%"></i><i class="fern-star" style="left:84.3%;top:7.5%"></i><i class="fern-star" style="left:42.0%;top:4.5%"></i><i class="fern-star" style="left:23.7%;top:29.3%"></i><i class="fern-star" style="left:6.4%;top:13.3%"></i><i class="fern-star" style="left:62.5%;top:31.3%"></i><i class="fern-star" style="left:23.8%;top:33.6%"></i><i class="fern-star big" style="left:76.8%;top:3.3%"></i><i class="fern-star" style="left:76.5%;top:39.3%"></i><i class="fern-star" style="left:34.6%;top:11.1%"></i><i class="fern-star" style="left:90.1%;top:20.5%"></i><i class="fern-star" style="left:12.3%;top:8.0%"></i><i class="fern-star" style="left:80.3%;top:34.4%"></i><i class="fern-star" style="left:76.6%;top:40.9%"></i><i class="fern-star" style="left:52.3%;top:53.6%"></i><i class="fern-star" style="left:38.1%;top:31.7%"></i><i class="fern-star big" style="left:78.6%;top:35.2%"></i><i class="fern-star" style="left:81.6%;top:33.0%"></i><i class="fern-star" style="left:67.4%;top:5.4%"></i><i class="fern-star" style="left:24.5%;top:18.0%"></i><i class="fern-star" style="left:11.2%;top:15.1%"></i><i class="fern-star" style="left:13.1%;top:17.5%"></i><i class="fern-star" style="left:61.2%;top:22.0%"></i><i class="fern-star" style="left:37.3%;top:13.9%"></i><i class="fern-star" style="left:28.0%;top:51.7%"></i><i class="fern-star big" style="left:62.3%;top:34.7%"></i><i class="fern-star" style="left:19.4%;top:40.9%"></i><i class="fern-star" style="left:18.7%;top:22.7%"></i><i class="fern-star" style="left:93.1%;top:36.3%"></i><i class="fern-star" style="left:54.1%;top:38.6%"></i><i class="fern-star" style="left:79.9%;top:43.4%"></i><i class="fern-star" style="left:24.6%;top:4.7%"></i></div>
 <style id="fern-aurora-definition">
 #fernWebGLAurora{opacity:.9!important;filter:saturate(1.18) contrast(1.16)!important}
 </style>
@@ -2948,14 +2876,12 @@ html, body {
     max-width: 100%;
 }
 </style>
-
 <style id="fern-featured-games">
 #gamesGrid .game-card[data-game-featured="true"]{border-color:rgba(125,165,255,.42)!important;box-shadow:0 10px 30px rgba(75,110,220,.20)!important}
 #gamesGrid .game-card[data-game-featured="true"] .game-card-top h3{color:#dce8ff}
 #gamesGrid .game-card[data-game-featured="true"]:first-child{grid-column:span 2}
 @media(max-width:900px){#gamesGrid .game-card[data-game-featured="true"]:first-child{grid-column:span 1}}
 </style>
-
 <style id="fern-proxy-performance">
 /* Proxy performance mode: keep the actual game surface as close to a native iframe as possible. */
 .iframe-container{contain:layout paint;isolation:isolate;}
@@ -2970,10 +2896,8 @@ body.fern-proxy-active .fern-nebula,
 body.fern-proxy-active .fern-nebula-cloud,
 body.fern-proxy-active .fern-mist-layer{display:none!important;}
 </style>
-
-<link rel="dns-prefetch" href="https://dante-el-gamer.github.io">
-<link rel="dns-prefetch" href="https://now.gg">
-
+<link href="https://dante-el-gamer.github.io" rel="dns-prefetch"/>
+<link href="https://now.gg" rel="dns-prefetch"/>
 <style id="fern-final-performance">
 /* ============================================================
    FERN FINAL PERFORMANCE PASS
@@ -3003,7 +2927,6 @@ body.no-animations #fernMistTexture{animation:none!important}
 /* Don't create compositor layers for every interactive element. */
 button,.nav-button,.game-card,.theme-card,input,select{will-change:auto!important}
 </style>
-
 <style id="fern-library-render-optimization">
 .games-grid{contain:layout paint}
 .game-card{content-visibility:auto;contain-intrinsic-size:0 320px}
@@ -3019,7 +2942,6 @@ button,.nav-button,.game-card,.theme-card,input,select{will-change:auto!importan
   contain:paint;
 }
 </style>
-
 <style id="fern-modern-ui-v1-2-10">
 :root {
     --fern-radius:10px;
@@ -3111,8 +3033,6 @@ body.fern-fullscreen-performance * {
     display:none !important;
 }
 </style>
-
-
 <style id="fern-concentrated-aurora-ui-v1-2-12">
 html,body{background:#03050c !important;}
 body{
@@ -3173,8 +3093,6 @@ input:focus,select:focus,textarea:focus{
 button,.button{border-radius:8px !important;box-shadow:none !important;text-shadow:none !important;}
 #auroraCanvas{opacity:.96 !important;}
 </style>
-
-
 <style id="fern-space-polish-v1-2-16">
 /* Fern v1.2.16 — deep-space base layer */
 html,body {
@@ -3273,8 +3191,6 @@ body::before {
     .fern-shooting-star { display:none !important; }
 }
 </style>
-
-
 <style id="fern-optimization-v1-2-19">
 /* Fern v1.2.19 — conservative performance pass */
 html {
@@ -3320,8 +3236,6 @@ body.fern-proxy-active #fernWebGLAurora {
     }
 }
 </style>
-
-
 <style id="fern-hard-performance-v1-2-20">
 /* Fern v1.2.20 — aggressive performance mode */
 *,
@@ -3405,7 +3319,6 @@ body.fern-proxy-active .fern-mist-layer {
     contain-intrinsic-size:260px 330px;
 }
 </style>
-
 <style id="fern-scramjet-library-fix">
 /* Keep the library away from the viewport edge. */
 .content {
@@ -3458,7 +3371,6 @@ body.fern-proxy-active .fern-mist-layer {
     }
 }
 </style>
-
 <style id="korona-ui-overrides">
 :root {
     --bg: #12020b; --bg-light: #210414; --panel: #210414; --panel-hover: #2b071a;
@@ -3593,8 +3505,6 @@ body {
     .online,.version-indicator { display:none !important; }
 }
 </style>
-
-
 <style id="korona-browser-ui">
 :root{--k-bg:var(--bg-light);--k-sidebar:var(--bg-light);--k-line:color-mix(in srgb,var(--green) 45%,var(--bg));--k-gold:var(--green);--k-text:var(--text)}
 html,body{background:var(--k-bg)!important;color:var(--k-text)!important}
@@ -3618,8 +3528,6 @@ body{min-height:100vh!important;background:radial-gradient(circle at 76% 16%,col
 @media(max-width:900px){.korona-sidebar{width:76px!important;padding:14px 7px!important}.sidebar-brand{justify-content:center!important;padding:2px 0 25px!important}.sidebar-brand>div:last-child{display:none!important}.korona-sidebar .nav-button{justify-content:center!important;padding:0!important}.korona-sidebar .nav-button span:last-child{display:none!important}.sidebar-bottom{display:none!important}.content{margin-left:76px!important;width:calc(100% - 76px)!important}.content>.page{padding:25px 18px 35px!important}.apps-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.quick-launch-grid{grid-template-columns:repeat(2,1fr)!important}}
 @media(max-width:650px){.korona-home{flex-direction:column!important;align-items:flex-start!important;padding:24px!important}.home-stat-grid{width:100%!important;grid-template-columns:repeat(3,1fr)!important}.korona-home h1{font-size:32px!important}.browser-window{height:calc(100vh - 132px)!important;min-height:430px!important}.browser-tab{min-width:125px!important;flex-basis:125px!important}#settingsPage .theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.apps-grid{grid-template-columns:1fr!important}}
 </style>
-
-
 <style id="korona-browser-fix">
 body{overflow:auto!important}
 #iframeContainer{display:block!important}
@@ -3629,7 +3537,6 @@ body{overflow:auto!important}
 .browser-newtab p{margin:8px 0 6px;color:color-mix(in srgb,var(--green) 45%,var(--bg));font-size:11px}
 .browser-newtab span{color:color-mix(in srgb,var(--green) 45%,var(--bg));font-size:10px}
 </style>
-
 <style id="korona-stability-fixes">
 /* Stable Korona shell */
 html,body{margin:0!important;min-height:100%!important;width:100%!important;overflow-x:hidden!important}
@@ -3675,7 +3582,6 @@ html,body{margin:0!important;min-height:100%!important;width:100%!important;over
   .browser-address button{width:30px!important}
 }
 </style>
-
 <style id="korona-auth-gate-fix">
 /* Authentication is a true full-screen gate. Nothing behind it is clickable or scrollable. */
 html.korona-auth-locked,
@@ -3730,421 +3636,573 @@ body.korona-auth-unlocked #app {
   overflow: hidden !important;
 }
 </style>
+<!-- Motion pass: purposeful, lightweight transitions; no layout animation. -->
+<style id="korona-motion-skill">
+      :root {
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+        --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+        --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+        --motion-fast: 120ms;
+        --motion-ui: 180ms;
+        --motion-enter: 220ms;
+        /* Existing var(--transition) users now avoid animating every property. */
+        --transition: color 180ms ease, background-color 180ms ease,
+          border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+      }
+
+      /* Tab/page changes are frequent: use a short, subtle opacity cue only. */
+      .page {
+        animation: koronaPageEnter 180ms var(--ease-out) both;
+      }
+      @keyframes koronaPageEnter {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      /* Keep frequent hover/press feedback fast and compositor-friendly. */
+      .nav button,
+      .theme-card,
+      .iframe-toolbar button,
+      .game-card,
+      .game-card a,
+      #searchButton,
+      #loginButton {
+        transition:
+          color var(--motion-fast) ease,
+          background-color var(--motion-fast) ease,
+          border-color var(--motion-fast) ease,
+          box-shadow var(--motion-fast) ease,
+          opacity var(--motion-fast) ease,
+          transform var(--motion-fast) var(--ease-out);
+      }
+
+      /* Hover motion only for devices that genuinely have a precise pointer. */
+      @media (hover: hover) and (pointer: fine) {
+        .nav button:hover,
+        .theme-card:hover,
+        .iframe-toolbar button:hover,
+        #searchButton:hover,
+        #loginButton:hover {
+          transform: translateY(-1px);
+        }
+        .game-card:hover {
+          transform: translateY(-2px);
+        }
+      }
+
+      .nav button:active,
+      .theme-card:active,
+      .iframe-toolbar button:active,
+      #searchButton:active,
+      #loginButton:active {
+        transform: translateY(0);
+      }
+
+      /* Don't animate reading surfaces or content inside the browser frame. */
+      .korona-browser-frame,
+      #iframeWindow,
+      #browserFrames,
+      .game-image,
+      .settings-section {
+        animation: none;
+      }
+
+      /* Reduced motion keeps gentle color/opacity feedback but removes movement. */
+      @media (prefers-reduced-motion: reduce) {
+        .page {
+          animation: koronaPageFade 120ms ease-out both !important;
+        }
+        @keyframes koronaPageFade {
+          from { opacity: .92; }
+          to { opacity: 1; }
+        }
+        .nav button,
+        .theme-card,
+        .iframe-toolbar button,
+        .game-card,
+        .game-card a,
+        #searchButton,
+        #loginButton {
+          transition: color 120ms ease, background-color 120ms ease,
+            border-color 120ms ease, box-shadow 120ms ease, opacity 120ms ease !important;
+        }
+        .nav button:hover,
+        .theme-card:hover,
+        .iframe-toolbar button:hover,
+        .game-card:hover,
+        #searchButton:hover,
+        #loginButton:hover,
+        .nav button:active,
+        .theme-card:active,
+        .iframe-toolbar button:active,
+        #searchButton:active,
+        #loginButton:active {
+          transform: none !important;
+        }
+      }
+
+      body.no-animations .page,
+      body.no-animations .nav button,
+      body.no-animations .theme-card,
+      body.no-animations .iframe-toolbar button,
+      body.no-animations .game-card,
+      body.no-animations .game-card a,
+      body.no-animations #searchButton,
+      body.no-animations #loginButton {
+        animation: none !important;
+        transition: none !important;
+      }
+    </style>
+<style id="korona-v3-layout-repair">
+/* Korona stability pass: preserve the original product layout and fix scrolling/auth usability. */
+html, body { min-height:100%; height:auto; overflow-x:hidden !important; overflow-y:auto !important; }
+body { position:relative; }
+#app { min-height:100vh; height:auto !important; overflow:visible !important; }
+#loginScreen { box-sizing:border-box; max-height:100dvh; overflow-y:auto !important; overscroll-behavior:contain; }
+#koronaSidebar { max-height:100dvh; overflow-y:auto !important; overscroll-behavior:contain; }
+main.content, .content { min-height:calc(100vh - 1px); height:auto !important; max-height:none !important; overflow:visible !important; }
+.page { min-height:calc(100vh - 120px); height:auto !important; max-height:none !important; overflow:visible !important; }
+#proxyPage, #gamesPage, #appsPage, #bookmarksPage, #accountPage, #settingsPage, #aboutPage, #homePage {
+  height:auto !important; max-height:none !important; overflow:visible !important;
+}
+#proxyPage .browser-window { max-width:100%; }
+#proxyPage .iframe-container { min-height:55vh; }
+img, video, iframe { max-width:100%; }
+@media (max-width:760px) {
+  html, body { overflow-y:auto !important; }
+  #loginScreen { max-height:100dvh; }
+  main.content, .content { padding-bottom:32px; }
+}
+</style><style id="korona-slate-cyan-finish">
+/* Korona visual finish: consistent dark surfaces, cyan accents, and background layers behind UI. */
+:root {
+  color-scheme: dark;
+  --bg: #080d16 !important;
+  --bg-light: #0d1522 !important;
+  --panel: #111c2b !important;
+  --panel-hover: #17263a !important;
+  --green: #62d9f5 !important;
+  --green-dark: #21a9cc !important;
+  --green-soft: #a8efff !important;
+  --text: #e8f2fb !important;
+  --muted: #8ea4b9 !important;
+  --border: rgba(113, 174, 205, .20) !important;
+  --border-bright: rgba(98, 217, 245, .55) !important;
+  --red: #ff7185 !important;
+}
+html, body {
+  background: #080d16 !important;
+  color: #e8f2fb !important;
+}
+body {
+  background:
+    radial-gradient(ellipse at 78% 18%, rgba(25, 112, 148, .16), transparent 38%),
+    radial-gradient(ellipse at 12% 84%, rgba(45, 77, 133, .13), transparent 36%),
+    linear-gradient(145deg, #080d16 0%, #0a1220 52%, #0b101b 100%) !important;
+}
+/* Keep decorative textures behind the actual application rather than washing over it. */
+body::before, body::after, #fernMistTexture, #bgCanvas,
+.fern-nebula-cloud, .fern-mist-layer, #fernWebGLAurora {
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+#app, #loginScreen, #koronaSidebar, main.content, .content, .topbar, .page {
+  position: relative;
+  z-index: 2;
+}
+#app, main.content, .content, .page,
+#homePage, #proxyPage, #gamesPage, #appsPage, #bookmarksPage,
+#accountPage, #settingsPage, #aboutPage {
+  color: var(--text) !important;
+  background-color: transparent !important;
+}
+#koronaSidebar, .sidebar, .sidebar-nav, .topbar, .nav,
+.hero, .glass-panel, .settings-section, .theme-card, .bookmark-card,
+.library-controls, .game-card, .browser-window, .iframe-container,
+.korona-auth-box, .login-box {
+  background-color: rgba(14, 24, 38, .94) !important;
+  color: var(--text) !important;
+  border-color: rgba(113, 174, 205, .20) !important;
+}
+#loginScreen {
+  background:
+    linear-gradient(rgba(98,217,245,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(98,217,245,.025) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 35%, rgba(28,104,139,.18), transparent 48%),
+    #080d16 !important;
+  background-size: 42px 42px, 42px 42px, auto, auto !important;
+}
+.korona-auth-box, .login-box {
+  background: linear-gradient(145deg, rgba(18,31,48,.98), rgba(10,18,30,.98)) !important;
+  border: 1px solid rgba(98,217,245,.24) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,.42), 0 0 36px rgba(35,157,192,.07) !important;
+}
+button, .nav-button, .sidebar-nav button, .nav button,
+#searchButton, .game-card a, .bookmark-button {
+  color: #eaf8ff !important;
+  border-color: rgba(98,217,245,.25) !important;
+}
+#searchButton, .primary-button, .btn-primary, .korona-primary {
+  background: linear-gradient(135deg, #31b8d8, #2185b7) !important;
+  color: #04121b !important;
+  border-color: rgba(134,235,255,.55) !important;
+}
+.nav-button.active, .sidebar-nav button.active, .nav button.active,
+.nav-button[aria-current="page"] {
+  background: rgba(55,174,211,.15) !important;
+  color: #9deeff !important;
+  border-color: rgba(98,217,245,.35) !important;
+}
+input, select, textarea {
+  background: #0a1320 !important;
+  color: #e8f2fb !important;
+  border-color: rgba(113,174,205,.28) !important;
+}
+input::placeholder, textarea::placeholder { color: #71899f !important; }
+#iframeContainer, .iframe-container, .browser-window, #iframeWindow,
+.korona-browser-frame {
+  background: #080d16 !important;
+}
+#iframeWindow, .korona-browser-frame { border-color: rgba(113,174,205,.22) !important; }
+hr, .divider, .section-divider { border-color: rgba(113,174,205,.16) !important; }
+/* Preserve the stable v3 scrolling repair; don't reintroduce nested fixed-height traps. */
+html, body { min-height: 100%; height: auto !important; overflow-x: hidden !important; overflow-y: auto !important; }
+#app { min-height: 100vh !important; height: auto !important; overflow: visible !important; }
+main.content, .content, .page { height: auto !important; max-height: none !important; overflow: visible !important; }
+#loginScreen, #koronaSidebar { max-height: 100dvh; overflow-y: auto !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+
 </head>
-
-
 <body>
-<div id="fernMistTexture" aria-hidden="true"></div>
+<div aria-hidden="true" id="fernMistTexture"></div>
 <div class="fern-nebula-cloud cloud-b"></div>
-    <div class="fern-nebula-cloud cloud-c"></div>
-</div>
-
+<div class="fern-nebula-cloud cloud-c"></div>
 
 <!-- =========================================================
      LOGIN SCREEN
      ========================================================= -->
-
 <div id="loginScreen">
-
-    <div class="login-box korona-auth-box">
-
-        <div class="fern-logo korona-logo">
-            <div class="fern-icon korona-icon">K</div>
-            <h1>korona<span>.</span></h1>
-        </div>
-
-        <p class="login-subtitle" id="loginTagline">first-time setup</p>
-
-        <div class="korona-auth-card" id="setup-card">
-            <div class="korona-auth-title">Create your Korona ID</div>
-
-            <div class="korona-field">
-                <label for="first-name">First name</label>
-                <input id="first-name" type="text" maxlength="40"
-                       autocomplete="given-name" placeholder="First name">
-            </div>
-
-            <div class="korona-field">
-                <label for="last-name">Last name</label>
-                <input id="last-name" type="text" maxlength="40"
-                       autocomplete="family-name" placeholder="Last name">
-            </div>
-
-            <button class="korona-primary" id="create-button" type="button">
+<div class="login-box korona-auth-box">
+<div class="fern-logo korona-logo">
+<div class="fern-icon korona-icon">K</div>
+<h1>korona<span>.</span></h1>
+</div>
+<p class="login-subtitle" id="loginTagline">first-time setup</p>
+<div class="korona-auth-card" id="setup-card">
+<div class="korona-auth-title">Create your Korona ID</div>
+<div class="korona-field">
+<label for="first-name">First name</label>
+<input autocomplete="given-name" id="first-name" maxlength="40" placeholder="First name" type="text"/>
+</div>
+<div class="korona-field">
+<label for="last-name">Last name</label>
+<input autocomplete="family-name" id="last-name" maxlength="40" placeholder="Last name" type="text"/>
+</div>
+<button class="korona-primary" id="create-button" type="button">
                 Create Korona ID
             </button>
-
-            <div id="setup-message" class="korona-message"></div>
-        </div>
-
-        <div class="korona-auth-card" id="login-card" style="display:none;">
-            <div class="korona-auth-title">Welcome back</div>
-
-            <div class="korona-user-id">
+<div class="korona-message" id="setup-message"></div>
+</div>
+<div class="korona-auth-card" id="login-card" style="display:none;">
+<div class="korona-auth-title">Welcome back</div>
+<div class="korona-user-id">
                 Korona ID:
                 <strong id="login-user-id"></strong>
-            </div>
-
-            <div class="korona-field" style="margin-top:20px;">
-                <label for="auth-code">Authentication code</label>
-                <input id="auth-code" type="password" autocomplete="off"
-                       placeholder="Enter authentication code">
-            </div>
-
-            <button class="korona-primary" id="korona-login-button" type="button">
+</div>
+<div class="korona-field" style="margin-top:20px;">
+<label for="auth-code">Authentication code</label>
+<input autocomplete="off" id="auth-code" placeholder="Enter authentication code" type="password"/>
+</div>
+<button class="korona-primary" id="korona-login-button" type="button">
                 Unlock Korona
             </button>
-
-            <div id="login-message" class="korona-message"></div>
-        </div>
-
-        <div class="korona-user-id" id="current-user" style="display:none;">
+<div class="korona-message" id="login-message"></div>
+</div>
+<div class="korona-user-id" id="current-user" style="display:none;">
             Korona ID:
             <strong id="display-user-id"></strong>
-        </div>
-
-        <div class="login-joke" id="loginJoke">
+</div>
+<div class="login-joke" id="loginJoke">
             The Korona gate is judging your credentials.
         </div>
-
-    </div>
-
 </div>
-
-
-
+</div>
 <!-- =========================================================
      MAIN APPLICATION
      ========================================================= -->
-
 <div id="app">
-
-
-    <!-- KORONA SIDEBAR -->
-    <aside class="korona-sidebar" id="koronaSidebar">
-      <div class="sidebar-brand"><div class="sidebar-mark">K</div><div><strong>korona</strong><span>browser</span></div></div>
-      <nav class="sidebar-nav">
-        <button class="nav-button active" data-page="home"><span class="sidebar-icon">⌂</span><span>Home</span></button>
-        <button class="nav-button" data-page="games"><span class="sidebar-icon">⌘</span><span>Games</span></button>
-        <button class="nav-button" data-page="apps"><span class="sidebar-icon">▣</span><span>Apps</span></button>
-        <button class="nav-button" data-page="proxy"><span class="sidebar-icon">◎</span><span>Browser</span></button>
-        <button class="nav-button" data-page="settings"><span class="sidebar-icon">⚙</span><span>Settings</span></button>
-        <button class="nav-button" data-page="account"><span class="sidebar-icon">♙</span><span>Account</span></button>
-      </nav>
-      <div class="sidebar-bottom"><div class="sidebar-status"><span></span> online</div><div class="sidebar-version">Korona v2.1</div></div>
-    </aside>
-
-    <!-- CONTENT -->
-
-    <main class="content">
-
-
-        <!-- =================================================
+<!-- KORONA SIDEBAR -->
+<aside class="korona-sidebar" id="koronaSidebar">
+<div class="sidebar-brand"><div class="sidebar-mark">K</div><div><strong>korona</strong><span>browser</span></div></div>
+<nav class="sidebar-nav">
+<button class="nav-button active" data-page="home"><span class="sidebar-icon">⌂</span><span>Home</span></button>
+<button class="nav-button" data-page="games"><span class="sidebar-icon">⌘</span><span>Games</span></button>
+<button class="nav-button" data-page="apps"><span class="sidebar-icon">▣</span><span>Apps</span></button>
+<button class="nav-button" data-page="proxy"><span class="sidebar-icon">◎</span><span>Browser</span></button>
+<button class="nav-button" data-page="settings"><span class="sidebar-icon">⚙</span><span>Settings</span></button>
+<button class="nav-button" data-page="account"><span class="sidebar-icon">♙</span><span>Account</span></button>
+</nav>
+<div class="sidebar-bottom"><div class="sidebar-status"><span></span> online</div><div class="sidebar-version">Korona v2.1</div></div>
+</aside>
+<!-- CONTENT -->
+<main class="content">
+<!-- =================================================
              HOME PAGE
              ================================================= -->
-        <section class="page active" id="homePage">
-          <div class="korona-home">
-            <div class="korona-home-copy">
-              <div class="browser-eyebrow">KORONA BROWSER</div>
-              <h1>your web, <span>your tabs.</span></h1>
-              <p>Open websites in separate tabs, keep your sessions organized, and jump into your game library without leaving Korona.</p>
-              <div class="home-actions">
-                <button class="korona-large-button" data-page-jump="proxy">Open Browser</button>
-                <button class="korona-large-button secondary" data-page-jump="games">Browse Games</button>
-              </div>
-            </div>
-            <div class="home-stat-grid">
-              <div class="home-stat"><strong id="homeTabCount">1</strong><span>browser tabs</span></div>
-              <div class="home-stat"><strong>∞</strong><span>websites</span></div>
-              <div class="home-stat"><strong>⌁</strong><span>Scramjet ready</span></div>
-            </div>
-          </div>
-          <div class="quick-launch-panel">
-            <div class="panel-heading"><span>quick launch</span><small>open a site in a new tab</small></div>
-            <div class="quick-launch-grid">
-              <button class="quick-site" data-url="https://www.google.com"><span>G</span>Google</button>
-              <button class="quick-site" data-url="https://www.youtube.com"><span>▶</span>YouTube</button>
-              <button class="quick-site" data-url="https://chatgpt.com"><span>AI</span>ChatGPT</button>
-              <button class="quick-site" data-url="https://www.wikipedia.org"><span>W</span>Wikipedia</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- =================================================
+<section class="page active" id="homePage">
+<div class="korona-home">
+<div class="korona-home-copy">
+<div class="browser-eyebrow">KORONA BROWSER</div>
+<h1>your web, <span>your tabs.</span></h1>
+<p>Open websites in separate tabs, keep your sessions organized, and jump into your game library without leaving Korona.</p>
+<div class="home-actions">
+<button class="korona-large-button" data-page-jump="proxy">Open Browser</button>
+<button class="korona-large-button secondary" data-page-jump="games">Browse Games</button>
+</div>
+</div>
+<div class="home-stat-grid">
+<div class="home-stat"><strong id="homeTabCount">1</strong><span>browser tabs</span></div>
+<div class="home-stat"><strong>∞</strong><span>websites</span></div>
+<div class="home-stat"><strong>⌁</strong><span>Scramjet ready</span></div>
+</div>
+</div>
+<div class="quick-launch-panel">
+<div class="panel-heading"><span>quick launch</span><small>open a site in a new tab</small></div>
+<div class="quick-launch-grid">
+<button class="quick-site" data-url="https://www.google.com"><span>G</span>Google</button>
+<button class="quick-site" data-url="https://www.youtube.com"><span>▶</span>YouTube</button>
+<button class="quick-site" data-url="https://chatgpt.com"><span>AI</span>ChatGPT</button>
+<button class="quick-site" data-url="https://www.wikipedia.org"><span>W</span>Wikipedia</button>
+</div>
+</div>
+</section>
+<!-- =================================================
              APPS PAGE
              ================================================= -->
-        <section class="page" id="appsPage">
-          <div class="section-header"><div class="eyebrow">KORONA APPS</div><h2>Apps</h2><p>Launch your frequently used websites as browser tabs.</p></div>
-          <div class="apps-grid">
-            <button class="app-tile" data-url="https://chatgpt.com"><span class="app-letter">AI</span><strong>ChatGPT</strong><small>chatgpt.com</small></button>
-            <button class="app-tile" data-url="https://www.youtube.com"><span class="app-letter">▶</span><strong>YouTube</strong><small>youtube.com</small></button>
-            <button class="app-tile" data-url="https://www.google.com"><span class="app-letter">G</span><strong>Google</strong><small>google.com</small></button>
-            <button class="app-tile" data-url="https://www.wikipedia.org"><span class="app-letter">W</span><strong>Wikipedia</strong><small>wikipedia.org</small></button>
-            <button class="app-tile" data-url="https://www.reddit.com"><span class="app-letter">R</span><strong>Reddit</strong><small>reddit.com</small></button>
-            <button class="app-tile" data-url="https://github.com"><span class="app-letter">GH</span><strong>GitHub</strong><small>github.com</small></button>
-          </div>
-        </section>
-
-        <!-- =================================================
+<section class="page" id="appsPage">
+<div class="section-header"><div class="eyebrow">KORONA APPS</div><h2>Apps</h2><p>Launch your frequently used websites as browser tabs.</p></div>
+<div class="apps-grid">
+<button class="app-tile" data-url="https://chatgpt.com"><span class="app-letter">AI</span><strong>ChatGPT</strong><small>chatgpt.com</small></button>
+<button class="app-tile" data-url="https://www.youtube.com"><span class="app-letter">▶</span><strong>YouTube</strong><small>youtube.com</small></button>
+<button class="app-tile" data-url="https://www.google.com"><span class="app-letter">G</span><strong>Google</strong><small>google.com</small></button>
+<button class="app-tile" data-url="https://www.wikipedia.org"><span class="app-letter">W</span><strong>Wikipedia</strong><small>wikipedia.org</small></button>
+<button class="app-tile" data-url="https://www.reddit.com"><span class="app-letter">R</span><strong>Reddit</strong><small>reddit.com</small></button>
+<button class="app-tile" data-url="https://github.com"><span class="app-letter">GH</span><strong>GitHub</strong><small>github.com</small></button>
+</div>
+</section>
+<!-- =================================================
              PROXY PAGE
              ================================================= -->
-
-        <section class="page" id="proxyPage">
-          <div class="browser-page">
-            <div class="browser-topline">
-              <div><div class="browser-eyebrow">KORONA BROWSER</div><h2>Browser</h2></div>
-              <div class="browser-status"><span></span> secure session</div>
-            </div>
-            <div class="browser-window" id="browserWindow">
-              <div class="browser-tabs" id="browserTabs">
-                <button class="new-tab-button" id="newTabButton" title="New tab" type="button">+</button>
-              </div>
-              <div class="browser-toolbar">
-                <button class="browser-nav-button" id="browserBack" title="Back" type="button">←</button>
-                <button class="browser-nav-button" id="browserForward" title="Forward" type="button">→</button>
-                <button class="browser-nav-button" id="browserRefresh" title="Refresh" type="button">↻</button>
-                <button class="browser-nav-button" id="browserHome" title="New tab" type="button">⌂</button>
-                <div class="browser-address"><span class="address-lock">⌕</span><input id="urlInput" type="text" placeholder="Search or enter a website address" autocomplete="off"><button id="searchButton" title="Go" type="button">↵</button></div>
-                <button class="browser-nav-button" id="browserFullscreen" title="Fullscreen browser" type="button">⛶</button>
-              </div>
-              <div class="iframe-container" id="iframeContainer">
-                <div class="browser-frames" id="browserFrames"><div class="browser-newtab" id="browserNewTab"><div class="newtab-k">K</div><h3>korona</h3><p>Open a site from a Korona tab or app.</p><span>+ opens a new tab</span></div></div>
-                <div class="proxy-opening-overlay" id="proxyOpeningOverlay"><div class="proxy-opening-text">OPENING WINDOW...</div></div>
-                <div class="iframe-toolbar"><button id="fullscreenButton" title="Press and hold for fullscreen" type="button">⛶</button><button id="reloadButton" title="Reload current site" type="button">↻</button></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-
-
-        <!-- =================================================
+<section class="page" id="proxyPage">
+<div class="browser-page">
+<div class="browser-topline">
+<div><div class="browser-eyebrow">KORONA BROWSER</div><h2>Browser</h2></div>
+<div class="browser-status"><span></span> secure session</div>
+</div>
+<div class="browser-window" id="browserWindow">
+<div class="browser-tabs" id="browserTabs">
+<button class="new-tab-button" id="newTabButton" title="New tab" type="button">+</button>
+</div>
+<div class="browser-toolbar">
+<button class="browser-nav-button" id="browserBack" title="Back" type="button">←</button>
+<button class="browser-nav-button" id="browserForward" title="Forward" type="button">→</button>
+<button class="browser-nav-button" id="browserRefresh" title="Refresh" type="button">↻</button>
+<button class="browser-nav-button" id="browserHome" title="New tab" type="button">⌂</button>
+<div class="browser-address"><span class="address-lock">⌕</span><input autocomplete="off" id="urlInput" placeholder="Search or enter a website address" type="text"/><button id="searchButton" title="Go" type="button">↵</button></div>
+<button class="browser-nav-button" id="browserFullscreen" title="Fullscreen browser" type="button">⛶</button>
+</div>
+<div class="iframe-container" id="iframeContainer">
+<div class="browser-frames" id="browserFrames"><div class="browser-newtab" id="browserNewTab"><div class="newtab-k">K</div><h3>korona</h3><p>Open a site from a Korona tab or app.</p><span>+ opens a new tab</span></div></div>
+<div class="proxy-opening-overlay" id="proxyOpeningOverlay"><div class="proxy-opening-text">OPENING WINDOW...</div></div>
+<div class="iframe-toolbar"><button id="fullscreenButton" title="Press and hold for fullscreen" type="button">⛶</button><button id="reloadButton" title="Reload current site" type="button">↻</button></div>
+</div>
+</div>
+</div>
+</section>
+<!-- =================================================
              BOOKMARKS PAGE
              ================================================= -->
-        <section class="page" id="bookmarksPage">
-            <div class="section-header">
-                <div class="eyebrow">SAVED FOR LATER</div>
-                <h2>Bookmarks</h2>
-                <p>Your favorite games in one place.</p>
-            </div>
-            <div class="bookmarks-panel" id="bookmarksPanel">
-                <div class="empty-state">
-                    <div class="empty-icon">♡</div>
-                    <h3>No bookmarks yet</h3>
-                    <p>Use the star on a game card to save it here.</p>
-                    <button class="empty-action" data-page-jump="games">Browse library</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- =================================================
+<section class="page" id="bookmarksPage">
+<div class="section-header">
+<div class="eyebrow">SAVED FOR LATER</div>
+<h2>Bookmarks</h2>
+<p>Your favorite games in one place.</p>
+</div>
+<div class="bookmarks-panel" id="bookmarksPanel">
+<div class="empty-state">
+<div class="empty-icon">♡</div>
+<h3>No bookmarks yet</h3>
+<p>Use the star on a game card to save it here.</p>
+<button class="empty-action" data-page-jump="games">Browse library</button>
+</div>
+</div>
+</section>
+<!-- =================================================
              ABOUT PAGE
              ================================================= -->
-        <section class="page" id="aboutPage">
-            <div class="section-header">
-                <div class="eyebrow">ABOUT KORONA</div>
-                <h2>Korona Browser</h2>
-                <p>A clean home for your browser tools and game library.</p>
-            </div>
-            <div class="about-grid">
-                <div class="about-card"><span class="about-icon">✦</span><div><strong>Korona</strong><small>Build <span id="aboutVersion">v2.1.0</span></small></div></div>
-                <div class="about-card"><span class="about-icon">⌁</span><div><strong>Proxy</strong><small>Launch URLs through your configured Fern proxy.</small></div></div>
-                <div class="about-card"><span class="about-icon">▦</span><div><strong>Library</strong><small>Game artwork is loaded automatically when available.</small></div></div>
-                <div class="about-card"><span class="about-icon">♡</span><div><strong>Bookmarks</strong><small>Saved locally in this browser.</small></div></div>
-            </div>
-        </section>
-
-        <!-- =================================================
+<section class="page" id="aboutPage">
+<div class="section-header">
+<div class="eyebrow">ABOUT KORONA</div>
+<h2>Korona Browser</h2>
+<p>A clean home for your browser tools and game library.</p>
+</div>
+<div class="about-grid">
+<div class="about-card"><span class="about-icon">✦</span><div><strong>Korona</strong><small>Build <span id="aboutVersion">v2.1.0</span></small></div></div>
+<div class="about-card"><span class="about-icon">⌁</span><div><strong>Proxy</strong><small>Launch URLs through your configured Fern proxy.</small></div></div>
+<div class="about-card"><span class="about-icon">▦</span><div><strong>Library</strong><small>Game artwork is loaded automatically when available.</small></div></div>
+<div class="about-card"><span class="about-icon">♡</span><div><strong>Bookmarks</strong><small>Saved locally in this browser.</small></div></div>
+</div>
+</section>
+<!-- =================================================
              ACCOUNT PAGE
              ================================================= -->
-        <section class="page" id="accountPage">
-          <div class="section-header"><div class="eyebrow">KORONA ACCOUNT</div><h2>Account</h2><p>Your Korona identity and local browser preferences.</p></div>
-          <div class="account-card"><div class="account-avatar">K</div><div class="account-details"><span class="account-label">Korona ID</span><strong id="accountUserId">Not signed in</strong><small id="accountUserName">Your account information will appear here.</small></div></div>
-          <div class="account-card compact"><div><strong>Browser session</strong><small>Authentication is checked against your Korona account.</small></div><span class="account-online-dot"></span></div>
-        </section>
-
-        <!-- =================================================
+<section class="page" id="accountPage">
+<div class="section-header"><div class="eyebrow">KORONA ACCOUNT</div><h2>Account</h2><p>Your Korona identity and local browser preferences.</p></div>
+<div class="account-card"><div class="account-avatar">K</div><div class="account-details"><span class="account-label">Korona ID</span><strong id="accountUserId">Not signed in</strong><small id="accountUserName">Your account information will appear here.</small></div></div>
+<div class="account-card compact"><div><strong>Browser session</strong><small>Authentication is checked against your Korona account.</small></div><span class="account-online-dot"></span></div>
+</section>
+<!-- =================================================
              SETTINGS PAGE
              ================================================= -->
-
-        <section
-            class="page"
-            id="settingsPage"
-        >
-
-            <div class="section-header">
-                <h2>Settings</h2>
-                <p>Make Korona look and behave the way you want.</p>
-            </div>
-
-            <div class="settings-panel">
-
-                <div class="settings-section">
-                    <div>
-                        <h3>Theme</h3>
-                        <p>Choose a color theme for the site. Changes apply immediately and persist across sessions.</p>
-                    </div>
-
-                    <div class="theme-grid" id="themeGrid">
-
-                        <button class="theme-card" data-theme="fern">
-                            <span class="theme-preview theme-fern"></span>
-                            <span>Korona</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="midnight">
-                            <span class="theme-preview theme-midnight"></span>
-                            <span>Midnight</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="amber">
-                            <span class="theme-preview theme-amber"></span>
-                            <span>Amber</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="ice">
-                            <span class="theme-preview theme-ice"></span>
-                            <span>Ice</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="violet">
-                            <span class="theme-preview theme-violet"></span>
-                            <span>Violet</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="rose">
-                            <span class="theme-preview theme-rose"></span>
-                            <span>Rose</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="mono">
-                            <span class="theme-preview theme-mono"></span>
-                            <span>Monochrome</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="cyan">
-                            <span class="theme-preview theme-cyan"></span>
-                            <span>Cyan</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="light">
-                            <span class="theme-preview theme-light"></span>
-                            <span>Light</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="cyberpunk">
-                            <span class="theme-preview theme-cyberpunk"></span>
-                            <span>Cyberpunk</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="aurora">
-                            <span class="theme-preview theme-aurora"></span>
-                            <span>Aurora</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="sunset">
-                            <span class="theme-preview theme-sunset"></span>
-                            <span>Sunset</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="ocean">
-                            <span class="theme-preview theme-ocean"></span>
-                            <span>Ocean</span>
-                        </button>
-
-                        <button class="theme-card" data-theme="dracula">
-                            <span class="theme-preview theme-dracula"></span>
-                            <span>Dracula</span>
-                        </button>
-
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <div>
-                        <h3>Interface</h3>
-                        <p>Small interface preferences.</p>
-                    </div>
-
-                    <div class="settings-toggle" style="margin-top:18px;">
-                        <span>
-                            <strong>Button style</strong>
-                            <small>Switch between Korona standard controls and softer rounded buttons.</small>
-                        </span>
-                        <select id="buttonStyleSelect" aria-label="Button style">
-                            <option value="standard">Standard</option>
-                            <option value="smooth">Smooth</option>
-                        </select>
-                    </div>
-
-                    <label class="settings-toggle">
-                        <span>
-                            <strong>Animations</strong>
-                            <small>Keep Korona window and page animations enabled.</small>
-                        </span>
-                        <input type="checkbox" id="animationsToggle" checked>
-                    </label>
-                </div>
-
-
-                <div class="settings-section">
-                    <div>
-                        <h3>Connection Diagnostics</h3>
-                        <p>Check Korona's proxy setup without needing Developer Tools.</p>
-                    </div>
-                    <div id="fernDiagnostics"
-                         style="margin-top:18px;padding:14px;border:1px solid var(--border);background:var(--bg);font-family:monospace;font-size:12px;line-height:1.65;">
+<section class="page" id="settingsPage">
+<div class="section-header">
+<h2>Settings</h2>
+<p>Make Korona look and behave the way you want.</p>
+</div>
+<div class="settings-panel">
+<div class="settings-section">
+<div>
+<h3>Theme</h3>
+<p>Choose a color theme for the site. Changes apply immediately and persist across sessions.</p>
+</div>
+<div class="theme-grid" id="themeGrid">
+<button class="theme-card" data-theme="fern">
+<span class="theme-preview theme-fern"></span>
+<span>Korona</span>
+</button>
+<button class="theme-card" data-theme="midnight">
+<span class="theme-preview theme-midnight"></span>
+<span>Midnight</span>
+</button>
+<button class="theme-card" data-theme="amber">
+<span class="theme-preview theme-amber"></span>
+<span>Amber</span>
+</button>
+<button class="theme-card" data-theme="ice">
+<span class="theme-preview theme-ice"></span>
+<span>Ice</span>
+</button>
+<button class="theme-card" data-theme="violet">
+<span class="theme-preview theme-violet"></span>
+<span>Violet</span>
+</button>
+<button class="theme-card" data-theme="rose">
+<span class="theme-preview theme-rose"></span>
+<span>Rose</span>
+</button>
+<button class="theme-card" data-theme="mono">
+<span class="theme-preview theme-mono"></span>
+<span>Monochrome</span>
+</button>
+<button class="theme-card" data-theme="cyan">
+<span class="theme-preview theme-cyan"></span>
+<span>Cyan</span>
+</button>
+<button class="theme-card" data-theme="light">
+<span class="theme-preview theme-light"></span>
+<span>Light</span>
+</button>
+<button class="theme-card" data-theme="cyberpunk">
+<span class="theme-preview theme-cyberpunk"></span>
+<span>Cyberpunk</span>
+</button>
+<button class="theme-card" data-theme="aurora">
+<span class="theme-preview theme-aurora"></span>
+<span>Aurora</span>
+</button>
+<button class="theme-card" data-theme="sunset">
+<span class="theme-preview theme-sunset"></span>
+<span>Sunset</span>
+</button>
+<button class="theme-card" data-theme="ocean">
+<span class="theme-preview theme-ocean"></span>
+<span>Ocean</span>
+</button>
+<button class="theme-card" data-theme="dracula">
+<span class="theme-preview theme-dracula"></span>
+<span>Dracula</span>
+</button>
+</div>
+</div>
+<div class="settings-section">
+<div>
+<h3>Interface</h3>
+<p>Small interface preferences.</p>
+</div>
+<div class="settings-toggle" style="margin-top:18px;">
+<span>
+<strong>Button style</strong>
+<small>Switch between Korona standard controls and softer rounded buttons.</small>
+</span>
+<select aria-label="Button style" id="buttonStyleSelect">
+<option value="standard">Standard</option>
+<option value="smooth">Smooth</option>
+</select>
+</div>
+<label class="settings-toggle">
+<span>
+<strong>Animations</strong>
+<small>Keep Korona window and page animations enabled.</small>
+</span>
+<input checked="" id="animationsToggle" type="checkbox"/>
+</label>
+</div>
+<div class="settings-section">
+<div>
+<h3>Connection Diagnostics</h3>
+<p>Check Korona's proxy setup without needing Developer Tools.</p>
+</div>
+<div id="fernDiagnostics" style="margin-top:18px;padding:14px;border:1px solid var(--border);background:var(--bg);font-family:monospace;font-size:12px;line-height:1.65;">
                         Checking Korona...
                     </div>
-                    <button id="runDiagnosticsButton"
-                            style="margin-top:12px;padding:10px 14px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer;border-radius:10px;">
+<button id="runDiagnosticsButton" style="margin-top:12px;padding:10px 14px;border:1px solid var(--border-bright);background:var(--panel);color:var(--text);cursor:pointer;border-radius:10px;">
                         Run diagnostics again
                     </button>
-                </div>
-
-                <div class="settings-section settings-about">
-                    <div>
-                        <h3>About Korona</h3>
-                        <p>Korona build <span id="settingsVersion">v2.1.0</span></p>
-                    </div>
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- =================================================
+</div>
+<div class="settings-section settings-about">
+<div>
+<h3>About Korona</h3>
+<p>Korona build <span id="settingsVersion">v2.1.0</span></p>
+</div>
+</div>
+</div>
+</section>
+<!-- =================================================
              GAMES PAGE
              ================================================= -->
-
-        <section
-            class="page"
-            id="gamesPage"
-        >
-
-            <div class="section-header library-heading">
-                <div>
-                    <div class="eyebrow">KORONA LIBRARY</div>
-                    <h2>Game Library <span class="heading-spark">✦</span></h2>
-                    <p>Pick a game and have fun.</p>
-                </div>
-                <div class="library-controls">
-                    <div class="library-search">
-                        <span>⌕</span>
-                        <input id="gameSearch" type="search" placeholder="Search games..." autocomplete="off">
-                    </div>
-                    <select id="gameFilter" aria-label="Filter games">
-                        <option value="all">All Games</option>
-                        <option value="favorites">Favorites</option>
-                    </select>
-                </div>
-            </div>
-
-
-            <div class="games-grid" id="gamesGrid">
-
-                <!--
+<section class="page" id="gamesPage">
+<div class="section-header library-heading">
+<div>
+<div class="eyebrow">KORONA LIBRARY</div>
+<h2>Game Library <span class="heading-spark">✦</span></h2>
+<p>Pick a game and have fun.</p>
+</div>
+<div class="library-controls">
+<div class="library-search">
+<span>⌕</span>
+<input autocomplete="off" id="gameSearch" placeholder="Search games..." type="search"/>
+</div>
+<select aria-label="Filter games" id="gameFilter">
+<option value="all">All Games</option>
+<option value="favorites">Favorites</option>
+</select>
+</div>
+</div>
+<div class="games-grid" id="gamesGrid">
+<!--
                     =====================================================
                     ADD GAMES HERE
                     =====================================================
@@ -4160,26 +4218,14 @@ body.korona-auth-unlocked #app {
                     That's it. Korona builds the cards automatically.
                     =====================================================
                 -->
-
-            </div>
-
-
-            <div
-                class="joke-card"
-                id="gameJoke"
-            >
+</div>
+<div class="joke-card" id="gameJoke">
                 Korona is calculating how many games
                 you can procrastinate with.
             </div>
-
-        </section>
-
-    </main>
-
+</section>
+</main>
 </div>
-
-
-
 <script>
 /* ============================================================
    BACKGROUND — LOW-CPU STARFIELD + STATIC CONSTELLATIONS
@@ -4973,8 +5019,7 @@ const games = [
     { name: "ChatGPT", description: "AI bro?", link: "https://chatgpt.com", featured: true },
     { name: "youtube", description: "Should work", link: "https://youtube.com", featured: true },
     { name: "Basket Bros", description: "basket bros", link: "https://www.google.com/goto?url=CAESWwHrOzAV1_tcgbIq5lnrBfwWWHikTUvPxhSGbl_4Pe7w_TKMzCdGfBIViOtOgBBsalhotGnTVnCb3DEN8haJLgIxSNQG4Qlcb7Cc9AA-Kt9fHiuxmPlRxrLE2Qo", featured: true },
-    { name: "Google Snake", description: "why is this game so popular?", link: "https://www.google.com/search?q=google+snake&rlz=1CATEQM_enUS1224US1224&oq=google+snake&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTINCAEQABiDARixAxiABDIHCAIQABiABDIHCAMQABiABDIHCAQQABiABDIHCAUQABiABDIHCAYQABiABDIHCAcQABiABDIHCAgQABiABDIHCAkQABiPAtIBCDE0OTFqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8&safe=active&ssui=on", featured: true },
-    { name: "Sonic Mania", description: "sanic man", link: "https://funkypotato.com/gamez/sonic-mania-plus-online/index.html", featured: true }
+    { name: "Google Snake", description: "why is this game so popular?", link: "https://www.google.com/search?q=google+snake&rlz=1CATEQM_enUS1224US1224&oq=google+snake&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTINCAEQABiDARixAxiABDIHCAIQABiABDIHCAMQABiABDIHCAQQABiABDIHCAUQABiABDIHCAYQABiABDIHCAcQABiABDIHCAgQABiABDIHCAkQABiPAtIBCDE0OTFqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8&safe=active&ssui=on", featured: true }
 ];
 
 
@@ -5004,7 +5049,7 @@ function getGameImageCandidates(game) {
 function gameFallbackDataURL(game) {
     const accent = getComputedStyle(document.documentElement).getPropertyValue('--green').trim() || '#00ff66';
     const safe = game.name.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#071009"/><stop offset="1" stop-color="#0b1c11"/></linearGradient></defs><rect width="900" height="500" fill="url(#g)"/><circle cx="760" cy="80" r="170" fill="${accent}" opacity=".08"/><path d="M0 420 L230 300 L390 380 L560 250 L900 410" fill="none" stroke="${accent}" stroke-opacity=".18" stroke-width="3"/><text x="55" y="255" fill="white" font-family="Arial,sans-serif" font-size="64" font-weight="800">${safe}</text><text x="58" y="305" fill="${accent}" font-family="Arial,sans-serif" font-size="20" letter-spacing="5">FERN LIBRARY</text></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#071009"/><stop offset="1" stop-color="#0b1c11"/></linearGradient></defs><rect width="900" height="500" fill="url(#g)"/><circle cx="760" cy="80" r="170" fill="${accent}" opacity=".08"/><path d="M0 420 L230 300 L390 380 L560 250 L900 410" fill="none" stroke="${accent}" stroke-opacity=".18" stroke-width="3"/><text x="55" y="255" fill="white" font-family="Arial,sans-serif" font-size="64" font-weight="800">${safe}</text><text x="58" y="305" fill="${accent}" font-family="Arial,sans-serif" font-size="20" letter-spacing="5">KORONA LIBRARY</text></svg>`;
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
 
@@ -5068,18 +5113,28 @@ function renderGames() {
         image.loading = index < 2 ? 'eager' : 'lazy';
         if (index === 0) image.fetchPriority = 'high';
         image.referrerPolicy = 'no-referrer';
+        // Always paint a working local artwork immediately. Remote thumbnail hosts
+        // (especially Bing's tse*.mm.bing.net endpoints) can reject hotlinked requests
+        // from Vercel deployments, so load them in the background and keep the fallback.
+        const fallbackArtwork = gameFallbackDataURL(game);
+        image.src = fallbackArtwork;
+        image.dataset.artworkState = 'fallback';
         const imageCandidates = getGameImageCandidates(game);
         let imageCandidateIndex = 0;
-        image.src = imageCandidates[imageCandidateIndex];
-        image.onerror = () => {
-            imageCandidateIndex++;
-            if (imageCandidateIndex < imageCandidates.length) {
-                image.src = imageCandidates[imageCandidateIndex];
-            } else {
-                image.onerror = null;
-                image.src = gameFallbackDataURL(game);
-            }
+        const tryNextArtwork = () => {
+            if (imageCandidateIndex >= imageCandidates.length) return;
+            const candidateUrl = imageCandidates[imageCandidateIndex++];
+            if (!candidateUrl || candidateUrl === fallbackArtwork) { tryNextArtwork(); return; }
+            const probe = new Image();
+            probe.referrerPolicy = 'no-referrer';
+            probe.onload = () => {
+                image.src = candidateUrl;
+                image.dataset.artworkState = 'remote';
+            };
+            probe.onerror = tryNextArtwork;
+            probe.src = candidateUrl;
         };
+        tryNextArtwork();
 
         const mediaGlow = document.createElement('div');
         mediaGlow.className = 'game-media-glow';
@@ -5655,8 +5710,6 @@ if (aboutVersion) aboutVersion.textContent = "v" + (typeof FERN_VERSION !== "und
 randomJoke();
 
 </script>
-
-
 <script id="fern-fullscreen-performance-js-v1-2-10">
 (() => {
     const sync = () => {
@@ -5671,8 +5724,6 @@ randomJoke();
     sync();
 })();
 </script>
-
-
 <script id="fern-shooting-stars-v1-2-16">
 (() => {
     let timer = 0;
@@ -5703,8 +5754,6 @@ randomJoke();
     }, {passive:true});
 })();
 </script>
-
-
 <script id="fern-image-cache-v1-2-20">
 (() => {
     const original = window.getGameImageCandidates;
@@ -5718,7 +5767,6 @@ randomJoke();
     };
 })();
 </script>
-
 <!-- =========================================================
      KORONA CUSTOMIZATION LAYER (characters, theme mixer,
      nav layouts, rearrangeable buttons) — additive only.
@@ -6296,7 +6344,6 @@ body.fern-proxy-active #koronaCharacterArt {
   }
 }
 </style>
-
 <script id="korona-customization-script">
 (function () {
   "use strict";
@@ -7149,7 +7196,6 @@ body.fern-proxy-active #koronaCharacterArt {
   window.Korona.resetNavOrder = resetNavOrder;
 })();
 </script>
-
 <style id="korona-network-bg">
 body::before, body::after { display:none!important; content:none!important; }
 [class*="fern-aurora"], [class*="fern-star"], .fern-moon, [id*="aurora"], [class*="fern-scene"], [class*="mist"]:not(button) { display:none!important; }
@@ -7163,7 +7209,7 @@ body.no-animations #koronaNetwork { opacity:0.35!important; }
 #settingsPage { overflow-y: auto!important; }
 .content { overflow-y: auto!important; }
 </style>
-<canvas id="koronaNetwork" aria-hidden="true"></canvas>
+<canvas aria-hidden="true" id="koronaNetwork"></canvas>
 <script>
 (function(){
   var c = document.getElementById("koronaNetwork");
@@ -7242,7 +7288,6 @@ body.no-animations #koronaNetwork { opacity:0.35!important; }
   checkRun();
 })();
 </script>
-
 <style id="korona-clean-final-css">
 :root{
  --k-bg:#080b10;--k-bg2:#0d1219;--k-panel:#111821;--k-panel2:#151e29;--k-text:#eef4f8;--k-muted:#91a0ad;--k-border:#27333f;--k-accent:#62e6a5;--k-accent2:#9cf5c8;--k-glow:rgba(98,230,165,.22);--k-scale:1;--k-char-opacity:.82;
@@ -7321,12 +7366,7 @@ function buildCharacterLayer(){ $$('#koronaCharacterArt,#koronaCharacterBadge,.k
 function buildSettings(){const p=$('#settingsPage');if(!p)return;const themes=Object.keys(THEMES).map(k=>'<button type="button" class="k-theme" data-theme="'+k+'"><span class="k-theme-swatch" style="background:'+THEMES[k][5]+'"></span>'+(k==='korona'?'Korona':k[0].toUpperCase()+k.slice(1))+'</button>').join('');const chars=Object.entries(CHARS).map(([id,c])=>'<button type="button" class="k-character-choice" data-char="'+id+'">'+(id==='none'?'<div style="height:105px;display:grid;place-items:center;background:var(--k-bg2);border-radius:7px;margin-bottom:7px">None</div>':'<img src="'+art(id)+'" alt="'+c[0]+'" loading="eager">')+'<strong>'+c[0]+'</strong><span>'+c[1]+'</span></button>').join('');p.innerHTML='<div class="k-settings"><h2>Settings</h2><p class="sub">Customize Korona without changing the rest of the application.</p><section class="k-setting-section"><h3>Theme</h3><p>Changes the entire interface immediately.</p><div class="k-theme-grid">'+themes+'</div></section><section class="k-setting-section"><h3>Characters</h3><p>Character identity and visual effects are independent. Opacity only affects the artwork.</p><div class="k-character-grid">'+chars+'</div></section><section class="k-setting-section"><h3>Interface</h3><div class="k-controls"><div class="k-control"><label>Interface scale <output id="kScaleOut">'+state.scale+'%</output></label><input id="kScale" type="range" min="85" max="115" value="'+state.scale+'"></div><div class="k-control"><label>Character opacity <output id="kOpacityOut">'+state.opacity+'%</output></label><input id="kOpacity" type="range" min="0" max="100" value="'+state.opacity+'"></div><div class="k-control"><label>Accent color</label><input id="kAccent" type="color" value="'+(state.accent||THEMES[state.theme][5])+'"></div></div></section></div>';$$('.k-theme',p).forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));$$('.k-character-choice',p).forEach(b=>b.onclick=()=>{state.char=b.dataset.char;applyChar()});$('#kScale').oninput=e=>{state.scale=+e.target.value;applyScale()};$('#kOpacity').oninput=e=>{state.opacity=+e.target.value;$('#kOpacityOut').textContent=state.opacity+'%';applyChar()};$('#kAccent').oninput=e=>{state.accent=e.target.value;localStorage.setItem('korona_clean_accent',state.accent);applyTheme(state.theme)};applyTheme(state.theme);applyScale();applyChar()}
 
 const ai=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
-function buildAI(){
-  // AI Studio is rebuilt by the final provider-aware implementation below.
-  // Do not create the legacy duplicate UI (it used the old Groq/Navy handler).
-  $$('#aiPage,#koronaAiPage').forEach(x=>x.remove());
-}
-
+function buildAI(){ $$('#aiPage,#koronaAiPage').forEach(x=>x.remove());const page=document.createElement('section');page.id='aiPage';page.className='page';page.innerHTML=`<div class="kai-shell"><div class="kai-head"><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Ask questions, upload screenshots, or continue a conversation.</p></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…"></textarea><img id="kaiPreview" class="kai-preview" alt="Attached image preview"><div class="kai-actions"><label class="kai-file">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button type="button" class="primary" id="kaiSend">Send</button><button type="button" id="kaiNew">New Chat</button><span class="kai-status" id="kaiStatus">Qwen 3.8 27B · vision + text</span></div></div></div>`;$('.content').appendChild(page);$('#kaiFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{ai.image=r.result;$('#kaiPreview').src=ai.image;$('#kaiPreview').classList.add('show')};r.readAsDataURL(f)};$('#kaiNew').onclick=()=>{ai.messages=[];ai.image=null;$('#kaiPrompt').value='';$('#kaiFile').value='';$('#kaiPreview').classList.remove('show');renderAI();$('#kaiStatus').textContent='New chat · Qwen 3.8 27B'};$('#kaiSend').onclick=sendAI;$('#kaiPrompt').onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendAI()}};renderAI()}
 function renderAI(){
  const h=$('#kaiHistory'); if(!h)return;
  if(!ai.messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.</div>';return}
@@ -7366,12 +7406,10 @@ $$('#koronaCharacterArt,#koronaCharacterBadge,.korona-character-dock,.korona-cha
 // Kill old global opacity/scale inline mutations on app shell.
 $$('#app,.content,.page,.korona-sidebar').forEach(x=>{x.style.removeProperty('opacity');x.style.removeProperty('transform');x.style.removeProperty('zoom')});
 }
-function boot(){cleanLegacy();buildAI();buildSettings();buildCharacterLayer();nav();applyTheme(state.theme);applyScale();window.KORONA_GROQ_MODEL='openai/gpt-oss-120b';
-        window.KORONA_GROQ_MODELS=['openai/gpt-oss-120b','openai/gpt-oss-20b'];const home=$('#homePage'),first=$('.sidebar-nav .nav-button[data-page="home"]');$$('.page').forEach(p=>p.classList.remove('active'));if(home)home.classList.add('active');$$('.sidebar-nav .nav-button').forEach(b=>b.classList.toggle('active',b===first));}
+function boot(){cleanLegacy();buildAI();buildSettings();buildCharacterLayer();nav();applyTheme(state.theme);applyScale();window.KORONA_GROQ_MODEL='qwen/qwen3.8-27b';const home=$('#homePage'),first=$('.sidebar-nav .nav-button[data-page="home"]');$$('.page').forEach(p=>p.classList.remove('active'));if(home)home.classList.add('active');$$('.sidebar-nav .nav-button').forEach(b=>b.classList.toggle('active',b===first));}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
-
 <style id="korona-v2-polish">
 /* ===== KORONA V2 POLISH ===== */
 #koronaDotsBackground{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;z-index:0!important;pointer-events:none!important;opacity:.58!important}
@@ -7453,7 +7491,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 setInterval(()=>{bindCharacters();setCharacterImage();},700);
 })();
 </script>
-
 <style id="korona-final-polish-v3">
 /* Background is deliberately behind Korona, not hidden behind an opaque body. */
 html,body{background:transparent!important}
@@ -7489,7 +7526,6 @@ html,body{background:transparent!important}
 <script id="korona-final-polish-v3-script">
 (()=>{
  'use strict';
- window.KORONA_AI_PROVIDER=window.KORONA_AI_PROVIDER||'navy';
  const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
  const CHAR_ART={
   none:'',
@@ -7621,11 +7657,10 @@ html,body{background:transparent!important}
  setTimeout(run,250);setTimeout(run,800);setTimeout(run,1600);
 })();
 </script>
-
 <script id="korona-ai-repair-final">(function(){
   'use strict';
   const state=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
-  let MODEL=window.KORONA_GROQ_MODEL||'openai/gpt-oss-120b';
+  const MODEL=window.KORONA_GROQ_MODEL||'qwen/qwen3.8-27b';
   const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   function md(src){
     let s=String(src??'').replace(/\r\n?/g,'\n');
@@ -7706,12 +7741,12 @@ html,body{background:transparent!important}
   }
   function rebuild(){
     let page=document.getElementById('aiPage');if(!page){page=document.createElement('section');page.id='aiPage';page.className='page';document.querySelector('.content')?.appendChild(page)}
-    page.innerHTML='<div class="kai-shell"><div class="kai-head"><div><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Text + vision chat with Markdown rendering.</p></div><div class="kai-head-actions"><select id="kaiProvider" class="kai-model" aria-label="AI provider"><option value="navy">Groq</option><option value="groq">Groq</option></select><select id="kaiModel" class="kai-model" aria-label="AI model"><option value="gpt-5.5">GPT-5.5</option><option value="o4-mini">o4-mini</option></select><span class="kai-status" id="kaiStatus">Ready · '+MODEL+'</span><button type="button" id="kaiNew">New Chat</button></div></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…" rows="4"></textarea><div id="kaiPreviewWrap" class="kai-preview-wrap"><img id="kaiPreview" class="kai-preview" alt="Attached image"><button type="button" id="kaiClearImage" aria-label="Remove attached image">×</button></div><div class="kai-actions"><label class="kai-file" for="kaiFile">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="primary" id="kaiSend">Send</button></div></div></div>';
+    page.innerHTML='<div class="kai-shell"><div class="kai-head"><div><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Text + vision chat with Markdown rendering.</p></div><div class="kai-head-actions"><span class="kai-status" id="kaiStatus">Ready · '+MODEL+'</span><button type="button" id="kaiNew">New Chat</button></div></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…" rows="4"></textarea><div id="kaiPreviewWrap" class="kai-preview-wrap"><img id="kaiPreview" class="kai-preview" alt="Attached image"><button type="button" id="kaiClearImage" aria-label="Remove attached image">×</button></div><div class="kai-actions"><label class="kai-file" for="kaiFile">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="primary" id="kaiSend">Send</button></div></div></div>';
     const clear=document.getElementById('kaiClearImage');if(clear)clear.onclick=()=>{state.image=null;const f=document.getElementById('kaiFile');if(f)f.value='';const p=document.getElementById('kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}setStatus('Ready · '+MODEL)};
     bind();
   }
   const css=document.createElement('style');css.id='korona-ai-repair';css.textContent=`
-  #aiPage{height:100%;min-height:0;overflow:hidden}.kai-shell{height:100%;min-height:0;display:flex;flex-direction:column;gap:14px;padding:22px}.kai-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.kai-head h2{margin:3px 0 4px}.kai-head p{margin:0;color:var(--muted)}.kai-head-actions{display:flex;align-items:center;gap:10px}.kai-model{color:var(--text);background:var(--panel);border:1px solid var(--border);padding:7px 10px;border-radius:8px;outline:none}.kai-model:focus{border-color:var(--border-bright)}.kai-status{font-size:12px;color:var(--muted)}.kai-history{flex:1;min-height:0;overflow:auto;padding:4px 6px 18px}.kai-msg{display:flex;margin:10px 0}.kai-msg.user{justify-content:flex-end}.kai-bubble{max-width:min(820px,88%);padding:12px 15px;border:1px solid var(--border);background:var(--panel);border-radius:12px;line-height:1.6;overflow-wrap:anywhere}.kai-msg.user .kai-bubble{background:color-mix(in srgb,var(--green) 8%,var(--panel))}.kai-markdown p{margin:.55em 0}.kai-markdown p:first-child{margin-top:0}.kai-markdown p:last-child{margin-bottom:0}.kai-markdown h2,.kai-markdown h3,.kai-markdown h4{margin:1em 0 .4em}.kai-markdown ul,.kai-markdown ol{padding-left:24px}.kai-markdown blockquote{margin:.7em 0;padding:.35em 1em;border-left:3px solid var(--green);color:var(--muted)}.kai-markdown a{color:var(--green-soft);text-decoration:underline}.kai-markdown del{opacity:.75}.kai-markdown code:not(pre code){padding:2px 5px;border-radius:5px;background:rgba(255,255,255,.06);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.kai-code{margin:12px 0;padding:0;overflow:auto;background:#070a0d;border:1px solid rgba(0,255,102,.22);border-radius:9px}.kai-code-head{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-size:11px;color:var(--muted)}.kai-code-head button{border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text);padding:4px 8px;border-radius:6px;cursor:pointer}.kai-code code{display:block;padding:12px 14px;white-space:pre;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;color:#d9fbe8}.kai-sent-image{position:relative;margin-top:10px}.kai-sent-image img{display:block;max-width:360px;max-height:260px;object-fit:contain;border-radius:9px}.kai-image-remove,.kai-preview-wrap button{position:absolute;right:6px;top:6px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;cursor:pointer;font-size:18px;line-height:1}.kai-compose{position:relative;border:1px solid var(--border-bright);background:var(--panel);border-radius:12px;padding:10px}.kai-compose textarea{width:100%;resize:vertical;min-height:82px;max-height:220px;background:transparent;border:0;outline:0;color:var(--text);font:inherit}.kai-actions{display:flex;align-items:center;gap:9px;margin-top:8px}.kai-file{display:inline-flex;align-items:center;justify-content:center;padding:9px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer}.kai-actions .primary{margin-left:auto}.kai-preview-wrap{display:none;position:relative;width:max-content;margin:5px 0 4px}.kai-preview-wrap:has(.show){display:block}.kai-preview{display:none;width:auto;max-width:180px;max-height:120px;border-radius:8px}.kai-preview.show{display:block}.kai-preview-wrap button{top:4px;right:4px}.kai-head-actions button,.kai-actions button{cursor:pointer}.kai-actions button:disabled{opacity:.55;cursor:wait}`;
+  #aiPage{height:100%;min-height:0;overflow:hidden}.kai-shell{height:100%;min-height:0;display:flex;flex-direction:column;gap:14px;padding:22px}.kai-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.kai-head h2{margin:3px 0 4px}.kai-head p{margin:0;color:var(--muted)}.kai-head-actions{display:flex;align-items:center;gap:10px}.kai-status{font-size:12px;color:var(--muted)}.kai-history{flex:1;min-height:0;overflow:auto;padding:4px 6px 18px}.kai-msg{display:flex;margin:10px 0}.kai-msg.user{justify-content:flex-end}.kai-bubble{max-width:min(820px,88%);padding:12px 15px;border:1px solid var(--border);background:var(--panel);border-radius:12px;line-height:1.6;overflow-wrap:anywhere}.kai-msg.user .kai-bubble{background:color-mix(in srgb,var(--green) 8%,var(--panel))}.kai-markdown p{margin:.55em 0}.kai-markdown p:first-child{margin-top:0}.kai-markdown p:last-child{margin-bottom:0}.kai-markdown h2,.kai-markdown h3,.kai-markdown h4{margin:1em 0 .4em}.kai-markdown ul,.kai-markdown ol{padding-left:24px}.kai-markdown blockquote{margin:.7em 0;padding:.35em 1em;border-left:3px solid var(--green);color:var(--muted)}.kai-markdown a{color:var(--green-soft);text-decoration:underline}.kai-markdown del{opacity:.75}.kai-markdown code:not(pre code){padding:2px 5px;border-radius:5px;background:rgba(255,255,255,.06);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.kai-code{margin:12px 0;padding:0;overflow:auto;background:#070a0d;border:1px solid rgba(0,255,102,.22);border-radius:9px}.kai-code-head{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-size:11px;color:var(--muted)}.kai-code-head button{border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text);padding:4px 8px;border-radius:6px;cursor:pointer}.kai-code code{display:block;padding:12px 14px;white-space:pre;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;color:#d9fbe8}.kai-sent-image{position:relative;margin-top:10px}.kai-sent-image img{display:block;max-width:360px;max-height:260px;object-fit:contain;border-radius:9px}.kai-image-remove,.kai-preview-wrap button{position:absolute;right:6px;top:6px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;cursor:pointer;font-size:18px;line-height:1}.kai-compose{position:relative;border:1px solid var(--border-bright);background:var(--panel);border-radius:12px;padding:10px}.kai-compose textarea{width:100%;resize:vertical;min-height:82px;max-height:220px;background:transparent;border:0;outline:0;color:var(--text);font:inherit}.kai-actions{display:flex;align-items:center;gap:9px;margin-top:8px}.kai-file{display:inline-flex;align-items:center;justify-content:center;padding:9px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer}.kai-actions .primary{margin-left:auto}.kai-preview-wrap{display:none;position:relative;width:max-content;margin:5px 0 4px}.kai-preview-wrap:has(.show){display:block}.kai-preview{display:none;width:auto;max-width:180px;max-height:120px;border-radius:8px}.kai-preview.show{display:block}.kai-preview-wrap button{top:4px;right:4px}.kai-head-actions button,.kai-actions button{cursor:pointer}.kai-actions button:disabled{opacity:.55;cursor:wait}`;
   document.head.appendChild(css);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',rebuild,{once:true});else rebuild();
 })();
@@ -7719,7 +7754,7 @@ html,body{background:transparent!important}
 <script id="korona-ai-math-vision-final">(function(){
 'use strict';
 const state=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
-let MODEL=window.KORONA_GROQ_MODEL||'openai/gpt-oss-120b';
+const MODEL=window.KORONA_GROQ_MODEL||'qwen/qwen3.8-27b';
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
 function mathSymbolize(src){
@@ -7764,7 +7799,6 @@ function boot(){const page=document.getElementById('aiPage');if(!page)return;con
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 setTimeout(boot,300);setTimeout(boot,900);
 })();</script>
-
 <style id="korona-fullspace-web-final">
 /* Korona full-space browser + AI Studio */
 .content > .page { width:100% !important; max-width:none !important; min-height:100vh !important; height:100vh !important; margin:0 !important; padding:0 !important; overflow:hidden !important; box-sizing:border-box !important; }
@@ -7798,7 +7832,7 @@ setTimeout(boot,300);setTimeout(boot,900);
 (function(){
 'use strict';
 const S=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
-let MODEL=window.KORONA_GROQ_MODEL||'openai/gpt-oss-120b';
+const MODEL=window.KORONA_GROQ_MODEL||'qwen/qwen3.8-27b';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 function status(t){const e=$('#kaiStatus');if(e)e.textContent=t;}
@@ -7843,7 +7877,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 new MutationObserver(()=>{if($('#kaiSend'))bind()}).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
-
 <style id="korona-v5-final-ui">
 /* Final layout: keep the browser input, but make it flush with the browser panel. */
 #proxyPage, #aiPage{box-sizing:border-box!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
@@ -7878,7 +7911,7 @@ new MutationObserver(()=>{if($('#kaiSend'))bind()}).observe(document.body,{child
 (function(){
 'use strict';
 const S=window.KORONA_AI_STATE||(window.KORONA_AI_STATE={messages:[],image:null});
-let MODEL=window.KORONA_GROQ_MODEL||'openai/gpt-oss-120b';
+const MODEL=window.KORONA_GROQ_MODEL||'qwen/qwen3.8-27b';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 function status(t){const e=$('#kaiStatus');if(e)e.textContent=t}
@@ -7947,37 +7980,21 @@ async function webSearch(q){
 }
 function shouldSearch(t){t=String(t||'').trim();return t.length>=8&&!/^(hi|hello|hey|thanks|thank you|ok|okay|yo|test)[!. ]*$/i.test(t)}
 async function send(){
- const input=$('#kaiPrompt'),btn=$('#kaiSend');if(!input)return;
- const text=input.value.trim(),image=S.image;if(!text&&!image){status('Enter a message or attach an image.');return}
- const provider=$('#kaiProvider')?.value||window.KORONA_AI_PROVIDER||'navy';
- const configs={
-  groq:{name:'Groq',base:'https://api.groq.com/openai/v1',key:String(window.KORONA_GROQ_API_KEY||'').trim()},
-  groq:{name:'Groq',base:'https://api.groq.com/openai/v1',key:String(window.KORONA_GROQ_API_KEY||'').trim()}
- };
- const cfg=configs[provider]||configs.groq;
- const key=cfg.key;if(!key){status(cfg.name+' API key is not configured.');return}
- S.messages.push({role:'user',content:text||(image?'Inspect this image carefully.':''),image:image||null});input.value='';S.image=null;
- const f=$('#kaiFile');if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')};render();if(btn)btn.disabled=true;
+ const input=$('#kaiPrompt'),btn=$('#kaiSend');if(!input)return;const text=input.value.trim(),image=S.image;if(!text&&!image){status('Enter a message or attach an image.');return}
+ const key=String(window.KORONA_GROQ_API_KEY||'').trim();if(!key){status('Groq API key is not configured.');return}
+ S.messages.push({role:'user',content:text||(image?'Inspect this image carefully.':''),image:image||null});input.value='';S.image=null;const f=$('#kaiFile');if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')};render();if(btn)btn.disabled=true;
  let web={context:'',sources:[]};if(text&&shouldSearch(text)){status('Searching the web…');web=await webSearch(text)}status(image?'Analyzing image…':web.context?'Using live web results…':'Thinking…');
  try{
-  const sys='You are Korona AI Studio, a precise text and vision assistant with live web-search context. When an image is attached, inspect it carefully before answering. Read visible text, equations, labels, diagrams, tables, UI elements and answer choices when possible. Do not invent unreadable details. For mathematics, use real LaTeX delimiters: inline \\(…\\) or $...$, and display \\[...\\] or $$...$$. Use clear headings and step-by-step structure for math. Use Markdown naturally. Treat LIVE WEB RESULTS as source context and do not invent facts not supported by them.'+(web.context?'\n'+web.context:'');
+  const sys='You are Korona AI Studio, a precise text and vision assistant with live web-search context. When an image is attached, inspect it carefully before answering. Read visible text, equations, labels, diagrams, tables, UI elements and answer choices when possible. Do not invent unreadable details. For mathematics, use real LaTeX delimiters: inline \\(...\\) or $...$, and display \\[...\\] or $$...$$. Never output raw LaTeX commands as plain prose when they are intended as equations. Use proper mathematical notation and symbols naturally. For fractions, use \\frac{a}{b}; roots use \\sqrt{x}; limits use \\lim_{x\\to0}; exponents/subscripts use ^{} and _{}. Use clear headings and step-by-step structure for math. Use Markdown naturally. Treat LIVE WEB RESULTS as source context and do not invent facts not supported by them.'+(web.context?'\n'+web.context:'');
   const api=[{role:'system',content:sys}];
-  for(const m of S.messages){
-   if(m.role==='assistant')api.push({role:'assistant',content:m.content||''});
-   else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content||'Inspect this image carefully.'},{type:'image_url',image_url:{url:m.image}}]});
-   else api.push({role:'user',content:m.content||''});
-  }
-  const selectedModel=MODEL;
-  const res=await fetch(cfg.base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:selectedModel,messages:api,max_tokens:image?1000:900,temperature:image?.2:.4})});
-  let data=null;try{data=await res.json()}catch{}
-  if(!res.ok)throw new Error(data?.error?.message||(`${cfg.name} request failed (${res.status})`));
-  const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error(cfg.name+' returned no response.');
-  S.messages.push({role:'assistant',content:String(answer),sources:web.sources||[]});status('Ready · '+cfg.name+' · '+selectedModel);render();
+  for(const m of S.messages){if(m.role==='assistant')api.push({role:'assistant',content:m.content||''});else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content||'Inspect this image carefully.'},{type:'image_url',image_url:{url:m.image}}]});else api.push({role:'user',content:m.content||''})}
+  const maxTokens=image?1000:900;
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODEL,messages:api,max_tokens:maxTokens,temperature:image?.2:.4})});
+  let data=null;try{data=await res.json()}catch{}if(!res.ok)throw new Error(data?.error?.message||('Groq request failed ('+res.status+')'));const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error('Groq returned no response.');S.messages.push({role:'assistant',content:String(answer),sources:web.sources||[]});status('Ready · '+MODEL+(image?' · Vision 1000':' · Text 900'));render();
  }catch(e){S.messages.push({role:'assistant',content:'**AI request failed:** '+String(e?.message||e)});status('Request failed');render()}finally{if(btn)btn.disabled=false}
 }
 function bind(){
- const b=$('#kaiSend'),i=$('#kaiPrompt'),f=$('#kaiFile'),n=$('#kaiNew'),ms=$('#kaiModel'),ps=$('#kaiProvider');if(!b||!i)return;
- if(ps){ps.value=window.KORONA_AI_PROVIDER||'navy';if(ms){ms.innerHTML=ps.value==='groq'?'<option value="llama-3.3-70b-versatile">Llama 3.3 70B</option><option value="openai/gpt-oss-120b">GPT-OSS 120B</option>':'<option value="gpt-5.5">GPT-5.5</option><option value="o4-mini">o4-mini</option>';if(![...ms.options].some(o=>o.value===MODEL))MODEL=ps.value==='groq'?'llama-3.3-70b-versatile':'gpt-5.5';ms.value=MODEL}ps.onchange=()=>{window.KORONA_AI_PROVIDER=ps.value;MODEL=ps.value==='groq'?'llama-3.3-70b-versatile':'gpt-5.5';if(ms){ms.innerHTML=ps.value==='groq'?'<option value="llama-3.3-70b-versatile">Llama 3.3 70B</option><option value="openai/gpt-oss-120b">GPT-OSS 120B</option>':'<option value="gpt-5.5">GPT-5.5</option><option value="o4-mini">o4-mini</option>';ms.value=MODEL}window.KORONA_GROQ_MODEL=MODEL;status('Ready · '+(ps.value==='groq'?'Groq':'Groq')+' · '+MODEL)}};if(ms){ms.onchange=()=>{MODEL=ms.value;window.KORONA_GROQ_MODEL=MODEL;status('Ready · '+(ps?.value==='groq'?'Groq':'Groq')+' · '+MODEL)}}
+ const b=$('#kaiSend'),i=$('#kaiPrompt'),f=$('#kaiFile'),n=$('#kaiNew');if(!b||!i)return;
  b.dataset.webBound='v5';b.onclick=send;i.onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send()}};
  if(f)f.onchange=async()=>{const file=f.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){f.value='';status('Please choose an image.');return}if(file.size>12*1024*1024){f.value='';status('Image is too large (max 12 MB).');return}try{const r=new FileReader();r.onload=()=>{S.image=String(r.result);const p=$('#kaiPreview');if(p){p.src=S.image;p.classList.add('show')}status('Image attached · ready to send')};r.readAsDataURL(file)}catch{status('Could not read image.')}};
  if(n)n.onclick=()=>{S.messages=[];S.image=null;i.value='';if(f)f.value='';const p=$('#kaiPreview');if(p){p.removeAttribute('src');p.classList.remove('show')}render();status('New chat')};
@@ -7988,86 +8005,268 @@ async function init(){await loadMathJax();bind();render()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
-
-<style id="korona-clean-browser-polish">
-/* Korona 2026 browser-style visual refresh */
-:root{
-  --kb-bg:#080b0e;--kb-surface:#0e1318;--kb-surface2:#121820;--kb-surface3:#171f28;
-  --kb-border:rgba(255,255,255,.075);--kb-border2:rgba(255,255,255,.12);
-  --kb-text:#e8edf2;--kb-muted:#8995a2;--kb-accent:#55d98b;--kb-accent2:#2ebd72;
-  --kb-shadow:0 18px 55px rgba(0,0,0,.32);--kb-radius:12px;
-}
-body{background:var(--kb-bg)!important;color:var(--kb-text)!important}
-/* Browser chrome */
-#app,.app,.shell,.browser-shell{background:var(--kb-bg)!important}
-#tabStrip,.tab-strip,.tabs-bar{background:#0a0e12!important;border-bottom:1px solid var(--kb-border)!important;box-shadow:0 4px 18px rgba(0,0,0,.18)!important}
-#browserBar,.browser-bar,.browser-toolbar{background:#0d1217!important;border-bottom:1px solid var(--kb-border)!important;box-shadow:none!important}
-#browserBar input,#browserBar textarea,.address-bar,.url-bar,#urlInput{background:#151b22!important;border:1px solid var(--kb-border)!important;color:#dce4eb!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important}
-#browserBar input:focus,.address-bar:focus,.url-bar:focus,#urlInput:focus{border-color:rgba(85,217,139,.42)!important;box-shadow:0 0 0 3px rgba(85,217,139,.08)!important;outline:none!important}
-button,.nav-button,.tab,.control-button,.action-button{transition:background .16s ease,border-color .16s ease,transform .16s ease,opacity .16s ease!important}
-button:hover,.nav-button:hover,.control-button:hover,.action-button:hover{background:rgba(255,255,255,.055)!important;border-color:var(--kb-border2)!important}
-button:active,.nav-button:active{transform:translateY(1px)!important}
-/* Sidebar */
-#side,.sidebar,.side-panel{background:#0b1015!important;border-right:1px solid var(--kb-border)!important}
-.sidebar-nav .nav-button{border:1px solid transparent!important;border-radius:9px!important;color:#9da9b5!important;margin:3px 8px!important}
-.sidebar-nav .nav-button.active{background:rgba(85,217,139,.095)!important;border-color:rgba(85,217,139,.18)!important;color:#dff9e9!important}
-/* Cards and panels */
-.card,.panel,.settings-card,.game-card,.home-card,.kai-shell{background:linear-gradient(180deg,#11171e,#0e141a)!important;border:1px solid var(--kb-border)!important;border-radius:var(--kb-radius)!important;box-shadow:var(--kb-shadow)!important}
-.card:hover,.game-card:hover{border-color:rgba(255,255,255,.13)!important;transform:translateY(-2px)}
-/* Home/dashboard */
-#homePage,.page{background:transparent!important}
-#homePage .hero,.hero{background:radial-gradient(circle at 70% 20%,rgba(85,217,139,.08),transparent 36%),linear-gradient(180deg,#0d1319,#090d11)!important;border:1px solid var(--kb-border)!important;border-radius:16px!important;box-shadow:var(--kb-shadow)!important}
-/* Games */
-#gamesGrid{gap:14px!important}
-#gamesGrid .game-card img{border-radius:9px!important}
-/* AI Studio */
-.kai-shell{max-width:1180px!important;margin:18px auto!important;overflow:hidden!important;padding:0!important}
-.kai-head{background:#0c1116!important;border-bottom:1px solid var(--kb-border)!important;padding:18px 20px!important}
-.kai-head h2{font-size:21px!important;letter-spacing:-.02em!important}
-.kai-kicker{color:var(--kb-accent)!important;font-size:11px!important;letter-spacing:.16em!important;font-weight:700!important}
-.kai-status{background:#121920!important;border:1px solid var(--kb-border)!important;border-radius:999px!important;padding:7px 11px!important;color:#aeb9c4!important}
-.kai-history{background:#090e13!important;min-height:430px!important;padding:22px!important}
-.kai-compose{background:#0c1116!important;border-top:1px solid var(--kb-border)!important;padding:14px!important}
-#kaiPrompt{background:#121920!important;border:1px solid var(--kb-border2)!important;border-radius:12px!important;color:#edf2f6!important;resize:vertical!important}
-#kaiPrompt:focus{border-color:rgba(85,217,139,.42)!important;box-shadow:0 0 0 3px rgba(85,217,139,.07)!important;outline:none!important}
-#kaiSend{background:var(--kb-accent2)!important;color:#06110a!important;border:0!important;border-radius:9px!important;font-weight:750!important;padding:10px 18px!important}
-#kaiSend:hover{background:var(--kb-accent)!important}
-#kaiNew{border:1px solid var(--kb-border)!important;border-radius:9px!important;background:#121920!important}
-.kai-file{background:#121920!important;border:1px solid var(--kb-border)!important;border-radius:9px!important;padding:9px 12px!important;color:#aeb9c4!important}
-.kai-preview-wrap{border-radius:10px!important;overflow:hidden!important}
-/* Reduce old neon/gradient clutter */
-body:before,body:after{pointer-events:none!important}
+<!-- Korona: AI Studio removed -->
+<style id="korona-remove-ai-studio">
+  #aiPage, #koronaAiPage, [data-korona-ai], .nav-button[data-page="ai"] { display: none !important; }
 </style>
-
-<script id="korona-groq-only-final">
-(()=>{
-'use strict';
-const GROQ=String(window.KORONA_GROQ_API_KEY||'').trim();
-let selectedModel='llama-3.3-70b-versatile';
-let messages=[];let image=null;
-const $=(s,r=document)=>r.querySelector(s);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function status(t){const e=$('#kaiStatus');if(e)e.textContent=t}
-function render(){const h=$('#kaiHistory');if(!h)return;if(!messages.length){h.innerHTML='<div class="kai-empty">Start a conversation with Korona.</div>';return}h.innerHTML=messages.map(m=>`<div class="kai-msg ${m.role==='user'?'user':'assistant'}"><div class="kai-msg-role">${m.role==='user'?'YOU':'KORONA'}</div><div class="kai-msg-body">${esc(m.content).replace(/\n/g,'<br>')}</div>${m.image?`<img class="kai-turn-image" src="${m.image}" alt="Attached image">`:''}</div>`).join('');h.scrollTop=h.scrollHeight}
-function fileData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file)})}
-function build(){
- const page=$('#aiPage');if(!page)return false;
- page.innerHTML=`<div class="kai-shell"><div class="kai-head"><div><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Fast text + vision chat.</p></div><div class="kai-head-actions"><select id="kaiModel" class="kai-model" aria-label="AI model"><option value="llama-3.3-70b-versatile">Llama 3.3 70B</option><option value="openai/gpt-oss-120b">GPT-OSS 120B</option></select><span class="kai-status" id="kaiStatus">Ready · Groq</span><button type="button" id="kaiNew">New Chat</button></div></div><div class="kai-history" id="kaiHistory"></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…" rows="4"></textarea><div id="kaiPreviewWrap" class="kai-preview-wrap"><img id="kaiPreview" class="kai-preview" alt="Attached image"><button type="button" id="kaiClearImage" aria-label="Remove attached image">×</button></div><div class="kai-actions"><label class="kai-file" for="kaiFile">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" id="kaiSend">Send</button></div></div></div>`;
- const model=$('#kaiModel');model.value=selectedModel;
- model.onchange=()=>{selectedModel=model.value;status('Ready · Groq · '+model.value)};
- const input=$('#kaiPrompt'),send=$('#kaiSend'),file=$('#kaiFile'),preview=$('#kaiPreview'),clear=$('#kaiClearImage'),fresh=$('#kaiNew');
- file.onchange=async()=>{const f=file.files?.[0];if(!f)return;if(!f.type.startsWith('image/')){file.value='';status('Please choose an image.');return}if(f.size>10*1024*1024){file.value='';status('Image is too large (10 MB max).');return}try{image=await fileData(f);preview.src=image;preview.classList.add('show');status('Image attached · ready')}catch{status('Could not read image.')}};
- clear.onclick=()=>{image=null;file.value='';preview.removeAttribute('src');preview.classList.remove('show');status('Ready · Groq')};
- fresh.onclick=()=>{messages=[];image=null;file.value='';input.value='';clear.click();render();status('Ready · Groq')};
- send.onclick=async()=>{const text=input.value.trim();if(!text&&!image){status('Enter a message or attach an image.');return}if(!GROQ){status('Groq API key is not configured.');return}const model=selectedModel;const userText=text||(image?'Inspect this image carefully.':'');const turnImage=image;messages.push({role:'user',content:userText,image:turnImage});input.value='';image=null;file.value='';preview.removeAttribute('src');preview.classList.remove('show');render();send.disabled=true;status('Thinking…');
- try{const api=[{role:'system',content:'You are Korona AI Studio, a helpful precise assistant. Use Markdown naturally. When an image is attached, inspect it carefully and say when something is unreadable. For math, show useful work.'}];for(const m of messages){if(m.role==='assistant')api.push({role:'assistant',content:m.content});else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content},{type:'image_url',image_url:{url:m.image}}]});else api.push({role:'user',content:m.content})}const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ},body:JSON.stringify({model,messages:api,max_tokens:700,temperature:0.45})});let data={};try{data=await res.json()}catch{}if(!res.ok)throw new Error(data?.error?.message||`Groq request failed (${res.status})`);const answer=data?.choices?.[0]?.message?.content;if(!answer)throw new Error('Groq returned no response.');messages.push({role:'assistant',content:String(answer)});status('Ready · Groq · '+model);render()}catch(e){messages.push({role:'assistant',content:'AI request failed: '+String(e?.message||e)});status('Request failed');render()}finally{send.disabled=false}};
- input.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();send.click()}};render();return true
-}
-function clean(){const page=$('#aiPage');if(!page)return;if(!$('#kaiProvider')&&!$('#kaiSend')?.dataset.koronaClean){build();const b=$('#kaiSend');if(b)b.dataset.koronaClean='1'}}
-function init(){clean();setTimeout(clean,250);setTimeout(clean,1000)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+<script id="korona-remove-ai-studio-runtime">
+(() => {
+  const removeAIStudio = () => {
+    document.querySelectorAll('#aiPage, #koronaAiPage, [data-korona-ai], .nav-button[data-page="ai"]').forEach(el => el.remove());
+    document.querySelectorAll('.sidebar-nav .nav-button').forEach(el => {
+      if (/^AI Studio$/i.test((el.innerText || el.textContent || '').trim())) el.remove();
+    });
+  };
+  removeAIStudio();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeAIStudio, { once: true });
+  const observer = new MutationObserver(removeAIStudio);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  window.addEventListener('pageshow', removeAIStudio);
 })();
 </script>
-
-\n<script id="korona-final-clean-ai-character">\n(()=>{\n'use strict';\nconst $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];\nconst GROQ_MODEL='openai/gpt-oss-120b';\nconst GROQ_KEY=String(window.KORONA_GROQ_API_KEY||'').trim();\nwindow.KORONA_GROQ_MODEL=GROQ_MODEL;\nwindow.KORONA_GROQ_MODELS=[GROQ_MODEL,'openai/gpt-oss-20b'];\n// Stable character artwork sources. Wikimedia Special:FilePath redirects are much less fragile than hotlinked PNG sites.\nconst CHAR_ART={\n miku:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hatsune_Miku.svg',\n teto:'https://commons.wikimedia.org/wiki/Special:FilePath/Kasane_Teto_in_BIRDBRAIN.png',\n neru:'https://commons.wikimedia.org/wiki/Special:FilePath/Akita_Neru.jpg',\n rin:'https://commons.wikimedia.org/wiki/Special:FilePath/Kagamine_Rin.svg',\n len:'https://commons.wikimedia.org/wiki/Special:FilePath/Kagamine_Len.svg',\n luka:'https://commons.wikimedia.org/wiki/Special:FilePath/Megurine_Luka.svg',\n kaito:'https://commons.wikimedia.org/wiki/Special:FilePath/KAITO.svg',\n meiko:'https://commons.wikimedia.org/wiki/Special:FilePath/MEIKO.svg'\n};\nconst COLORS={gojo:['#d9c7ff','#202030'],naruto:['#ff9b35','#182033'],hunter:['#bfc7d6','#1b202b'],lebron:['#c99b70','#181818'],miku:['#39ccd6','#17242c'],teto:['#e8455f','#24171d'],neru:['#e8c547','#171717'],luka:['#ff9ec4','#27212b'],rin:['#ffb23f','#222'],len:['#f2e14c','#222'],kaito:['#3f7bff','#142033'],meiko:['#d8384a','#24171d']};\nfunction fallback(id){const c=COLORS[id]||['#8aff80','#182018'];const label=({gojo:'Gojo',naruto:'Naruto',hunter:'Hunter',lebron:'LeBron',miku:'Miku',teto:'Teto',neru:'Neru',luka:'Luka',rin:'Rin',len:'Len',kaito:'Kaito',meiko:'Meiko'})[id]||id;const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 520"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient></defs><path fill="url(#g)" d="M28 520V350c0-80 58-130 132-130s132 50 132 130v170Z"/><circle cx="160" cy="165" r="88" fill="#efd0bf"/><path fill="${c[0]}" d="M68 165C62 70 260 35 252 170c-26-55-62-73-96-73-40 0-72 22-88 68Z"/><circle cx="128" cy="170" r="7"/><circle cx="192" cy="170" r="7"/><path d="M126 211q34 22 68 0" fill="none" stroke="#6b3f3f" stroke-width="5" stroke-linecap="round"/><text x="160" y="405" text-anchor="middle" fill="#fff" font-family="Arial" font-size="30" font-weight="700">${label}</text></svg>`;return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)}\nfunction charUrl(id){return CHAR_ART[id]||fallback(id)}\nfunction fixCharacter(){\n let box=$('#korona-clean-character'); if(!box){box=document.createElement('div');box.id='korona-clean-character';box.innerHTML='<img alt="" draggable="false">';document.body.appendChild(box)}\n const id=localStorage.getItem('korona_clean_char')||'none', img=$('#korona-clean-character img');\n if(!img)return; if(id==='none'){box.classList.remove('visible');box.style.display='none';img.removeAttribute('src');return}\n box.style.display='flex';box.classList.add('visible');img.onerror=()=>{if(!img.dataset.fallback){img.dataset.fallback='1';img.src=fallback(id)}};img.dataset.fallback='';img.src=charUrl(id);img.alt=id;\n const op=Math.max(0,Math.min(100,Number(localStorage.getItem('korona_clean_opacity')||82)));box.style.opacity=String(op/100);\n}\nfunction fixCharacterCards(){\n const grid=$('.k-character-grid');if(!grid)return; $$('img',grid).forEach(img=>{const id=img.closest('.k-character-choice')?.dataset.char;if(!id||id==='none')return;img.onerror=()=>{if(!img.dataset.fallback){img.dataset.fallback='1';img.src=fallback(id)}};img.dataset.fallback='';img.src=charUrl(id);img.removeAttribute('loading')});\n}\nfunction cleanAI(){\n const page=$('#aiPage');if(!page)return;\n page.innerHTML=`<div class="kai-shell"><div class="kai-head"><div><div class="kai-kicker">KORONA INTELLIGENCE</div><h2>AI Studio</h2><p>Powered by Groq · GPT-OSS 120B</p></div><div class="kai-head-actions"><select id="kaiModel" class="kai-model"><option value="openai/gpt-oss-120b">GPT-OSS 120B</option><option value="openai/gpt-oss-20b">GPT-OSS 20B</option></select><span class="kai-status" id="kaiStatus">Ready · GPT-OSS 120B</span><button type="button" id="kaiNew">New Chat</button></div></div><div class="kai-history" id="kaiHistory"><div class="kai-empty">Start a conversation with Korona.</div></div><div class="kai-compose"><textarea id="kaiPrompt" placeholder="Ask Korona anything…" rows="4"></textarea><div id="kaiPreviewWrap" class="kai-preview-wrap"><img id="kaiPreview" class="kai-preview" alt="Attached image"><button type="button" id="kaiClearImage">×</button></div><div class="kai-actions"><label class="kai-file" for="kaiFile">Attach image<input id="kaiFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><button type="button" class="primary" id="kaiSend">Send</button></div></div></div>`;\n let messages=[] , image=null; const hist=$('#kaiHistory'), prompt=$('#kaiPrompt'), file=$('#kaiFile'), send=$('#kaiSend'), model=$('#kaiModel'), status=$('#kaiStatus');\n const render=()=>{hist.innerHTML=messages.length?messages.map(m=>`<div class="kai-msg ${m.role}"><div class="kai-role">${m.role==='user'?'You':'Korona'}</div><div class="kai-bubble">${String(m.content).replace(/[&<>]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[x])).replace(/\\n/g,'<br>')}</div></div>`).join(''):'<div class="kai-empty">Start a conversation with Korona.</div>';hist.scrollTop=hist.scrollHeight};\n file.onchange=()=>{const f=file.files?.[0];if(!f)return;if(f.size>12*1024*1024){status.textContent='Image too large';file.value='';return}const r=new FileReader();r.onload=()=>{image=r.result;$('#kaiPreview').src=image;$('#kaiPreviewWrap').classList.add('show');status.textContent='Image attached · ready'};r.readAsDataURL(f)};\n $('#kaiClearImage').onclick=()=>{image=null;file.value='';$('#kaiPreview').removeAttribute('src');$('#kaiPreviewWrap').classList.remove('show')};\n $('#kaiNew').onclick=()=>{messages=[];image=null;file.value='';prompt.value='';$('#kaiPreviewWrap').classList.remove('show');status.textContent='Ready · GPT-OSS 120B';render()};\n model.onchange=()=>{status.textContent='Ready · '+(model.value.endsWith('20b')?'GPT-OSS 20B':'GPT-OSS 120B')};\n send.onclick=async()=>{const text=prompt.value.trim();if(!text&&!image)return;if(!GROQ_KEY){messages.push({role:'assistant',content:'Groq API key is not configured.'});render();return}const attached=image;messages.push({role:'user',content:text||'Inspect this image carefully.',image:attached});prompt.value='';image=null;file.value='';$('#kaiPreviewWrap').classList.remove('show');render();send.disabled=true;status.textContent='Thinking…';try{const api=[{role:'system',content:'You are Korona AI Studio. Be helpful, accurate, concise, and use Markdown. Carefully inspect attached images.'}];for(const m of messages){if(m.role==='assistant')api.push({role:'assistant',content:m.content});else if(m.image)api.push({role:'user',content:[{type:'text',text:m.content},{type:'image_url',image_url:{url:m.image}}]});else api.push({role:'user',content:m.content})}const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:model.value,messages:api,max_tokens:1024,temperature:.5})});const d=await r.json();if(!r.ok)throw new Error(d?.error?.message||`Groq HTTP ${r.status}`);messages.push({role:'assistant',content:d?.choices?.[0]?.message?.content||'Groq returned no response.'});status.textContent='Ready · '+(model.value.endsWith('20b')?'GPT-OSS 20B':'GPT-OSS 120B');render()}catch(e){messages.push({role:'assistant',content:'AI request failed: '+e.message});status.textContent='Request failed';render()}finally{send.disabled=false}};\n prompt.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();send.click()}};render();\n}\nfunction run(){fixCharacter();fixCharacterCards();cleanAI()}\nif(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,50),{once:true});else setTimeout(run,50);\nnew MutationObserver(()=>{fixCharacter();fixCharacterCards()}).observe(document.body,{childList:true,subtree:true});\n})();\n</script>\n
+<!-- Korona cinematic motion overhaul: high-visibility movement across the interface. -->
+<style id="korona-cinematic-motion-v2">
+:root {
+  --km-ease: cubic-bezier(.16, 1, .3, 1);
+  --km-spring: cubic-bezier(.2, .9, .25, 1.35);
+  --km-fast: 180ms;
+  --km-medium: 420ms;
+  --km-slow: 760ms;
+  --km-glow: color-mix(in srgb, var(--green, #00ff66) 48%, transparent);
+}
+html { scroll-behavior: smooth; }
+body {
+  background-size: 180% 180%;
+  animation: kmBackgroundDrift 24s ease-in-out infinite alternate !important;
+}
+@keyframes kmBackgroundDrift {
+  0% { background-position: 0% 20%; }
+  50% { background-position: 100% 65%; }
+  100% { background-position: 35% 100%; }
+}
+/* A moving neon sheen is layered into common panel surfaces without covering content. */
+.topbar, header, .nav, .sidebar, .hero, .settings-section, .theme-card,
+.about-grid, .bookmarks-panel, .library-controls, .kai-shell {
+  position: relative;
+  isolation: isolate;
+}
+.topbar::after, header::after, .hero::after, .settings-section::after,
+.theme-card::after, .about-grid::after, .bookmarks-panel::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(112deg, transparent 0%, color-mix(in srgb, var(--green, #00ff66) 0%, transparent) 34%, color-mix(in srgb, var(--green, #00ff66) 14%, transparent) 48%, transparent 64%);
+  background-size: 240% 100%; opacity: .28; z-index: -1;
+  animation: kmSheen 8s linear infinite;
+}
+@keyframes kmSheen { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+/* Pages enter with a pronounced but short cinematic lift. */
+.page, .page.active { animation: kmPageIn 560ms var(--km-ease) both !important; transform-origin: 50% 18%; }
+@keyframes kmPageIn {
+  0% { opacity: 0; transform: translate3d(0, 30px, 0) scale(.985); filter: blur(5px); }
+  68% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+}
+.km-reveal { animation: kmReveal 720ms var(--km-ease) both !important; }
+@keyframes kmReveal {
+  0% { opacity: 0; transform: translate3d(0, 28px, 0) scale(.975); filter: blur(4px); }
+  70% { filter: blur(0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+}
+/* Cards are animated on arrival, then get an obvious 3D lift and neon edge on hover. */
+.game-card, .theme-card, .settings-section, .about-grid, .bookmark-card,
+.games-grid > *, .gamesGrid > *, .character-card, .k-character-choice {
+  transition: transform 360ms var(--km-ease), box-shadow 360ms ease,
+    border-color 260ms ease, background-color 260ms ease, filter 260ms ease !important;
+}
+.game-card, .theme-card, .settings-section, .about-grid, .bookmark-card {
+  animation: kmCardSettle 700ms var(--km-ease) both;
+}
+@keyframes kmCardSettle {
+  0% { opacity: 0; transform: translateY(24px) scale(.96); }
+  70% { opacity: 1; transform: translateY(-3px) scale(1.008); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.game-card { position: relative; overflow: hidden; }
+.game-card::before {
+  content: ""; position: absolute; z-index: 3; pointer-events: none; inset: 0;
+  border-radius: inherit; padding: 1px;
+  background: linear-gradient(125deg, transparent 5%, var(--green, #00ff66) 25%, transparent 42%, transparent 62%, var(--green, #00ff66) 82%, transparent 96%);
+  background-size: 240% 240%; opacity: .0; transition: opacity 260ms ease;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.game-image { transform: scale(1.015); transition: transform 750ms var(--km-ease), filter 500ms ease !important; }
+.game-media { overflow: hidden; }
+.game-media::after { transition: opacity 360ms ease, background-position 600ms ease; }
+.nav button, .sidebar-nav button, .nav-button, button, .game-card a, .bookmark-button,
+.theme-card, .k-character-choice, .settings-toggle, input, select, textarea {
+  transition: color 220ms ease, background-color 260ms ease, border-color 260ms ease,
+    box-shadow 300ms ease, transform 300ms var(--km-ease), filter 260ms ease !important;
+}
+button, .nav button, .sidebar-nav button, .nav-button, .game-card a, .bookmark-button { position: relative; overflow: hidden; }
+button::after, .nav button::after, .sidebar-nav button::after, .nav-button::after, .game-card a::before {
+  content: ""; position: absolute; pointer-events: none; inset: -80% auto -80% -45%; width: 30%;
+  transform: rotate(18deg) translateX(-220%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.17), transparent);
+}
+button:hover::after, .nav button:hover::after, .sidebar-nav button:hover::after,
+.nav-button:hover::after, .game-card a:hover::before { animation: kmButtonShine 780ms var(--km-ease) both; }
+@keyframes kmButtonShine { to { transform: rotate(18deg) translateX(650%); } }
+@media (hover: hover) and (pointer: fine) {
+  .game-card:hover, .theme-card:hover, .settings-section:hover, .about-grid:hover,
+  .bookmark-card:hover, .k-character-choice:hover {
+    transform: perspective(900px) translateY(-7px) rotateX(1.2deg) scale(1.012) !important;
+    box-shadow: 0 18px 46px rgba(0,0,0,.36), 0 0 0 1px var(--km-glow), 0 0 28px color-mix(in srgb, var(--green, #00ff66) 15%, transparent) !important;
+    border-color: var(--green, #00ff66) !important;
+  }
+  .game-card:hover::before { opacity: .85; animation: kmBorderOrbit 2.2s linear infinite; }
+  .game-card:hover .game-image { transform: scale(1.13) rotate(.6deg) !important; filter: saturate(1.25) contrast(1.04) brightness(1.08) !important; }
+  .game-card:hover .game-media-glow { opacity: .35; transform: scale(1.5); }
+  button:hover, .game-card a:hover, .bookmark-button:hover { transform: translateY(-2px) scale(1.025); filter: brightness(1.1); }
+  button:active, .game-card a:active, .bookmark-button:active { transform: scale(.96) !important; }
+  .nav button:hover, .sidebar-nav button:hover, .nav-button:hover { transform: translateX(4px); }
+}
+@keyframes kmBorderOrbit { from { background-position: 0% 0%; } to { background-position: 240% 240%; } }
+.game-media-glow { transition: opacity 350ms ease, transform 500ms var(--km-ease) !important; animation: kmGlowBreathe 4.5s ease-in-out infinite alternate; }
+@keyframes kmGlowBreathe { from { opacity: .08; } to { opacity: .24; } }
+.game-joke, #gameJoke, .online, .status, .hero h1, .hero h2 { animation: kmSoftPulse 4s ease-in-out infinite alternate; }
+@keyframes kmSoftPulse { from { text-shadow: 0 0 0 transparent; } to { text-shadow: 0 0 16px color-mix(in srgb, var(--green, #00ff66) 28%, transparent); } }
+/* Image cards never appear empty while remote artwork is loading or blocked by hotlink rules. */
+.game-image[data-artwork-state="fallback"] { object-fit: cover; background: #071009; }
+.game-image[data-artwork-state="remote"] { animation: kmImageResolve 520ms var(--km-ease) both; }
+@keyframes kmImageResolve { from { opacity: .45; filter: blur(3px) saturate(.7); } to { opacity: 1; filter: blur(0) saturate(1); } }
+/* Global scroll reveal is applied by the script below; keep overlays and browser frames stable. */
+#browserView, #frames, iframe, .iframe-container, .browser-frame, .modal, .overlay,
+#loginScreen, #authGate, .fullscreen, .game-embed { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .game-card:hover, .theme-card:hover, .settings-section:hover, .about-grid:hover { transform: none !important; }
+}
+</style>
+<script id="korona-cinematic-motion-runtime">
+(() => {
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return;
+  const skip = el => !el || el.matches('iframe, .iframe-container, #browserView, #frames, .modal, .overlay, #loginScreen, #authGate, .fullscreen, .game-embed, script, style');
+  const revealSelector = '.hero, .settings-section, .theme-card, .game-card, .about-grid, .bookmarks-panel, .library-controls, .character-card, .k-character-choice, .content > section, .content > .page.active';
+  const observeReveals = root => {
+    if (!root || !root.querySelectorAll) return;
+    const nodes = root.querySelectorAll(revealSelector);
+    nodes.forEach((el, i) => {
+      if (skip(el) || el.dataset.kmRevealed) return;
+      el.dataset.kmRevealed = '1';
+      el.style.setProperty('--km-stagger', Math.min(i % 10, 9) * 55 + 'ms');
+      el.style.animationDelay = el.style.animationDelay || el.style.getPropertyValue('--km-stagger');
+      if ('IntersectionObserver' in window) {
+        el.classList.add('km-reveal-pending');
+        observer.observe(el);
+      } else el.classList.add('km-reveal');
+    });
+  };
+  const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.remove('km-reveal-pending');
+      entry.target.classList.add('km-reveal');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.06, rootMargin: '0px 0px -4% 0px' }) : null;
+  const css = document.createElement('style');
+  css.textContent = '.km-reveal-pending{opacity:0;transform:translateY(22px) scale(.98)} .km-reveal{animation-delay:var(--km-stagger,0ms)!important}';
+  document.head.appendChild(css);
+  observeReveals(document);
+  let timer;
+  new MutationObserver(records => {
+    for (const record of records) for (const node of record.addedNodes) if (node.nodeType === 1) observeReveals(node);
+    clearTimeout(timer); timer = setTimeout(() => observeReveals(document), 80);
+  }).observe(document.body, { childList: true, subtree: true });
+  // A soft cursor aura adds motion without intercepting clicks or scrolling.
+  const aura = document.createElement('div'); aura.className = 'korona-cursor-aura';
+  aura.setAttribute('aria-hidden', 'true');
+  aura.style.cssText = 'position:fixed;left:0;top:0;width:280px;height:280px;border-radius:50%;pointer-events:none;z-index:0;opacity:.13;filter:blur(38px);background:radial-gradient(circle, var(--green,#00ff66) 0%, transparent 68%);transform:translate3d(-50%,-50%,0);transition:opacity 300ms ease;will-change:transform;display:none';
+  document.body.appendChild(aura);
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    aura.style.display = 'block';
+    let raf = 0, x = innerWidth / 2, y = innerHeight / 2;
+    document.addEventListener('pointermove', e => {
+      x = e.clientX; y = e.clientY;
+      if (raf) return;
+      raf = requestAnimationFrame(() => { aura.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%)`; raf = 0; });
+    }, { passive: true });
+  }
+  // Re-run reveals when the app swaps pages without a full navigation.
+  document.addEventListener('click', e => {
+    if (e.target.closest('.nav button, .sidebar-nav button, .nav-button, [data-page]')) {
+      setTimeout(() => observeReveals(document), 50);
+    }
+  }, true);
+})();
+</script>
+<style id="korona-particle-network-background">
+/* Low-cost connected particle field: no WebGL, blur filters, or full-screen shader. */
+#koronaParticleNetwork{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.9}
+#app,#loginScreen{position:relative;z-index:2}
+body{background-color:#030806}
+/* Remove expensive motion from the previous cinematic pass while keeping interactions responsive. */
+.korona-cursor-aura{display:none!important}
+.game-media-glow{animation:none!important}
+.game-joke,#gameJoke,.online,.status,.hero h1,.hero h2{animation:none!important}
+.game-card,.theme-card,.settings-section,.about-grid,.bookmark-card,.games-grid>*,.gamesGrid>*,.character-card,.k-character-choice{
+ transition:transform 160ms ease-out,border-color 160ms ease-out,background-color 160ms ease-out,opacity 160ms ease-out!important;
+ animation:none!important;filter:none!important;box-shadow:none;
+}
+.game-image{transform:none!important;filter:none!important;transition:opacity 160ms ease-out!important}
+button,.nav button,.sidebar-nav button,.nav-button,.game-card a,.bookmark-button,.theme-card,.k-character-choice,.settings-toggle,input,select,textarea{
+ transition:color 130ms ease-out,background-color 130ms ease-out,border-color 130ms ease-out,transform 130ms ease-out!important;filter:none!important;
+}
+button::after,.nav button::after,.sidebar-nav button::after,.nav-button::after,.game-card a::before,.game-card::before{animation:none!important;display:none!important}
+@media(hover:hover) and (pointer:fine){
+ .game-card:hover,.theme-card:hover,.settings-section:hover,.about-grid:hover,.bookmark-card:hover,.k-character-choice:hover{transform:translateY(-2px)!important;box-shadow:0 5px 18px rgba(0,0,0,.2)!important}
+ .game-card:hover .game-image{transform:none!important;filter:none!important}
+ button:hover,.game-card a:hover,.bookmark-button:hover{transform:translateY(-1px)!important;filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){#koronaParticleNetwork{display:none!important}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+<script id="korona-particle-network-runtime">
+(()=>{
+ const start=()=>{
+  if(document.getElementById('koronaParticleNetwork'))return;
+  const canvas=document.createElement('canvas');canvas.id='koronaParticleNetwork';canvas.setAttribute('aria-hidden','true');
+  document.body.prepend(canvas);
+  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});if(!ctx)return;
+  let w=0,h=0,dpr=1,nodes=[],raf=0,last=0,visible=true;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  function resize(){
+   w=innerWidth;h=innerHeight;dpr=Math.min(devicePixelRatio||1,1);
+   canvas.width=Math.max(1,Math.floor(w*dpr));canvas.height=Math.max(1,Math.floor(h*dpr));
+   canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+   const count=Math.max(28,Math.min(64,Math.round(w*h/22000)));
+   nodes=Array.from({length:count},()=>({x:rand(0,w),y:rand(0,h),vx:rand(-.18,.18),vy:rand(-.16,.16),r:rand(1.2,2.4),phase:rand(0,6.28)}));
+   draw(0,true);
+  }
+  function draw(now,force){
+   if(!ctx||document.hidden||!visible)return;
+   if(!force&&now-last<33){raf=requestAnimationFrame(draw);return}last=now;
+   ctx.clearRect(0,0,w,h);
+   const maxDist=Math.min(155,Math.max(105,w/8));
+   for(let i=0;i<nodes.length;i++){
+    const a=nodes[i];
+    if(!reduce&&!force){a.x+=a.vx;a.y+=a.vy;if(a.x< -10)a.x=w+10;if(a.x>w+10)a.x=-10;if(a.y< -10)a.y=h+10;if(a.y>h+10)a.y=-10;}
+    for(let j=i+1;j<nodes.length;j++){
+     const b=nodes[j],dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;
+     if(d2<maxDist*maxDist){const d=Math.sqrt(d2);ctx.globalAlpha=(1-d/maxDist)*.24;ctx.strokeStyle='#46e99a';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+    }
+    ctx.globalAlpha=.65;ctx.fillStyle='#79ffc0';ctx.beginPath();ctx.arc(a.x,a.y,a.r,0,Math.PI*2);ctx.fill();
+    /* Small hollow node gives the network a molecular / atom-like feel without costly glow filters. */
+    ctx.globalAlpha=.22;ctx.strokeStyle='#45e99a';ctx.lineWidth=.7;ctx.beginPath();ctx.arc(a.x,a.y,a.r+3.2,0,Math.PI*2);ctx.stroke();
+   }
+   ctx.globalAlpha=1;raf=requestAnimationFrame(draw);
+  }
+  function pause(){visible=!document.hidden;if(!visible){cancelAnimationFrame(raf);raf=0}else if(!reduce){last=0;raf=requestAnimationFrame(draw)}}
+  addEventListener('resize',resize,{passive:true});document.addEventListener('visibilitychange',pause);
+  if(reduce){resize();return}resize();raf=requestAnimationFrame(draw);
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
 </body></html>
