@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Korona</title>
-<meta content="4.1.0" name="fern-version"/>
+<meta content="2.1.0" name="fern-version"/>
 <!-- Configure AI through a secure server-side endpoint. Do not place provider API keys in public HTML. -->
 <script>window.KORONA_GROQ_API_KEY = "";</script>
 <!-- Scramjet -->
@@ -8500,5 +8500,59 @@ main.content, #app > .content, .content { position:relative !important; display:
   };
 })();
 </script>
+
+<style id="korona-settings-scroll-final">
+/* Settings must scroll independently instead of being clipped by the app shell. */
+html, body { min-height:100%; height:auto!important; overflow-y:auto!important; }
+#app { min-height:100dvh!important; height:auto!important; overflow:visible!important; }
+#app > .content, #app main.content, main.content, .content {
+  height:auto!important; min-height:100dvh!important; max-height:none!important;
+  overflow-x:hidden!important; overflow-y:visible!important; align-self:stretch!important;
+}
+#settingsPage, #settingsPage.active {
+  height:auto!important; min-height:100dvh!important; max-height:none!important;
+  overflow:visible!important; padding-bottom:80px!important;
+}
+#settingsPage .settings-panel, #settingsPage .settings-section { overflow:visible!important; min-height:min-content!important; }
+.korona-sidebar { overflow-y:auto!important; overscroll-behavior:contain; }
+/* Never let the browser viewport extend underneath the sidebar. */
+:root { --korona-sidebar-width:194px; }
+@media(max-width:700px){:root{--korona-sidebar-width:72px}}
+#app > .content, #app main.content, main.content, .content {
+ margin-left:var(--korona-sidebar-width)!important;
+ width:calc(100% - var(--korona-sidebar-width))!important;
+}
+#proxyPage.active { width:100%!important; max-width:none!important; margin:0!important; }
+/* Game cards use local artwork and have an unmistakable, working Play action. */
+#gamesGrid .game-card { cursor:default!important; }
+#gamesGrid .game-card .game-card-play, #gamesGrid .game-card a, #gamesGrid .game-card button { cursor:pointer!important; pointer-events:auto!important; }
+</style>
+<script id="korona-sidebar-duck-ai-and-game-launch-final">
+(function(){
+  // Add a real, visible Duck.ai destination to the actual left sidebar.
+  const nav = document.querySelector('#koronaSidebar .sidebar-nav, .korona-sidebar .sidebar-nav');
+  if (nav && !nav.querySelector('[data-korona-duck-ai]')) {
+    const ai = document.createElement('button');
+    ai.type = 'button'; ai.className = 'nav-button'; ai.dataset.koronaDuckAi = 'true';
+    ai.innerHTML = '<span class="sidebar-icon" aria-hidden="true">✦</span><span>Duck.ai</span>';
+    ai.title = 'Open Duck.ai'; ai.setAttribute('aria-label','Open Duck.ai');
+    ai.addEventListener('click', function(){ window.open('https://duck.ai/','_blank','noopener,noreferrer'); });
+    nav.appendChild(ai);
+  }
+  // Direct launch is dependable on static Vercel hosting; the embedded proxy can be configured separately.
+  window.openGame = function(targetURL){
+    let url; try { url = new URL(String(targetURL || '').trim(), location.href); } catch(e) { return false; }
+    if (!['http:','https:'].includes(url.protocol)) return false;
+    const opened = window.open(url.href, '_blank', 'noopener,noreferrer');
+    if (!opened) { location.href = url.href; }
+    return true;
+  };
+  // Settings and games may be entered after initial layout; keep scroll available on navigation.
+  document.querySelectorAll('.nav-button[data-page="settings"]').forEach(function(btn){
+    btn.addEventListener('click', function(){ requestAnimationFrame(function(){ document.documentElement.style.overflowY='auto'; document.body.style.overflowY='auto'; }); });
+  });
+})();
+</script>
+
 </body>
 </html>
