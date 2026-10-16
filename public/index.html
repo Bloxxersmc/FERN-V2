@@ -5,8 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Korona</title>
-<meta content="4.0.3" name="fern-version"/>
-        
+<meta content="4.0.4" name="fern-version"/>
 <!-- Configure AI through a secure server-side endpoint. Do not place provider API keys in public HTML. -->
 <script>window.KORONA_GROQ_API_KEY = "";</script>
 <!-- Scramjet -->
@@ -4743,16 +4742,13 @@ async function launchURL(targetURL=null,targetTabId=activeTabId){
     await tab.frame.go(url);tab.title=getSiteTitle(url);renderTabButtons();
   }catch(error){
     console.error("Korona Scramjet launch failed:",error);
-    // A direct iframe is not a full proxy and some sites intentionally block it,
-    // but it provides an actual preview when a site's embed policy permits it.
-    if(proxyOpeningOverlay){
+    // Automatically attempt a direct preview so game cards and URLs do not stop
+    // at a dead-end error panel. This works only for sites that permit iframe embedding.
+    const direct = showDirectPreview(tab,url);
+    if(!direct && proxyOpeningOverlay){
       proxyOpeningOverlay.style.display="";
-      proxyOpeningOverlay.innerHTML='<div class="proxy-opening-text">Proxy connection failed</div><div style="max-width:440px;margin:10px auto;color:#9aa8ba;font-size:12px;line-height:1.5;text-align:center">Check that Scramjet assets and your Wisp WebSocket endpoint are deployed. You can also try a direct preview for sites that allow embedding.</div><button id="tryDirectPreview" type="button" style="display:block;margin:12px auto;padding:10px 14px;border:1px solid #5cdcf5;border-radius:9px;background:#10202d;color:#d9f7ff;cursor:pointer">Try direct preview</button>';
+      proxyOpeningOverlay.innerHTML='<div class="proxy-opening-text">Preview unavailable</div><div style="max-width:440px;margin:10px auto;color:#9aa8ba;font-size:12px;line-height:1.5;text-align:center">The proxy could not connect and a direct preview could not be created. Check the deployed Scramjet assets and Wisp WebSocket endpoint.</div>';
       proxyOpeningOverlay.classList.add("show");
-      document.getElementById("tryDirectPreview")?.addEventListener("click",()=>{
-        showDirectPreview(tab,url);
-        proxyOpeningOverlay.classList.remove("show");
-      },{once:true});
     }
   }finally{setTabLoading(false);renderTabButtons();}
 }
@@ -5040,9 +5036,8 @@ updateFullscreenUI();
    ============================================================ */
 
 function openGame(targetURL) {
-    openBrowserTab(targetURL);
-    const container=document.getElementById("iframeContainer");
-    if(container && document.fullscreenElement!==container && container.requestFullscreen) container.requestFullscreen().catch(()=>{});
+    // Opening a game should navigate to the browser view; fullscreen remains user-controlled.
+    return openBrowserTab(targetURL);
 }
 
 
@@ -5076,14 +5071,19 @@ function getGameImage(game) {
 }
 
 function getGameImageCandidates(game) {
-    if (game.image) return [game.image];
-    const q = encodeURIComponent(game.name + " logo");
-    return [
-        "https://tse1.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1",
-        "https://tse2.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1",
-        "https://tse3.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1",
-        "https://tse4.mm.bing.net/th?q=" + q + "&w=900&h=500&c=7&rs=1"
-    ];
+    if (game && game.image) return [game.image];
+    const q = encodeURIComponent((game?.name || 'game') + " logo");
+    let host = '';
+    try { host = new URL(game?.link || '').hostname; } catch (_) {}
+    const candidates = [];
+    if (host) candidates.push('https://www.google.com/s2/favicons?domain=' + encodeURIComponent(host) + '&sz=256');
+    candidates.push(
+        'https://tse1.mm.bing.net/th?q=' + q + '&w=900&h=500&c=7&rs=1',
+        'https://tse2.mm.bing.net/th?q=' + q + '&w=900&h=500&c=7&rs=1',
+        'https://tse3.mm.bing.net/th?q=' + q + '&w=900&h=500&c=7&rs=1',
+        'https://tse4.mm.bing.net/th?q=' + q + '&w=900&h=500&c=7&rs=1'
+    );
+    return candidates;
 }
 
 function gameFallbackDataURL(game) {
@@ -5153,20 +5153,26 @@ function renderGames() {
         image.loading = index < 2 ? 'eager' : 'lazy';
         if (index === 0) image.fetchPriority = 'high';
         image.referrerPolicy = 'no-referrer';
-        // Always paint a working local artwork immediately. Remote thumbnail hosts
-        // (especially Bing's tse*.mm.bing.net endpoints) can reject hotlinked requests
-        // from Vercel deployments, so load them in the background and keep the fallback.
+        // Paint local artwork immediately, then progressively try automatic remote art.
+        // If Vercel or a remote host blocks thumbnails, the local artwork remains reliable.
         const fallbackArtwork = gameFallbackDataURL(game);
+        const artworkCandidates = getGameImageCandidates(game);
+        let artworkAttempt = 0;
         image.src = fallbackArtwork;
+        image.style.backgroundImage = 'url("' + fallbackArtwork + '")';
         image.dataset.artworkState = 'fallback';
-        // Use generated, self-contained SVG artwork as the guaranteed default.
-        // External thumbnail hosts often reject hotlinks from Vercel deployments;
-        // keeping card artwork local means every automatically generated card renders.
         image.onerror = () => {
+            if (artworkAttempt < artworkCandidates.length) {
+                image.src = artworkCandidates[artworkAttempt++];
+                image.dataset.artworkState = 'remote';
+                return;
+            }
             image.onerror = null;
-            image.src = gameFallbackDataURL(game);
+            image.src = fallbackArtwork;
             image.dataset.artworkState = 'fallback';
         };
+        // Start the remote-art attempt after the fallback has been assigned.
+        image.src = artworkCandidates.length ? artworkCandidates[artworkAttempt++] : fallbackArtwork;
 
         const mediaGlow = document.createElement('div');
         mediaGlow.className = 'game-media-glow';
@@ -8322,4 +8328,64 @@ html, body { width:100%; height:100%; }
 @media(max-width:800px){ .content:has(#proxyPage.active){padding:0!important} }
 </style>
 
+
+<style id="korona-layout-gamecards-repair">
+/* Correct the earlier narrow preview rule: the browser should occupy all space beside the sidebar. */
+#app { width:100% !important; max-width:none !important; }
+#app .content,
+.content:has(#proxyPage.active) {
+  box-sizing:border-box !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  margin:0 !important;
+}
+#proxyPage,
+#proxyPage.active,
+.content:has(#proxyPage.active) > #proxyPage.active {
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  left:auto !important;
+  right:auto !important;
+}
+#proxyPage .browser-page,
+#proxyPage .browser-window,
+#proxyPage .iframe-container,
+#proxyPage .browser-frames {
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  margin:0 !important;
+}
+#proxyPage .browser-page { flex:1 1 auto !important; }
+#proxyPage .browser-window { flex:1 1 auto !important; }
+#proxyPage .iframe-container { flex:1 1 auto !important; }
+#proxyPage .browser-frames { flex:1 1 auto !important; }
+#proxyPage .hero,
+#proxyPage .iframe-container { max-width:none !important; }
+#proxyPage .hero { width:100% !important; }
+#proxyPage .browser-frames iframe,
+#proxyPage .browser-frames .korona-direct-preview,
+#proxyPage .browser-frame iframe {
+  position:absolute !important; inset:0 !important;
+  display:block !important; width:100% !important; height:100% !important;
+  min-width:0 !important; min-height:0 !important; max-width:none !important; max-height:none !important;
+}
+/* Cards remain visibly interactive; artwork has a local fallback while remote artwork loads. */
+#gamesPage #gamesGrid { width:100% !important; max-width:none !important; }
+#gamesPage #gamesGrid .game-card {
+  cursor:pointer !important; pointer-events:auto !important; min-width:0 !important;
+}
+#gamesPage #gamesGrid .game-card a,
+#gamesPage #gamesGrid .bookmark-button { position:relative !important; z-index:2 !important; pointer-events:auto !important; }
+#gamesPage #gamesGrid .game-media { min-width:0 !important; overflow:hidden !important; }
+#gamesPage #gamesGrid .game-image { display:block !important; width:100% !important; height:100% !important; object-fit:cover !important; }
+@media(max-width:800px) {
+  #proxyPage, #proxyPage.active { padding:0 !important; }
+}
+</style>
 </body></html>
